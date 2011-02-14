@@ -41,7 +41,7 @@ There's also a simple API which can be accessed from the move module:
   
   - As functions, or lambdas, are the key awesomeness of JavaScript and is a very light-weight thing, the "function" keyword and boilerplate argument parens just need to be easier to write. Move uses the `^` keyword and does not enforce `()` for argument-less functions.
 
-  - The last statement of a function is automatically returned.
+  - The last statement in a function is automatically returned.
   
   - Move adds a shorthand for calling functions without parens. E.g. `foo(bar)` is equivalent to `foo! bar` and `Some.foo(strip(bar))` can be written as `Some.foo! strip! bar`.
 
