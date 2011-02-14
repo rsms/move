@@ -4,7 +4,7 @@
 
 Move is a flavor (and a subset) of JavaScript improving in the following ways:
 
-- Simpler: For instance; there's only one way to declare functions, no need of `var` declarations and no need for terminating statements with semicolons.
+- Simpler: For instance; there's only one way to declare functions, no need of `var` declarations, only one type of (non type-coercing) equality operators and no need for terminating statements with semicolons.
 
 - Less boiler-plate code needed. Move introduces a few carefully selected features like the "import" and "export" keywords, and @-shorthand for `this` access.
 
@@ -48,6 +48,8 @@ There's also a simple API which can be accessed from the move module:
 - **Variables** need not be explicitly declared. Move will declare a newfound variable in the scope which it first was used. This behavior is deterministic, in contrast to the ambiguous way implicitly declared variables behave in JavaScript.
 
 - **No commas** required to terminate expressions. Move will determine when a comma is needed so you don't have to (and the code gets more readable).
+
+- No type-coercing **equality operators** -- in Move, `==` does not perform type coercion and behaves just like `===` in JavaScript. Same goes for `!=`.
 
 - **@-shorthand** for accessing properties of the `this` object. E.g. `this.foo = 5` can be written as `@foo = 5`.
 
