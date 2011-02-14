@@ -57,8 +57,6 @@ There's also a simple API which can be accessed from the move module:
 
 Move is **designed for humans** which is the reason for why things like variable declarations and statement terminators has been removed -- they are simply not part of the essentials or essence of what a programmer should be thinking about. The computer is, or at least should be, better at deciding those things.
 
-Features which interfere with how JavaScript work (e.g. implicit return statements, "import" & "export" sugar, etc) can be disabled at compile-time by passing certain options to the compile functions.
-
 ## A subset of JavaScript, not a different language
 
 Move is a subset of JavaScript rather than a different language -- features can be selectively used when writing code. The following three examples are all valid Move code while the last one is also valid JavaScript code:
