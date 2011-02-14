@@ -14,7 +14,7 @@ Move is a flavor (and a subset) of JavaScript improving in the following ways:
 
 Currently Move itself (the compiler) is only running in CommonJS environments like Node.js, but code being generated is pure JavaScript without any implicit dependencies which should run wherever the code you write would normally run.
 
-For now, it's easiest to install Move using the Node Package Manager:
+For now, it's easiest to install Move using the [Node Package Manager](http://npmjs.org/):
 
     npm install move
 
