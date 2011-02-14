@@ -2,13 +2,13 @@
 
 > JavaScript moving forward (or: how JavaScript is meant to be written)
 
-Move is a flavor (and a subset) of JavaScript improving in the following ways:
+Move is a flavor (and a superset) of JavaScript improving in the following ways:
 
 - **Simpler.** E.g. there's only one way to declare functions, no need for `var` declarations, only a single type of equality operators and no need for terminating statements with semicolons.
 
 - **Less boiler-plate** code needed. Move introduces a few carefully selected features like the "import" and "export" keywords, and @-shorthand for `this` access.
 
-- Move is **a subset of JavaScript** rather than a different language. This makes it possible to selectively use language features you like and e.g. using snippets of JavaScript code unmodified, directly in Move code.
+- Move is **a superset of JavaScript** rather than a different language. This makes it possible to selectively use language features you like and e.g. using snippets of JavaScript code unmodified, directly in Move code.
 
 ## Installing and using Move
 
@@ -59,9 +59,9 @@ There's also a simple API which can be accessed from the move module:
 
 Move is **designed for humans** which is the reason for why things like variable declarations and statement terminators has been removed -- they are simply not part of the essentials or essence of what a programmer should be thinking about. The computer is, or at least should be, better at deciding those things.
 
-## A subset of JavaScript, not a different language
+## A superset of JavaScript, not a different language
 
-Move is a subset of JavaScript rather than a different language -- features can be selectively used when writing code. The following three examples are all valid Move code while the last one is also valid JavaScript code:
+Move is a superset of JavaScript rather than a different language -- features can be selectively used when writing code. The following three examples are all valid Move code while the last one is also valid JavaScript code:
 
 example1.move:
 
