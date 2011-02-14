@@ -8,7 +8,7 @@ Move is a flavor (and a subset) of JavaScript improving in the following ways:
 
 - Less boiler-plate code needed. Move introduces a few carefully selected features like the "import" and "export" keywords, and @-shorthand for `this` access.
 
-- Move is a subset of JavaScript rather than a different language. This makes it possible to selectively language features you like and do things like using snippets of JavaScript code unmodified directly in Move code.
+- Move is a subset of JavaScript rather than a different language. This makes it possible to selectively use language features you like and e.g. using snippets of JavaScript code unmodified, directly in Move code.
 
 ## Installing and using Move
 
