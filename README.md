@@ -33,7 +33,7 @@ There's also a simple API which can be accessed from the move module:
     //     return 5 * Math.PI;
     //   };
 
-## Difference to JavaScript
+## Differences to JavaScript
 
 - **Functions** are declared using *one* construction: `^(arg1){...}` or `^{...}`
   
