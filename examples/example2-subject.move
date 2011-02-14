@@ -1,0 +1,62 @@
+// A sample subject
+import fs, vm2 = 'vm', foo = './z/foo'
+
+// First time-assignment should define the var in the upmost scope
+bar = 89
+bar2 = 89 ^ 4
+bar2 = bar2 ^ 4
+
+import http
+
+bar3 = ^(arg1, arg2, callback) {
+  arg1 = arg2 + 5
+  arg1 = Math.pow! arg1, 2
+  arg1 = @pow! arg1, 2
+  setInterval! 1000, callback
+}
+
+o = { foo: ^(x){ 6 } }
+
+bar4 = ^{ return bar3 }
+
+bar3! ^{
+  console.log! 'callback invoked'
+}
+bar3! 1, 2, ^(err) {
+  x = 1 + 3
+  @y = 4
+  if (@y < x) return 'okay'
+  console.log! 'callback invoked'
+}
+
+http.get! '/api/submit', ^(err, response){
+  console.log! 'submit response:', response
+}
+
+text = stripCharacters! '-', fs.readFileSync! '/foo/bar.txt'
+
+list = [1, 3, 6, 9]
+list2 = list.map! ^(item){ '$'+item }
+
+//foreach (value in list) {
+//  console.log(value)
+//}
+for (var _line32v=list, _line32i=0, _line32L=_line32v.length, value; // ¬
+     i < _line32L && ((value = _line32v[_line32i++]) || true); ) {
+  console.log! value
+}
+
+object = {foo:'F00', bar:'84R'}
+
+//foreach (key, value in object) {
+//  console.log(key, value)
+//}
+for (var key in object) { value = object[key];
+  console.log(key, value)
+}
+
+for (i=0; i < 10; i++) {
+  // Log a message if i is less than five
+  if (i < 5)
+    console.log('value of i is now: '+i)
+}
