@@ -45,7 +45,7 @@ There's also a simple API which can be accessed from the move module:
   
   - Move adds a shorthand for calling functions without parens. E.g. `foo(bar)` is equivalent to `foo! bar` and `Some.foo(strip(bar))` can be written as `Some.foo! strip! bar`.
 
-- **Variables** need not be explicitly declared. Move will declare a newfound variable in the scope which it first was used. This behavior is deterministic, in contrast to the ambiguous way implicitly declared variables work in JavaScript.
+- **Variables** need not be explicitly declared. Move will declare a newfound variable in the scope which it first was used. This behavior is deterministic, in contrast to the ambiguous way implicitly declared variables behave in JavaScript.
 
 - **No commas** required to terminate expressions. Move will determine when a comma is needed so you don't have to (and the code gets more readable).
 
@@ -65,12 +65,14 @@ As Move is a subset of JavaScript rather than a different language -- Move's fea
 
 example1.move:
 
-    export load = ^(path, callback) {
-      fs.readFile! path, 'utf8', ^(err, content) {
-        if (err) return callback! err
-        callback! null, content.replace! /\t/, '  '
-      }
-    }
+```js
+export load = ^(path, callback) {
+  fs.readFile! path, 'utf8', ^(err, content) {
+    if (err) return callback! err
+    callback! null, content.replace! /\t/, '  '
+  }
+}
+```
 
 example2.move:
 
