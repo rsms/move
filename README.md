@@ -61,7 +61,7 @@ Features which interfere with how JavaScript work (e.g. implicit return statemen
 
 ## A subset of JavaScript, not a different language
 
-As Move is a subset of JavaScript rather than a different language -- Move's features can be selectively used when writing code. The following three examples are all valid Move code while the last one is also valid JavaScript code:
+Move is a subset of JavaScript rather than a different language -- features can be selectively used when writing code. The following three examples are all valid Move code while the last one is also valid JavaScript code:
 
 example1.move:
 
