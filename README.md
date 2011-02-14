@@ -4,11 +4,11 @@
 
 Move is a flavor (and a subset) of JavaScript improving in the following ways:
 
-- Simpler: For instance; there's only one way to declare functions, no need of `var` declarations, only one type of (non type-coercing) equality operators and no need for terminating statements with semicolons.
+- **Simpler.** E.g. there's only one way to declare functions, no need for `var` declarations, only a single type of equality operators and no need for terminating statements with semicolons.
 
-- Less boiler-plate code needed. Move introduces a few carefully selected features like the "import" and "export" keywords, and @-shorthand for `this` access.
+- **Less boiler-plate** code needed. Move introduces a few carefully selected features like the "import" and "export" keywords, and @-shorthand for `this` access.
 
-- Move is a subset of JavaScript rather than a different language. This makes it possible to selectively use language features you like and e.g. using snippets of JavaScript code unmodified, directly in Move code.
+- Move is **a subset of JavaScript** rather than a different language. This makes it possible to selectively use language features you like and e.g. using snippets of JavaScript code unmodified, directly in Move code.
 
 ## Installing and using Move
 
