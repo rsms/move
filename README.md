@@ -65,14 +65,12 @@ As Move is a subset of JavaScript rather than a different language -- Move's fea
 
 example1.move:
 
-```js
-export load = ^(path, callback) {
-  fs.readFile! path, 'utf8', ^(err, content) {
-    if (err) return callback! err
-    callback! null, content.replace! /\t/, '  '
-  }
-}
-```
+    export load = ^(path, callback) {
+      fs.readFile! path, 'utf8', ^(err, content) {
+        if (err) return callback! err
+        callback! null, content.replace! /\t/, '  '
+      }
+    }
 
 example2.move:
 
