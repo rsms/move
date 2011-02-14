@@ -92,7 +92,7 @@ example3.{move,js}:
 
 ## License (MIT)
 
-Move incorporates some third-party, namely a derivation of [UglifyJS](https://github.com/mishoo/UglifyJS). These sources have a separate license embedded into their heads.
+Move incorporates some third-party source, namely a derivation of [UglifyJS](https://github.com/mishoo/UglifyJS). These sources have a separate license embedded into their heads.
 
 The rest of Move is licensed as follows:
 
