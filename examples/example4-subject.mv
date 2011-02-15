@@ -1,0 +1,26 @@
+import fs, vm2 = 'vm';
+
+C = ^{ for (k in arguments[0]) console[k](arguments[0][k]) }
+
+refreshPlaylist = ^(uri, query="*", page=0) {
+  "uri: "+uri+', query: '+query+' and page: '+page
+}
+
+refreshPlaylist2 = ^(uri) {
+  "uri is "+uri
+}
+
+refreshPlaylist3 = ^{
+  "uri is not specified"
+}
+
+C { log: refreshPlaylist {uri: "spotify:xyz", page: 3} }
+
+
+/*debug = ^{
+  // This breaks:
+  return ^{
+    kw = arguments[0]
+    for (k in kw) console[k](kw[k])
+  }
+}();*/

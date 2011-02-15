@@ -1,0 +1,474 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Interactive Move</title>
+    <script src="../move.js"></script>
+    <script src="codemirror/codemirror.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+    <script>
+$(function () {
+  
+if (typeof console !== 'object') window.console = {log:function(){}};
+  
+  // Move compilation settings
+  var compilerOptions = {};
+  
+  // Etc
+  var $input = $('#input');
+  var $output = $('#output');
+  var $sidePane = $('#side-pane');
+  $input[0].spellcheck = false;
+  $output[0].spellcheck = false;
+  var lineHeight = 18;
+  var strRepeat = function (str, count) {
+    var s = ''; while (count--) s += str;
+    return s;
+  };
+  var strFit = function (str, fill, minlen) {
+    var r = minlen - String(str).length;
+    return r > 0 ? strRepeat(fill, r) + str : str;
+  };
+  var editor = {
+    getCode: function() { return $input.value(); }
+  };
+  
+  // Writing output
+  var appendOutput = function (message) {
+    var date = new Date;
+    var prefix = (date.toLocaleTimeString
+                  ? date.toLocaleTimeString()
+                  : strFit(date.getHours(), '0', 2)+':'+
+                    strFit(date.getMinutes(), '0', 2)+':'+
+                    strFit(date.getSeconds(), '0', 2)
+                 )+'> ';
+    message = prefix + message;
+    var el = $output[0];
+    el.value = el.value + String(message + '\n');
+    try { el.scrollTop = el.scrollHeight; }catch(e){}
+  };
+  
+  // Evaluate a Move program
+  var exectimer = null;
+  var isFirefox = (navigator.userAgent.indexOf('Firefox') !== -1);
+  var $lineHelper = $('#line-helper');
+  var $lineMessage = $('#line-message').text('Error message');
+  var executeMoveProgram = function () {
+    // Firefox is a bit buggy so we need a short delay to avoid multiple calls
+    if (isFirefox) {
+      if (exectimer !== null) return;
+      exectimer = setTimeout(function(){ exectimer = null; }, 50);
+    }
+    console.log('Compiling & executing');
+    var moveSource = editor.getCode(), jsSource;
+    try {
+      jsSource = move.compile(moveSource, compilerOptions);
+      $lineHelper.hide();
+    } catch (e) {
+      if (e.name === 'SyntaxError') {
+        // Display visual error indicator
+        var origin = $input.offset();
+        origin.top += 11; // margin
+        origin.top += e.line * lineHeight;
+        var inputWidth = $input.outerWidth();
+        var $leftPart = $lineHelper.find('.left.part');
+        $leftPart.text(strRepeat(' ', e.col));
+        $lineHelper.show().css({
+          width: inputWidth + 'px',
+          height: lineHeight + 'px',
+          left: origin.left + 'px',
+          top: origin.top + 'px'
+        });
+        $leftPart.show().css({ opacity: 1.0 }).animate({
+          opacity: 0.07
+        }, 100);
+        $lineHelper.find('.center.part').show().css({ opacity: 1.0 }).animate({
+          opacity: 0.25
+        }, 100);
+       $lineMessage.text(e.message).addClass('error').css({
+          height: lineHeight + 'px',
+          left: (origin.left + (inputWidth - $lineMessage.outerWidth())) + 'px',
+          top: origin.top + 'px'
+        }).fadeIn(100);
+        
+        // Append error message
+        appendOutput('Syntax error: '+e.message);
+        return;
+      } else {
+        throw e;
+      }
+    };
+    
+    // Evaluate
+    var result;
+    var inspect;
+    if (!JSON.stringify) {
+      inspect = String;
+    } else {
+      inspect = function (obj) {
+        if (obj === undefined) return 'undefined';
+        switch (typeof obj) {
+          case 'function': return String(obj);
+          case 'string': return obj;
+        }
+        return JSON.stringify(obj);
+      };
+    }
+    try {
+      //result = eval(jsSource);
+      var f = new Function("window", "with(window){ " + jsSource + " }");
+      result = f({
+        $: $, // jQuery
+        print: function () {
+          var kw;
+          if (arguments.length === 1 &&
+              typeof (kw = arguments[0]) === 'object') {
+            appendOutput(inspect(kw.message));
+          } else {
+            var args = [];
+            for (var i=0;i<arguments.length; ++i)
+              args[i] = inspect(arguments[i]);
+            appendOutput(args.join(' '));
+          }
+        },
+        console: { log: appendOutput }
+      });
+
+    } catch (e) {
+      console.error('eval:', e.stack || e);
+      appendOutput(''+e);
+      return;
+    }
+    
+    // Append result to output
+    //appendOutput(inspect(result));
+  };
+  
+  
+  var clearOverlays = function () {
+    $lineHelper.fadeOut(60);
+    $lineMessage.fadeOut(60);
+  };
+  
+  
+  // Execute Cmd+ENTER key listener
+  var metaIsPressed, ctrlIsPressed;
+  $input.bind('keydown', function (ev) {
+    if (ev.keyCode === 91) {
+      return metaIsPressed = true;
+    } else if (ev.keyCode === 17) {
+      return ctrlIsPressed = true;
+    } else if ((metaIsPressed || ctrlIsPressed) &&
+               (ev.keyCode === 13 || ev.keyCode === 10)) {
+      return executeMoveProgram();
+    }
+    if (ev.keyCode < 14 || ev.keyCode > 40)
+      clearOverlays();
+    if (ev.keyCode === 9 && ev.cancelable) {
+      // TAB
+      ev.stopPropagation && ev.stopPropagation();
+      ev.preventDefault && ev.preventDefault();
+      ev.cancel && ev.cancel();
+      var el = $input[0], start = el.selectionStart, end = el.selectionEnd;
+      var indentString = '  ';
+      el.textContent = el.textContent.substr(0, start) + indentString +
+                 el.textContent.substr(end);
+      el.selectionStart = start + indentString.length;
+      el.selectionEnd = el.selectionStart;
+      //console.dir($input[0])
+    }
+  }).bind('keyup', function (ev) {
+    if (ev.keyCode === 91) metaIsPressed = false;
+    else if (ev.keyCode === 17) ctrlIsPressed = false;
+  });
+  
+  
+  // Tooltips
+  /*var tips = {
+    'input': 'Press Cmd+ENTER to run your Move code'
+  };
+  var $contextTip = $('#context-tip');
+  tips['default'] = $contextTip.html();
+  var currentTip;
+  var setContextTip = function (id) {
+    $contextTip.html(tips[id] || tips['default']);
+    currentTip = id;
+  };
+  var clearContextTip = function (id) {
+    if (currentTip === id) $contextTip.html(tips['default']);
+  };
+  $input.bind('focus', function () { setContextTip('input'); })
+             .bind('blur', function () { clearContextTip('input'); });*/
+  
+
+  // Cmd --> Ctrl for non-OS X systems
+  if (navigator.userAgent.indexOf('OS X') === -1) {
+    $('#context-tip').text($('#context-tip').text().replace(/Cmd\+/g, 'Ctrl+'));
+  }
+  
+  // Give the input field focus
+  $input.focus();
+  
+  // Layout
+  var layout = function (){
+    clearOverlays();
+    // Hide the side pane when the window is less than 600px wide
+    if (window.innerWidth < 600) $sidePane.hide();
+    else $sidePane.show();
+  };
+  $(window).bind('resize', layout);
+  layout();
+  
+  // Enable CodeMirror editor (place a return stmt here to disable it)
+  var textarea = document.getElementById('input');
+  var content = textarea.value;
+  textarea = CodeMirror.replace(textarea);
+  var home = document.createElement("div");
+  var leftParen, rightParen, markedBetweenParens = [];
+  textarea(home);
+  $input = $(home);
+  editor = new CodeMirror(home, {
+    height: "340px",
+    content: content,
+    parserfile: ["tokenizemove.js", "parsejavascript.js"],
+    stylesheet: "codemirror/jscolors.css",
+    path: "codemirror/",
+    saveFunction: function() {
+      appendOutput("Imaginary save not possible in reality");
+    },
+    enterMode: 'keep',
+    tabMode: 'shift',
+    electricChars: false,
+    autoMatchParens: true,
+    passDelay: 100,
+    passTime: 30,
+    //markParen: 'marked-paren',
+    markParen: function (elem, isMatching) {
+      if (!rightParen && isMatching) {
+        rightParen = elem;
+      } else {
+        leftParen = elem;
+        if (rightParen.firstChild.nodeValue === '{') {
+          leftParen = rightParen;
+          rightParen = elem;
+        }
+        $(leftParen).addClass('marked-paren').css({opacity:1.0}).animate({opacity:0.5}, 100);
+        $(rightParen).addClass('marked-paren').css({opacity:1.0}).animate({opacity:0.5}, 100);
+        var n = leftParen;
+        while ((n = n.nextSibling) && n !== rightParen)
+          markedBetweenParens.push($(n).addClass('marked-between-parens'));
+        //console.log(elem, leftParen.firstChild.nodeValue, rightParen.firstChild.nodeValue)
+      }
+    },
+    unmarkParen: function (elem) {
+      $(leftParen).removeClass('marked-paren').css({opacity:1.0});
+      $(rightParen).removeClass('marked-paren').css({opacity:1.0});
+      for (var i=0,L=markedBetweenParens.length; i<L; ++i)
+        markedBetweenParens[i].removeClass('marked-between-parens');
+      leftParen = rightParen = null;
+    },
+    onLoad: function(){
+      var metaIsPressed, ctrlIsPressed;
+      editor.grabKeys(function () {}, function (keyCode) {
+        //console.log(keyCode);
+        //appendOutput(keyCode);
+        if (keyCode === 91 || keyCode === 224) {
+          return metaIsPressed = true;
+        } else if (keyCode === 17) {
+          return ctrlIsPressed = true;
+        } else if ((metaIsPressed || ctrlIsPressed) &&
+                   (keyCode === 13 || keyCode === 10)) {
+          executeMoveProgram();
+          return true;
+        }
+        if (keyCode < 14 || keyCode > 40)
+          clearOverlays();
+      });
+      var origKeyUp = editor.editor.keyUp;
+      editor.editor.keyUp = function (ev) {
+        if (ev.keyCode === 91 || ev.keyCode === 224) metaIsPressed = false;
+        else if (ev.keyCode === 17) ctrlIsPressed = false;
+        return origKeyUp.call(editor.editor, ev);
+      };
+      editor.focus();
+    }
+  });
+});
+    </script>
+    <style type="text/css" media="screen">
+      html { }
+      html, body { width: 100%; height: 100%; }
+      body {
+        font: 13px helvetica, sans-serif;
+        display: block;
+        padding: 0;
+        margin: 0;
+        background: #fff; color: #050505;
+      }
+      header {
+        display: block;
+        padding: 10px 20px 10px 20px;
+        background: #333;
+        color: white;
+        text-shadow: #222 0 1px 1px;
+        border-bottom: 1px solid #111;
+      }
+        header h1 {
+          margin:0; font-size:1.618em;
+          line-height: 30px;
+        }
+      #context-tip {
+        color: #999;
+        line-height: 30px;
+        float:right;
+        text-align: right;
+      }
+      .code {
+        margin:0;
+        display: block;
+        font-family: monospace;
+        font-size: inherit;
+        line-height: 18px;
+        border: none;
+        padding: 7px 10px;
+        background: #eee;
+        outline: none;
+      }
+      textarea.code { resize: none; }
+      textarea.code:focus { outline: 2px solid #ccc; }
+      #input {
+        background: #D5EEDC;
+        border-bottom:1px solid #aaa;
+      }
+      #input:focus { outline: 2px solid #8DD497; }
+      #output {
+        border-top:1px solid #bbb;
+        overflow:auto;
+        white-space: pre-wrap;
+        height:10%;
+        width: 100%;
+        box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box;
+      }
+      
+      #side-pane {
+        margin:0; padding:0;
+        padding:15px;
+        border-left:1px solid #444;
+        background: #666;
+        color: #fff;
+        text-shadow: #555 0 1px 1px;
+      }
+      
+      #line-helper, #line-message {
+        display: none;
+        position: absolute;
+        left: 0; top: 0;
+        /* following properties must match .code : */
+        font-family: monospace;
+        font-size: inherit;
+        pointer-events: none;
+        overflow:hidden;
+        /* this must match .code's left padding: */
+        padding-left: 10px;
+        z-index:100000;
+      }
+      #line-helper .part {
+        pointer-events: none;
+        display: inline-block;
+        margin:0; padding:0;
+        font-family: inherit;
+        font-size: inherit;
+        background: #FF001F;
+        opacity: 0.1;
+        white-space: pre;
+        color: black;
+      }
+      #line-helper .center.part, #line-helper .right.part {
+        opacity: 1.0;
+      }
+      #line-message {
+        font: 11px 'lucida grande', helvetica, sans-serif;
+        line-height: 18px;
+        padding: 0 0.5em 0 0.6em;
+        color: black;
+        background-color: white;
+        background-color: rgba(255,255,255,0.8);
+        -webkit-border-top-left-radius: 5px;
+        -webkit-border-bottom-left-radius: 5px;
+        -moz-border-radius-topleft: 5px;
+        -moz-border-radius-bottomleft: 5px;
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+      }
+      #line-message.error {
+        background-color: #FF9C9A;
+      }
+      
+      vbox, hbox, box {
+        display: box; display: -webkit-box; display: -moz-box;
+        box-align: stretch; -webkit-box-align: stretch; -moz-box-align: stretch;
+        box-flex: 1; -webkit-box-flex: 1; -moz-box-flex: 1;
+      }
+      vbox {
+        box-orient: vertical;
+          -webkit-box-orient: vertical;
+          -moz-box-orient: vertical;
+      }
+      hbox, box {
+        box-orient: horizontal;
+          -webkit-box-orient: horizontal;
+          -moz-box-orient: horizontal;
+      }
+      vbox > *, hbox > * {
+        box-flex: 1; -webkit-box-flex: 1; -moz-box-flex: 1;
+      }
+      
+      vbox.io > div { box-flex: 0; -webkit-box-flex: 0; -moz-box-flex: 0; }
+      #input { box-flex: 2; -webkit-box-flex: 2; -moz-box-flex: 2; }
+      
+      body {
+        display: -moz-box;
+        display: -webkit-box;
+        display: box;
+        box-align: stretch; -webkit-box-align: stretch; -moz-box-align: stretch;
+        box-orient: horizontal;
+          -webkit-box-orient: horizontal;
+          -moz-box-orient: horizontal;
+      }
+      body > box {
+        box-flex: 1; -webkit-box-flex: 1; -moz-box-flex: 1;
+      }
+      header { box-flex: 0; -webkit-box-flex: 0; -moz-box-flex: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="line-helper"><div class="left part"></div><div class="center part"> </div><div class="right part"></div></div>
+    <div id="line-message"></div>
+    <box>
+      <vbox>
+        <header>
+          <div id="context-tip">
+            Press Cmd+ENTER to run your Move code
+          </div>
+          <h1>Interactive Move</h1>
+          <!--a href="http://movelang.org/">movelang.org</a-->
+        </header>
+        <hbox>
+          <vbox class="io">
+            <textarea id="input" class="code">
+hello = ^(name) {
+  "Hello " + name + ". How are you?"
+}
+greeting = hello {name: "John"}
+print {message: greeting}
+</textarea>
+            <textarea id="output" class="code"></textarea>
+          </vbox>
+          <div id="side-pane">
+            Tips and ticks, baby
+          </div>
+        </hbox>
+      </vbox>
+    </box>
+  </body>
+</html>

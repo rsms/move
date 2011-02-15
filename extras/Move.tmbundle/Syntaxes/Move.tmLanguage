@@ -5,6 +5,7 @@
 	<key>fileTypes</key>
 	<array>
 		<string>move</string>
+		<string>mv</string>
 	</array>
 	<key>foldingStartMarker</key>
 	<string>/\*\*|\{\s*$</string>
@@ -19,6 +20,20 @@
 		<dict>
 			<key>include</key>
 			<string>source.js</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.comment.move</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>(#).*$\n?</string>
+			<key>name</key>
+			<string>comment.line.move</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -133,30 +148,6 @@
 			<string>(\^)\s*\{</string>
 			<key>name</key>
 			<string>meta.function.move</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>variable.definition.readwrite.instance.move</string>
-				</dict>
-				<key>2</key>
-				<dict>
-					<key>name</key>
-					<string>entity.invocation.name.move</string>
-				</dict>
-				<key>3</key>
-				<dict>
-					<key>name</key>
-					<string>entity.invocation.bang.move</string>
-				</dict>
-			</dict>
-			<key>match</key>
-			<string>(?x)(@?)([a-zA-Z_?$][\w?$]*)\s*(\!)</string>
-			<key>name</key>
-			<string>meta.function.call.move</string>
 		</dict>
 		<dict>
 			<key>captures</key>

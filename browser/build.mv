@@ -1,0 +1,68 @@
+import fs, move
+
+# Function which produces the text content of a file
+read = ^(path, encoding="utf8") { fs.readFileSync(path, encoding) }
+
+# Function which enumerate all files in `dir` matching a pattern
+enumerateDirectory = ^(path, pattern=/.*/, apply){
+  fs.readdirSync(path).forEach(^(name) {
+    if (pattern.test(name)) apply(name)
+  })
+}
+
+# Variables holding the final output and the browser template
+output = ''
+browserTemplate = read { path: __dirname + '/template.js' }
+
+# Source directory
+sourceDir = __dirname + '/../lib'
+
+# Collect all sources into `output`
+enumerateDirectory { path: sourceDir,
+                  pattern: /\.(js|move|mv)$/,
+                    apply: ^(filename) {
+  # Read text source
+  source = read { path: sourceDir + '/' + filename }
+
+  # XXX debug
+  #if (filename != 'index.js') return
+  
+  # Pass Move sources through the Move compiler
+  if (filename.lastIndexOf('.move') == filename.length - '.move'.length) {
+    source = move.compile { source: source }
+    console.log(source)
+  }
+  
+  # Derive "module name" from filename
+  name = /^(.+)\.[^\.]+$/.exec(filename)[1]
+
+  # Wrap in module declaration
+  source = 'modules[' + JSON.stringify(name) + '] = module = {'+
+             'id: ' + JSON.stringify(name) + ','+
+             'exports: {},'+
+             'block: '+
+                'function (exports, require, module, __filename, __dirname) {'+
+                  source + '\n}'+
+           '};\n'
+
+  # Append source to output
+  output += source
+}}
+
+# Wrap the combined sources in the browser.js template
+output = browserTemplate.replace(/\/\/\s*%CONTENT%.*/, output)
+
+# Run through UglifyJS if available
+try {
+  import uglifyjs = 'uglify-js'
+  ast = uglifyjs.parser.parse(output)
+  ast = uglifyjs.uglify.ast_mangle(ast)
+  ast = uglifyjs.uglify.ast_squeeze(ast)
+  output = uglifyjs.uglify.gen_code(ast)
+} catch (e){}
+
+# Write output to move.js
+fs.writeFileSync(__dirname + '/move.js', output)
+
+console.log(output.substr(0, 1000))
+#console.log(output)

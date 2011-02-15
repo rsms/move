@@ -1,0 +1,40 @@
+import fs, http, url
+
+// Idea from Scala: Provide a Object.create shorthand
+/*expirationTask = new TimerTask {
+  run: ^{
+    ...
+  }
+}
+--->
+var expirationTask = new TimerTask;
+expirationTask.run = function () {
+  ...
+};
+*/
+
+# Function which produces the text content of a file
+read = ^(path, encoding="utf8", callback) {
+  fs.readFile(path, encoding, callback) }
+
+# Create a simple HTTP server
+http.createServer(^(req, res) {
+  console.log(arguments)
+  req.url = url.parse(req.url)
+  if (req.url.pathname == '/source') {
+    read {path:__filename, callback:^(err, content) {
+      if (err) {
+        res.writeHead(404, {'Content-Type': 'text/plain'})
+        res.end('Not found or not accessible\n')
+      } else {
+        res.writeHead(200, {'Content-Type': 'text/plain'})
+        res.end(content)
+      }
+    }}
+  } else {
+    res.writeHead(200, {'Content-Type': 'text/plain'})
+    res.end('Hello World\n')
+  }
+}).listen(8124, "127.0.0.1")
+
+console.log('Server running at http://127.0.0.1:8124/')

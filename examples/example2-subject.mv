@@ -10,40 +10,38 @@ import http
 
 bar3 = ^(arg1, arg2, callback) {
   arg1 = arg2 + 5
-  arg1 = Math.pow! arg1, 2
-  arg1 = @pow! arg1, 2
-  setInterval! 1000, callback
+  arg1 = Math.pow(arg1, 2)
+  arg1 = @pow(arg1, 2)
+  setInterval(1000, callback)
 }
 
 o = { foo: ^(x){ 6 } }
 
 bar4 = ^{ return bar3 }
 
-bar3! ^{
-  console.log! 'callback invoked'
-}
-bar3! 1, 2, ^(err) {
+bar3 {callback: ^{
+  console.log('callback invoked')
+}}
+bar3(1, 2, ^(err) {
   x = 1 + 3
   @y = 4
   if (@y < x) return 'okay'
-  console.log! 'callback invoked'
-}
+  console.log('callback invoked')
+})
 
-http.get! '/api/submit', ^(err, response){
-  console.log! 'submit response:', response
-}
-
-text = stripCharacters! '-', fs.readFileSync! '/foo/bar.txt'
+http { get:'/api/submit', then:^(err, response){
+  console.log('submit response:', response)
+}}
 
 list = [1, 3, 6, 9]
-list2 = list.map! ^(item){ '$'+item }
+list2 = list.map(^(item){ '$'+item })
 
 //foreach (value in list) {
 //  console.log(value)
 //}
 for (var _line32v=list, _line32i=0, _line32L=_line32v.length, value; // ¬
      i < _line32L && ((value = _line32v[_line32i++]) || true); ) {
-  console.log! value
+  console.log(value)
 }
 
 object = {foo:'F00', bar:'84R'}

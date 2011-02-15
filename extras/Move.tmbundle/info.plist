@@ -4,6 +4,13 @@
 <dict>
 	<key>name</key>
 	<string>Move</string>
+	<key>ordering</key>
+	<array>
+		<string>0011590C-A53D-4EC8-84BF-FFBABAD2A38D</string>
+		<string>9481E54C-E163-44DF-BED3-D60ABD35FADC</string>
+		<string>CC679050-122F-4E23-8EE4-6437B1C84064</string>
+		<string>81E05538-420F-4900-8FAF-C1097AD305EA</string>
+	</array>
 	<key>uuid</key>
 	<string>BDAE2F45-8A88-42C1-8EC8-7E88833ACA35</string>
 </dict>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
+	<key>command</key>
+	<string>#!/bin/bash
+
+if [ "$TM_NODE" = "" ]; then TM_NODE=node; fi
+
+echo "&lt;html&gt;&lt;head&gt;&lt;title&gt;${TM_FILEPATH} &amp;rarr; AST&lt;/title&gt;&lt;/head&gt;"
+echo '&lt;body style="margin:0;padding:0;"&gt;'
+echo '&lt;textarea id="text" style="position:absolute;left:0;top:0;right:0;bottom:0;font-family:mplus-1m-light, Menlo, monospace; background:#224; color:#fff;outline:none;border:none;padding:1em;margin:0;" editable="false"&gt;'
+
+$TM_NODE --stack_trace_limit=50 -e \
+  'require("util").inspect(require("move").compileFileSync("'"${TM_FILEPATH}"'",{optimizationLevel:0, detailedOutput:1}).ast, 0, 100)' \
+  | sed 's/&lt;/\&amp;lt;/g' | sed 's/&gt;/\&amp;gt;/g'
+
+echo "&lt;/textarea&gt;"
+echo '&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;'
+</string>
+	<key>input</key>
+	<string>selection</string>
+	<key>keyEquivalent</key>
+	<string>@B</string>
+	<key>name</key>
+	<string>Compile to AST</string>
+	<key>output</key>
+	<string>showAsHTML</string>
+	<key>scope</key>
+	<string>source.move</string>
+	<key>uuid</key>
+	<string>81E05538-420F-4900-8FAF-C1097AD305EA</string>
+</dict>
+</plist>

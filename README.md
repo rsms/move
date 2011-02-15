@@ -1,7 +1,5 @@
 # Move
 
-> JavaScript moving forward (or: how JavaScript is meant to be written)
-
 Move is a flavor (and a superset) of JavaScript improving in the following ways:
 
 - **Simpler.** E.g. there's only one way to declare functions, no need for `var` declarations, only a single type of equality operators and no need for terminating statements with semicolons.
@@ -35,7 +33,7 @@ There's also a simple API which can be accessed from the move module:
 
 ## Differences to JavaScript
 
-- **Functions** are declared using *one* construction: `^(arg1){...}` or `^{...}`
+- **Functions** are declared using *one* construction: `^(arg1){...}` or `^{...}` and can be called using either **keyword arguments** or positional arguments.
   
   - In JavaScript, there are two different ways to define a function: using the function expression and the function declaration statement, the latter having subtle restrictions. Move only has function expressions.
   
@@ -43,7 +41,9 @@ There's also a simple API which can be accessed from the move module:
 
   - The last statement in a function is automatically returned.
   
-  - Move adds a shorthand for calling functions without parens. E.g. `foo(bar)` is equivalent to `foo! bar` and `Some.foo(strip(bar))` can be written as `Some.foo! strip! bar`.
+  - Functions can be called using the `foo {key: value}` syntax, passing arguments by name. This greatly increases code readability.
+  
+  - When defining functions, any argument can be given a default value using wither `:` or `=`. E.g. `foo = ^(bar, baz: 4, names=[], age) {...`.
 
 - **Variables** need not be explicitly declared. Move will declare a newfound variable in the scope which it first was used. This behavior is deterministic, in contrast to the ambiguous way implicitly declared variables behave in JavaScript.
 
@@ -61,32 +61,25 @@ Move is **designed for humans** which is the reason for why things like variable
 
 ## A superset of JavaScript, not a different language
 
-Move is a superset of JavaScript rather than a different language -- features can be selectively used when writing code. The following three examples are all valid Move code while the last one is also valid JavaScript code:
+Move is a superset of JavaScript rather than a different language -- features can be selectively used when writing code. The following two examples are both valid Move code while the last one is also valid JavaScript code:
 
-example1.move:
+example1.mv:
 
-    export load = ^(path, callback) {
-      fs.readFile! path, 'utf8', ^(err, content) {
-        if (err) return callback! err
-        callback! null, content.replace! /\t/, '  '
-      }
-    }
-
-example2.move:
-
-    var fs = require('fs')
-    var load = exports.load = ^(path, callback) {
-      return fs.readFile(path, "utf8", ^(err, content) {
+    import fs
+    
+    export load = ^(path, encoding='utf8', callback) {
+      fs.readFile(path, encoding, ^(err, content) {
         if (err) return callback(err)
-        return callback(null, content.replace(/\t/, "  "))
+        callback(null, content.replace(/\t/, '  '))
       })
     }
 
-example3.{move,js}:
+example2.{mv,js}:
 
     var fs = require('fs');
-    var load = exports.load = function load(path, callback) {
-      return fs.readFile(path, "utf8", function (err, content) {
+    
+    var load = exports.load = function load(path, encoding, callback) {
+      return fs.readFile(path, encoding || "utf8", function (err, content) {
         if (err) return callback(err);
         return callback(null, content.replace(/\t/, "  "));
       });

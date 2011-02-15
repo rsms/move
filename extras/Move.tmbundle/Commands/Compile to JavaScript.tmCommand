@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
+	<key>command</key>
+	<string>#!/bin/bash
+
+if [ "$TM_NODE" = "" ]; then TM_NODE=node; fi
+
+echo "&lt;html&gt;&lt;head&gt;&lt;title&gt;${TM_FILEPATH} &amp;rarr; JavaScript&lt;/title&gt;&lt;/head&gt;"
+echo '&lt;body style="margin:0;padding:0;"&gt;'
+echo '&lt;textarea id="text" style="position:absolute;left:0;top:0;right:0;bottom:0;font-family:mplus-1m-light, Menlo, monospace; background:#224; color:#fff;outline:none;border:none;padding:1em;margin:0;"&gt;'
+
+$TM_NODE --stack_trace_limit=50 -e \
+  'require("move").compileFileSync("'"${TM_FILEPATH}"'",{optimizationLevel:0})' \
+  | sed 's/&lt;/\&amp;lt;/g' | sed 's/&gt;/\&amp;gt;/g'
+
+echo "&lt;/textarea&gt;"
+echo '&lt;script&gt;setTimeout(function(){'
+echo '  document.getElementById("text").focus();'
+#echo '  document.getElementById("text").select();'
+echo '},1);&lt;/script&gt;'
+echo '&lt;/body&gt;&lt;/html&gt;'
+</string>
+	<key>input</key>
+	<string>selection</string>
+	<key>keyEquivalent</key>
+	<string>@b</string>
+	<key>name</key>
+	<string>Compile to JavaScript</string>
+	<key>output</key>
+	<string>showAsHTML</string>
+	<key>scope</key>
+	<string>source.move</string>
+	<key>uuid</key>
+	<string>CC679050-122F-4E23-8EE4-6437B1C84064</string>
+</dict>
+</plist>
