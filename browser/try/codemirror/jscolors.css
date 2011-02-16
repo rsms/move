@@ -5,11 +5,10 @@ html {
 .editbox {
   margin: 10px;
   padding: 0;
-  font-family: monospace;
-  font-size: 10pt;
+  font: 13px mplus-1m-regular, menlo, consolas, monospace;
   color: black;
-  background: #EBEBDC;
-  line-height: 18px;
+  background: #EBEBDC url('../paper-bg.png') repeat scroll 0 0;
+  line-height: 20px;
 }
 
 pre.code, .editbox {
@@ -67,6 +66,10 @@ span.js-string {
 span.marked-paren {
   color: black !important;
   background: #DCD781;
+}
+span.broken-paren {
+  color: black !important;
+  background: #f00;
 }
 .marked-between-parens {
   background: #EAE6BD;

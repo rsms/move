@@ -8,9 +8,10 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
     <script>
 $(function () {
-  
-if (typeof console !== 'object') window.console = {log:function(){}};
-  
+  // Got console?
+  var console = window.console || {
+    log:function(){}, error:function(){} };
+
   // Move compilation settings
   var compilerOptions = {};
   
@@ -20,7 +21,7 @@ if (typeof console !== 'object') window.console = {log:function(){}};
   var $sidePane = $('#side-pane');
   $input[0].spellcheck = false;
   $output[0].spellcheck = false;
-  var lineHeight = 18;
+  var lineHeight = 20;
   var strRepeat = function (str, count) {
     var s = ''; while (count--) s += str;
     return s;
@@ -53,7 +54,7 @@ if (typeof console !== 'object') window.console = {log:function(){}};
   var isFirefox = (navigator.userAgent.indexOf('Firefox') !== -1);
   var $lineHelper = $('#line-helper');
   var $lineMessage = $('#line-message').text('Error message');
-  var executeMoveProgram = function () {
+  var executeMoveProgram = function (onlyCompile) {
     // Firefox is a bit buggy so we need a short delay to avoid multiple calls
     if (isFirefox) {
       if (exectimer !== null) return;
@@ -68,7 +69,7 @@ if (typeof console !== 'object') window.console = {log:function(){}};
       if (e.name === 'SyntaxError') {
         // Display visual error indicator
         var origin = $input.offset();
-        origin.top += 11; // margin
+        origin.top += 10; // margin
         origin.top += e.line * lineHeight;
         var inputWidth = $input.outerWidth();
         var $leftPart = $lineHelper.find('.left.part');
@@ -98,6 +99,9 @@ if (typeof console !== 'object') window.console = {log:function(){}};
         throw e;
       }
     };
+    
+    if (onlyCompile)
+      return;
     
     // Evaluate
     var result;
@@ -161,6 +165,8 @@ if (typeof console !== 'object') window.console = {log:function(){}};
     } else if ((metaIsPressed || ctrlIsPressed) &&
                (ev.keyCode === 13 || ev.keyCode === 10)) {
       return executeMoveProgram();
+    } else {
+      ctrlIsPressed = metaIsPressed = false;
     }
     if (ev.keyCode < 14 || ev.keyCode > 40)
       clearOverlays();
@@ -219,14 +225,31 @@ if (typeof console !== 'object') window.console = {log:function(){}};
   $(window).bind('resize', layout);
   layout();
   
-  // Enable CodeMirror editor (place a return stmt here to disable it)
+  // Load default program
   var textarea = document.getElementById('input');
-  var content = textarea.value;
+  var content, hasCustomContent = false;
+  if (window.localStorage) {
+    if ($.trim((content = window.localStorage['try.buffer.current'])) === '') {
+      content = null;
+    } else {
+      hasCustomContent = true;
+    }
+  }
+  if (!content) content = $('data.default-program').text();
+  textarea.value = content;
+  
+  // Enable CodeMirror editor (place a return stmt here to disable it)
   textarea = CodeMirror.replace(textarea);
   var home = document.createElement("div");
   var leftParen, rightParen, markedBetweenParens = [];
   textarea(home);
   $input = $(home);
+  var onEditorChange;
+  if (window.localStorage) {
+    onEditorChange = function () {
+      window.localStorage['try.buffer.current'] = editor.getCode();
+    };
+  }
   editor = new CodeMirror(home, {
     height: "340px",
     content: content,
@@ -244,30 +267,38 @@ if (typeof console !== 'object') window.console = {log:function(){}};
     passTime: 30,
     //markParen: 'marked-paren',
     markParen: function (elem, isMatching) {
+      //console.log(isMatching, elem);
       if (!rightParen && isMatching) {
         rightParen = elem;
       } else {
         leftParen = elem;
-        if (rightParen.firstChild.nodeValue === '{') {
+        if (rightParen && rightParen.firstChild.nodeValue === '{') {
           leftParen = rightParen;
           rightParen = elem;
         }
-        $(leftParen).addClass('marked-paren').css({opacity:1.0}).animate({opacity:0.5}, 100);
-        $(rightParen).addClass('marked-paren').css({opacity:1.0}).animate({opacity:0.5}, 100);
-        var n = leftParen;
-        while ((n = n.nextSibling) && n !== rightParen)
-          markedBetweenParens.push($(n).addClass('marked-between-parens'));
-        //console.log(elem, leftParen.firstChild.nodeValue, rightParen.firstChild.nodeValue)
+        var cssClass = isMatching ? 'marked-paren' : 'broken-paren';
+        $(leftParen).addClass(cssClass).css({opacity:1.0}).animate({opacity:0.5}, 100);
+        $(rightParen).addClass(cssClass).css({opacity:1.0}).animate({opacity:0.5}, 100);
+        if (isMatching && leftParen && rightParen) {
+          var n = leftParen;
+          while ((n = n.nextSibling) && n !== rightParen)
+            markedBetweenParens.push($(n).addClass('marked-between-parens'));
+        }
       }
     },
     unmarkParen: function (elem) {
-      $(leftParen).removeClass('marked-paren').css({opacity:1.0});
-      $(rightParen).removeClass('marked-paren').css({opacity:1.0});
+      $(leftParen).removeClass('marked-paren').removeClass('broken-paren')
+          .css({opacity:1.0});
+      $(rightParen).removeClass('marked-paren').removeClass('broken-paren')
+          .css({opacity:1.0});
       for (var i=0,L=markedBetweenParens.length; i<L; ++i)
         markedBetweenParens[i].removeClass('marked-between-parens');
+      markedBetweenParens = [];
       leftParen = rightParen = null;
     },
     onLoad: function(){
+      
+      // Configure key bindings
       var metaIsPressed, ctrlIsPressed;
       editor.grabKeys(function () {}, function (keyCode) {
         //console.log(keyCode);
@@ -291,7 +322,11 @@ if (typeof console !== 'object') window.console = {log:function(){}};
         return origKeyUp.call(editor.editor, ev);
       };
       editor.focus();
-    }
+      
+      // Compile (but do not evaluate)
+      if (hasCustomContent) executeMoveProgram();
+    },
+    onChange: onEditorChange
   });
 });
     </script>
@@ -307,28 +342,33 @@ if (typeof console !== 'object') window.console = {log:function(){}};
       }
       header {
         display: block;
-        padding: 10px 20px 10px 20px;
-        background: #333;
+        height: 32px;
+        padding: 0 10px 0 0;
+        background: #000;
         color: white;
-        text-shadow: #222 0 1px 1px;
-        border-bottom: 1px solid #111;
+        text-shadow: #000 0 1px 1px;
       }
         header h1 {
-          margin:0; font-size:1.618em;
-          line-height: 30px;
+          display: block;
+          background: url('logo.png') no-repeat scroll top left;
+          width: 200px;
+          height: 32px;
+          margin:0; padding:0;
         }
+        header h1 span { display:none; }
+      data { display:none; }
       #context-tip {
+        margin: 0; padding:0;
         color: #999;
-        line-height: 30px;
+        line-height: 32px;
         float:right;
         text-align: right;
       }
       .code {
         margin:0;
         display: block;
-        font-family: monospace;
-        font-size: inherit;
-        line-height: 18px;
+        font: 13px mplus-1m-light, menlo, consolas, monospace;
+        line-height: 20px;
         border: none;
         padding: 7px 10px;
         background: #eee;
@@ -388,7 +428,7 @@ if (typeof console !== 'object') window.console = {log:function(){}};
       }
       #line-message {
         font: 11px 'lucida grande', helvetica, sans-serif;
-        line-height: 18px;
+        line-height: 20px;
         padding: 0 0.5em 0 0.6em;
         color: black;
         background-color: white;
@@ -450,18 +490,12 @@ if (typeof console !== 'object') window.console = {log:function(){}};
           <div id="context-tip">
             Press Cmd+ENTER to run your Move code
           </div>
-          <h1>Interactive Move</h1>
+          <h1><span>Move</span></h1>
           <!--a href="http://movelang.org/">movelang.org</a-->
         </header>
         <hbox>
           <vbox class="io">
-            <textarea id="input" class="code">
-hello = ^(name) {
-  "Hello " + name + ". How are you?"
-}
-greeting = hello {name: "John"}
-print {message: greeting}
-</textarea>
+            <textarea id="input" class="code"></textarea>
             <textarea id="output" class="code"></textarea>
           </vbox>
           <div id="side-pane">
@@ -470,5 +504,11 @@ print {message: greeting}
         </hbox>
       </vbox>
     </box>
+    <data class="default-program">hello = ^(name) {
+  "Hello " + name + ". How are you?"
+}
+greeting = hello {name: "John"}
+print {message: greeting}
+</data>
   </body>
 </html>
