@@ -54,7 +54,7 @@ There's also a simple API which can be accessed from the move module:
   
   - When defining functions, any argument can be given a default value using either `:` or `=`. E.g. `foo = ^(bar, baz: 4, names=[], age) {...`.
 
-- **Variables** need not be explicitly declared. Move will declare a newfound variable in the scope which it first was used. This behavior is deterministic, in contrast to the ambiguous way implicitly declared variables behave in JavaScript.
+- **Variables** are not explicitly declared. Move will declare a newfound variable in the scope which it first was used. The use of "var" produces a syntax error.
 
 - **No commas** required to terminate expressions. Move will determine when a comma is needed so you don't have to (and the code gets more readable).
 
