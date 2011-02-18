@@ -15,7 +15,7 @@ A simple Move program which prints "Hello John" three times:
       print hello {name: "John"}
     }
 
-Move compiles directly to optimized JavaScript which can run on almost any computer (in a web browser or a virtual machine like Node.js).
+Move compiles directly to optimized JavaScript which can run on almost any computer (in a web browser or a runtime like Node.js).
 
 ## Installing and using Move
 
