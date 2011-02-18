@@ -1,6 +1,6 @@
 import assert
 
-outer»
+outer:
 for (i=0; i<5; i++)
   for (x=0; x<5; x++)
     if (x == 2 && i == 2)
