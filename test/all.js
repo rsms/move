@@ -14,8 +14,12 @@ var files = fs.readdirSync('.').filter(function(fn){
 var totalcount = files.length;
 
 function done() {
-  console.log('>>> ran '+runcount+' of '+totalcount+' tests with '+
-              failcount+' failure(s)');
+  var message = '>>> ran '+runcount+' of '+totalcount+' tests';
+  if (failcount)
+    message += ' with '+failcount+' failure'+(failcount === 1 ? '' : 's');
+  else
+    message += ' -- all OK';
+  console.log(message);
   process.exit(failcount ? 1 : 0);
 }
 
@@ -52,9 +56,7 @@ function runNext() {
     if (code !== 0) {
       console.log('>>> fail '+fn+' -- status '+code);
       failcount++;
-    } else {
-      console.log('>>> ok '+fn);
-    }
+    } //else console.log('>>> ok '+fn);
     runcount++;
     runNext();
   });

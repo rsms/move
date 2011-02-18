@@ -1,0 +1,68 @@
+import assert
+
+# Three arguments, all with default values, producing a text concatenation
+x = ^(a=1, b=2, c=3){ ''+a+b+c }
+assert.equal(x{b:9}, "193")
+assert.equal(x{a:9}, "923")
+assert.equal(x{a:9, b:8}, "983")
+assert.equal(x{a:9, c:8}, "928")
+assert.equal(x{a:9, b:8, c:7}, "987")
+assert.equal(x 9, "923")
+assert.equal(x(9,8), "983")
+assert.equal(x(9,8,7), "987")
+assert.equal(x(), "123")
+
+# No default value for an argument should result in the "undefined" atom
+x = ^(a=1, b, c=3){ ''+a+b+c }
+assert.equal(x{b:9}, "193")
+assert.equal(x{a:9}, "9undefined3")
+assert.equal(x{a:9, b:8}, "983")
+assert.equal(x{a:9, c:8}, "9undefined8")
+assert.equal(x{a:9, b:8, c:7}, "987")
+assert.equal(x 9, "9undefined3")
+assert.equal(x(9,8), "983")
+assert.equal(x(9,8,7), "987")
+assert.equal(x(), "1undefined3")
+
+# Keyword argument call-style
+assert.equal(x{b:8}, "183")
+# Using an arbitrary object as keyword arguments by "reference" call-style
+kwargs = {b:8}
+assert.equal(x{&kwargs}, "183")
+# Passing an object as the first value with explicit positional call-style
+# (parens) should pass the object through w/o interference
+assert.equal(x({b:8}), "[object Object]undefined3")
+# Tampering should not be possible from JSON input
+assert.equal(x JSON.parse '{"b":8}', "[object Object]undefined3")
+# ...but when explicitly allowed, it should work
+kwargs = JSON.parse '{"b":8}'
+assert.equal(x{&kwargs}, "183")
+assert.equal(x{&JSON.parse('{"b":8}')}, "183")
+
+# Access to arguments.keywords
+x = ^(a=1, b=2, c=3){
+  arguments.keywords ? Object.keys(arguments.keywords).sort().join(', ')
+                     : 'undefined'
+}
+# No arguments or positional call-style should not produce any keywords
+assert.equal(x(), "undefined")
+assert.equal(x(11,22,33), "undefined")
+assert.equal(x({a:11,b:22,c:33}), "undefined")
+# When passing keyword arguments, arguments.keywords should reflect those keywords
+assert.equal(x{a:11,b:22,c:33}, "__kw, a, b, c")
+assert.equal(x{a:11,c:33}, "__kw, a, c")
+assert.equal(x{b:11}, "__kw, b")
+assert.equal(x{}, "__kw")
+
+# Test keyword argument values accessed from arguments.keywords
+x = ^(a=1, b=2, c=3){
+  kwargs = arguments.keywords
+  Object.keys(kwargs).sort().filter(^(key){
+    key != '__kw'
+  }).map(^(key){
+    key+'='+kwargs[key]
+  }).join(', ')
+}
+assert.equal(x{a:11,b:22,c:33}, "a=11, b=22, c=33")
+assert.equal(x{a:11,c:33}, "a=11, c=33")
+assert.equal(x{c:'1,2,3'}, "c=1,2,3")

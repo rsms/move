@@ -311,7 +311,7 @@ $(function () {
           ctrlIsPressed = true;
           return;
         } else if ((metaIsPressed || ctrlIsPressed) &&
-                   (keyCode === 82 || keyCode === 10 || keyCode === 13) ) {
+                   (keyCode === 82 /*|| keyCode === 10 || keyCode === 13*/) ) {
           //                    R                 \n                \r
           //metaIsPressed = ctrlIsPressed = false;
           executeMoveProgram();
@@ -518,9 +518,10 @@ repeat {times: 3} ^{
 
 numbers = [1,2,2,3,1].unique()
 print numbers
+numbers.sort().forEach ^(number){ print "Number: "+number }
 
 Cat = {age: 5}
-Dog = Object.create(Cat)
+Dog = Object.create Cat
 print Dog.age
 Cat.name = "Zelda"
 print Dog.name  # &lt;- by inferred inheritance from Cat

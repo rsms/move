@@ -3,10 +3,11 @@ repeat {times: 3} ^{
 }
 
 x = 5
-repeat ^{ print x; x-- }
+repeat ^{ print x; --x }
 
 after {delay: 500} ^{ print 'hello' }
 print 'Printing "hello" in 500ms...'
 
 timer = after { date: '2011-02-01' } ^{ print 'hello again' }
-print('Printing "hello again" after date 2011-02-01. Timer =>', timer)
+print 'Printing "hello again" after date 2011-02-01'
+print('Timer =>', timer)

@@ -1,5 +1,8 @@
 # Move runtime library
 
+# A few things that need to be defined in order for this very module to compile
+_MoveKWArgsT = global.__move.runtime._MoveKWArgsT;
+
 # -----------------------------------------------------------------------------
 # ES5 compatibility
 
@@ -39,6 +42,24 @@ Array.prototype.unique = ^{
   }
   a
 }
+
+# -----------------------------------------------------------------------------
+# Constants
+
+# Helper function to define constants
+if (Object.defineProperty) {
+  defineConstant = ^(obj, name, value){
+    Object.defineProperty(obj, name, {
+      value: value, writable: false, enumerable: true, configurable: false
+    })
+  }
+} else {
+  defineConstant = ^(obj, name, value){ obj[name] = value }
+}
+
+# _MoveKWArgsT is a unique object used to test for and prevent tampering with
+# keyword arguments
+defineConstant(exports, '_MoveKWArgsT', _MoveKWArgsT)
 
 # -----------------------------------------------------------------------------
 # Base library functions
