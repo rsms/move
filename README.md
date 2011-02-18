@@ -48,7 +48,7 @@ If you want to use move in a web browser, simply use and include the `browser/mo
   
   - As functions, or lambdas, are the key awesomeness of JavaScript and is a very light-weight thing, the "function" keyword and boilerplate argument parens just need to be easier to write. Move uses the `^` keyword and does not enforce `()` for argument-less functions.
 
-  - The last producing statement in a function is automatically returned.
+  - The last statement in a function is automatically returned.
 
   - Functions can be called using the `foo {key: value}` syntax, passing arguments by name. This greatly increases code readability.
 
