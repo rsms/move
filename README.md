@@ -52,7 +52,7 @@ There's also a simple API which can be accessed from the move module:
   
   - Functions can be called using the `foo value` syntax, passing a single argument. Passing a single argument is a common use-case (e.g. `print value`) and works nicely together with chaining to produce flow control-style functions like for instance the built-in `repeat` function.
   
-  - When defining functions, any argument can be given a default value using wither `:` or `=`. E.g. `foo = ^(bar, baz: 4, names=[], age) {...`.
+  - When defining functions, any argument can be given a default value using either `:` or `=`. E.g. `foo = ^(bar, baz: 4, names=[], age) {...`.
 
 - **Variables** need not be explicitly declared. Move will declare a newfound variable in the scope which it first was used. This behavior is deterministic, in contrast to the ambiguous way implicitly declared variables behave in JavaScript.
 
