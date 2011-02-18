@@ -50,7 +50,7 @@ There's also a simple API which can be accessed from the move module:
   
   - Functions can be called using the `foo {key: value}` syntax, passing arguments by name. This greatly increases code readability.
   
-  - Functions can be called using the `foo arg` syntax, passing a single argument. Passing a single argument is a common use-case (e.g. `print foo`) and works nicely together with chaining to produce flow control-style functions like for instance the built-in `repeat` function.
+  - Functions can be called using the `foo value` syntax, passing a single argument. Passing a single argument is a common use-case (e.g. `print value`) and works nicely together with chaining to produce flow control-style functions like for instance the built-in `repeat` function.
   
   - When defining functions, any argument can be given a default value using wither `:` or `=`. E.g. `foo = ^(bar, baz: 4, names=[], age) {...`.
 
