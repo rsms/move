@@ -1,6 +1,6 @@
 # Move
 
-Move is a flavor (and a superset) of JavaScript improving in the following ways:
+Move is a simple but powerful programming language which can run on most computers (anywhere there's a >=ES3 JavaScript runtime). When compared to JavaScript, Move has the following key features:
 
 - **Simpler.** E.g. there's only one way to declare functions, no need for `var` declarations, only a single type of equality operators and no need for terminating statements with semicolons.
 
