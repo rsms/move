@@ -11,7 +11,7 @@ require ENV["TM_SUPPORT_PATH"] + "/lib/tm/save_current_document"
 
 TextMate.save_current_document
 TextMate::Executor.make_project_master_current_document
-TextMate::Executor.run(ENV["TM_NODE"] || "node", "--stack_trace_limit=50", "-e", "(function(){require('move');require('"+ENV["TM_FILEPATH"]+"'); return '';})()")</string>
+TextMate::Executor.run(ENV["TM_NODE"] || "node", "--stack_trace_limit=50", "-e", "(function(){require('move');require('"+ENV["TM_FILEPATH"]+"'); /*process.exit(0)*/return '';})()")</string>
 	<key>input</key>
 	<string>document</string>
 	<key>keyEquivalent</key>

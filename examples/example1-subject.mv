@@ -15,7 +15,7 @@ export source = ^{ read {path: __filename} }
 readLines = ^(path) {
   read {path: path }.split(/\n/)
 }
-export readLines;
+export readLines
 
 // There's only one kind of equality operator (the one without type coercion)
                     // Move    JavaScript

@@ -1,0 +1,7 @@
+import assert
+
+# if less than
+if (5 < 6) assert.ok(true); else assert.ok(false)
+
+# shorthand
+assert.equal(5 < 6 ? true : false, true)

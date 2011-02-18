@@ -23,15 +23,10 @@ enumerateDirectory { path: sourceDir,
                     apply: ^(filename) {
   # Read text source
   source = read { path: sourceDir + '/' + filename }
-
-  # XXX debug
-  #if (filename != 'index.js') return
   
   # Pass Move sources through the Move compiler
-  if (filename.lastIndexOf('.move') == filename.length - '.move'.length) {
-    source = move.compile { source: source }
-    console.log(source)
-  }
+  if (filename.match(/\.(?:mv|move)$/))
+    source = move.compile { source: source, filename: filename }
   
   # Derive "module name" from filename
   name = /^(.+)\.[^\.]+$/.exec(filename)[1]
@@ -64,5 +59,4 @@ try {
 # Write output to move.js
 fs.writeFileSync(__dirname + '/move.js', output)
 
-console.log(output.substr(0, 1000))
-#console.log(output)
+console.log output.substr(0, 500)+'\n...\n\nOK!'

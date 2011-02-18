@@ -1,0 +1,114 @@
+# Move runtime library
+
+# -----------------------------------------------------------------------------
+# ES5 compatibility
+
+/*if (typeof global == 'undefined' || global.global != global) {
+  if (typeof window == 'object')
+    window.global = window
+  else
+    this.global = this
+}*/
+
+IS_KNOWN_ES5_HOST = !!(typeof process != 'undefined' &&
+                     ((typeof process.versions == 'object' &&
+                       process.versions.node) ||
+                      process.pid));
+
+if (!IS_KNOWN_ES5_HOST) {
+  require './es5_object'
+  require './es5_array'
+  require './es5_date'
+  require './es5_json'
+}
+
+# -----------------------------------------------------------------------------
+# Additions
+
+require './runtime_string'
+require './runtime_date'
+
+# Array.prototype
+if (typeof Array.prototype.unique != 'function')
+Array.prototype.unique = ^{
+  a = [], l = @length
+  for (i=0; i<l; ++i) {
+    for (j=i+1; j<l; ++j)
+      if (this[i] === this[j]) j = ++i
+    a.push this[i]
+  }
+  a
+}
+
+# -----------------------------------------------------------------------------
+# Base library functions
+
+try {
+  # Use an existing implementation if available
+  inspect = require('util').inspect
+  if (typeof inspect != 'function') throw 1
+  exports.inspect = inspect
+} catch (e) {
+  # Load our implementation
+  exports.inspect = require('./runtime_inspect').inspect
+}
+
+# -----------------------------------------------------------------------------
+# Single-argument functions (print, repeat, etc)
+
+# Print something (e.g. to a console or other output)
+if (typeof console != 'undefined' && console.log) {
+  if (typeof window != 'undefined') {
+    # In a browser setting we use eval, and eval has the restriction that
+    # no code executed can directly reference native objects, thus we wrap
+    # console.log in a lambda
+    exports.print = ^{
+      console.log.apply(console, Array.prototype.slice.call(arguments))
+    }
+  } else {
+    exports.print = console.log
+  }
+} else {
+  # As a last resort, make print a no-op
+  exports.print = ^{}
+}
+
+# Repeat a `block`...
+#
+# - `times: N` -- repeat `block` *N* times
+#
+# If called with shorthand single argument, `block` is repeated until it returns
+# a false value
+export repeat = ^(times) {
+  if (typeof times == 'function') {
+    # short-hand call style
+    while (true) if (!times()) break
+    return
+  }
+  ^(block){
+    if (times != undefined) {
+      for (i=0; i<times; ++i) if (block(i) == true) break
+    } else {
+      while (true) if (!block()) break
+    }
+  }
+}
+
+# Perform a `block` after a delay or date/time
+export after = ^(delay, date) {
+  if (delay) {
+    #if (arguments.)...
+    if (typeof delay != 'number')
+      throw new TypeError('"delay" argument must be a number')
+  } else if (date) {
+    if (typeof date == 'string' || typeof date == 'number') {
+      date = new Date(date)
+      if (isNaN(date.getTime()))
+        throw new Error('Invalid date/time passed for "date" argument')
+    } else if (typeof date != 'object' || !(date instanceof Date)) {
+      throw new TypeError('"date" argument must be a Date object or a string')
+    }
+    delay = Math.max(0, date.getTime() - (new Date).getTime())
+  }
+  return ^(block) { setTimeout(block, delay) }
+}

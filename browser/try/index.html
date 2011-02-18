@@ -13,7 +13,9 @@ $(function () {
     log:function(){}, error:function(){} };
 
   // Move compilation settings
-  var compilerOptions = {};
+  var compilerOptions = {
+    globals: ['__js_source']
+  };
   
   // Etc
   var $input = $('#input');
@@ -47,6 +49,26 @@ $(function () {
     var el = $output[0];
     el.value = el.value + String(message + '\n');
     try { el.scrollTop = el.scrollHeight; }catch(e){}
+  };
+  
+  // Inspection function
+  var inspect = function (obj) {
+    if (typeof obj === 'string') return obj;
+    return __move.runtime.inspect(obj, false, 10);
+  };
+  
+  // Replace the default print (goes to console.log) to our #output area
+  __move.runtime.print = function () {
+    var kw;
+    if (arguments.length === 1 &&
+        typeof (kw = arguments[0]) === 'object' && kw.__kw === true) {
+      appendOutput(inspect(kw.message));
+    } else {
+      var args = [];
+      for (var i=0;i<arguments.length; ++i)
+        args[i] = inspect(arguments[i]);
+      appendOutput(args.join(' '));
+    }
   };
   
   // Evaluate a Move program
@@ -105,37 +127,16 @@ $(function () {
     
     // Evaluate
     var result;
-    var inspect;
-    if (!JSON.stringify) {
-      inspect = String;
-    } else {
-      inspect = function (obj) {
-        if (obj === undefined) return 'undefined';
-        switch (typeof obj) {
-          case 'function': return String(obj);
-          case 'string': return obj;
-        }
-        return JSON.stringify(obj);
-      };
-    }
     try {
       //result = eval(jsSource);
+      //console.log(jsSource);
       var f = new Function("window", "with(window){ " + jsSource + " }");
       result = f({
         $: $, // jQuery
-        print: function () {
-          var kw;
-          if (arguments.length === 1 &&
-              typeof (kw = arguments[0]) === 'object') {
-            appendOutput(inspect(kw.message));
-          } else {
-            var args = [];
-            for (var i=0;i<arguments.length; ++i)
-              args[i] = inspect(arguments[i]);
-            appendOutput(args.join(' '));
-          }
-        },
-        console: { log: appendOutput }
+        __move: window.__move,
+        console: console,
+        __js_source: jsSource,
+        require: __move.runtime.require
       });
 
     } catch (e) {
@@ -155,7 +156,7 @@ $(function () {
   };
   
   
-  // Execute Cmd+ENTER key listener
+  // Execute Cmd+R key listener
   var metaIsPressed, ctrlIsPressed;
   $input.bind('keydown', function (ev) {
     if (ev.keyCode === 91) {
@@ -191,7 +192,7 @@ $(function () {
   
   // Tooltips
   /*var tips = {
-    'input': 'Press Cmd+ENTER to run your Move code'
+    'input': 'Press Cmd+R to run your Move code'
   };
   var $contextTip = $('#context-tip');
   tips['default'] = $contextTip.html();
@@ -272,7 +273,8 @@ $(function () {
         rightParen = elem;
       } else {
         leftParen = elem;
-        if (rightParen && rightParen.firstChild.nodeValue === '{') {
+        if (rightParen && (rightParen.firstChild.nodeValue === '{' ||
+            rightParen.firstChild.nodeValue === '(') ) {
           leftParen = rightParen;
           rightParen = elem;
         }
@@ -301,14 +303,17 @@ $(function () {
       // Configure key bindings
       var metaIsPressed, ctrlIsPressed;
       editor.grabKeys(function () {}, function (keyCode) {
-        //console.log(keyCode);
         //appendOutput(keyCode);
-        if (keyCode === 91 || keyCode === 224) {
-          return metaIsPressed = true;
+        if (keyCode === 91 || keyCode === 93 || keyCode === 224) {
+          metaIsPressed = true;
+          return;
         } else if (keyCode === 17) {
-          return ctrlIsPressed = true;
+          ctrlIsPressed = true;
+          return;
         } else if ((metaIsPressed || ctrlIsPressed) &&
-                   (keyCode === 13 || keyCode === 10)) {
+                   (keyCode === 82 || keyCode === 10 || keyCode === 13) ) {
+          //                    R                 \n                \r
+          //metaIsPressed = ctrlIsPressed = false;
           executeMoveProgram();
           return true;
         }
@@ -317,8 +322,10 @@ $(function () {
       });
       var origKeyUp = editor.editor.keyUp;
       editor.editor.keyUp = function (ev) {
-        if (ev.keyCode === 91 || ev.keyCode === 224) metaIsPressed = false;
-        else if (ev.keyCode === 17) ctrlIsPressed = false;
+        if (ev.keyCode === 91 || ev.keyCode === 93 || ev.keyCode === 224 ||
+            ev.keyCode === 17) {
+          ctrlIsPressed = metaIsPressed = false;
+        }
         return origKeyUp.call(editor.editor, ev);
       };
       editor.focus();
@@ -488,7 +495,7 @@ $(function () {
       <vbox>
         <header>
           <div id="context-tip">
-            Press Cmd+ENTER to run your Move code
+            Press Cmd+R to run your Move code
           </div>
           <h1><span>Move</span></h1>
           <!--a href="http://movelang.org/">movelang.org</a-->
@@ -504,11 +511,21 @@ $(function () {
         </hbox>
       </vbox>
     </box>
-    <data class="default-program">hello = ^(name) {
-  "Hello " + name + ". How are you?"
+    <data class="default-program">hello_to = ^(name){ "Hello "+name }
+repeat {times: 3} ^{
+  print hello_to {name: "John"}
 }
-greeting = hello {name: "John"}
-print {message: greeting}
+
+numbers = [1,2,2,3,1].unique()
+print numbers
+
+Cat = {age: 5}
+Dog = Object.create(Cat)
+print Dog.age
+Cat.name = "Zelda"
+print Dog.name  # &lt;- by inferred inheritance from Cat
+Dog.name = "Lassie"
+print(Dog.name, Cat.name)
 </data>
   </body>
 </html>

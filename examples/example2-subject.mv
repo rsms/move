@@ -3,8 +3,8 @@ import fs, vm2 = 'vm', foo = './z/foo'
 
 // First time-assignment should define the var in the upmost scope
 bar = 89
-bar2 = 89 ^ 4
-bar2 = bar2 ^ 4
+bar2 = 89 xor 4
+bar2 = bar2 xor 4
 
 import http
 

@@ -1,0 +1,15 @@
+import assert
+
+foo = ^(arg1){ return arg1 }
+
+# Straight-forward simple input
+assert.equal(foo "Hello", "Hello")
+
+# Chained. Translates to foo(foo(foo("Hello")))
+assert.equal(foo foo foo "Hello", "Hello")
+
+# Keywords arguments should take precedence over an object argument
+assert.equal(foo {arg1:"Hello"}, "Hello")
+
+# Call precedence should invoke the anonymous lambda first, then foo
+assert.equal(foo ^{ "Hello" }(), "Hello")

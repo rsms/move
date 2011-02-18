@@ -8,6 +8,15 @@ Move is a flavor (and a superset) of JavaScript improving in the following ways:
 
 - Move is **a superset of JavaScript** rather than a different language. This makes it possible to selectively use language features you like and e.g. using snippets of JavaScript code unmodified, directly in Move code.
 
+A simple Move program which prints "Hello John" three times:
+
+    hello = ^(name){ "Hello "+name }
+    repeat {times: 3} ^{
+      print hello {name: "John"}
+    }
+
+Move compiles directly to optimized JavaScript which can run on almost any computer (in a web browser or a virtual machine like Node.js).
+
 ## Installing and using Move
 
 Currently Move itself (the compiler) is only running in CommonJS environments like Node.js, but code being generated is pure JavaScript without any implicit dependencies which should run wherever the code you write would normally run.
@@ -19,7 +28,7 @@ For now, it's easiest to install Move using the [Node Package Manager](http://np
 Then require the "move" module before requiring any move code. In this `example.js` we load "foo.move" which is a module written in Move:
 
     require("move");
-    var foo = require("./foo")
+    var foo = require("./foo");
 
 There's also a simple API which can be accessed from the move module:
 

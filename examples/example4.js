@@ -1,6 +1,6 @@
 // Compiles, generates and dumps the output JavaScript code
 var C = require("../lib").compileFileSync;
-var out = C('./example4-subject.move', {
+var out = C('./example4-subject.mv', {
   detailedOutput:true,
   //automaticVarDeclarations:false,
   //optimizationLevel:2,

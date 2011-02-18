@@ -1,0 +1,66 @@
+# Move command line interface
+import fs, optparse = './optparse'
+
+# The help banner that is printed when `move` is called without arguments.
+banner = "Usage: move [options] [<filename>]"
+
+# Options
+available_options = [
+  ['-c', '--compile',   "Compile to JavaScript"],
+  ['-e', '--eval [CODE]', "Compile and execute Move code from the command line"],
+  [      '--ast',       "Parse (but don't compile) and output the AST"],
+  [      '--version',   "Display version"],
+  ['-h', '--help',      "Display help"] ]
+
+# stuff collected and parsed from the command line
+options = {}
+sources = []
+
+# Output printers
+usage = ^(die) {
+  console.error (new optparse.OptionParser(available_options, banner)).help()
+  if (die != undefined) process.exit(die)
+}
+
+# Program entry-point
+export main = ^{
+  parseOptions()
+  if (options.help) return usage()
+  #console.log(options, sources)
+
+  # Run passed file(s)
+  if (options.run) {
+    # Check that we have some input
+    if (!sources.length) {
+      console.error "At least one file must to be specified"
+      usage(1)
+    }
+    
+    sources.forEach(^(filename) {
+      # Resolve absolute path
+      try {
+        filename = fs.realpathSync filename
+      } catch (e) {
+        if (e.errno != undefined) {
+          console.error e.message
+          process.exit 1
+        }
+        throw e
+      }
+      # Execute file
+      #console.log 'run '+filename
+      require(filename)
+    })
+  }
+}
+
+# Use the `optparse` to extract all options from `process.argv` that are
+# specified in `available_options`.
+parseOptions = ^{
+  op  = new optparse.OptionParser(available_options, banner)
+  options = o = op.parse(process.argv.slice(2))
+  # Normalize and set pseudo-options
+  o.run = !(o.compile || o.ast)
+  return sources = o.arguments
+}
+

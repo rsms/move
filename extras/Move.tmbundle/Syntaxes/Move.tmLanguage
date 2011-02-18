@@ -4,8 +4,8 @@
 <dict>
 	<key>fileTypes</key>
 	<array>
-		<string>move</string>
 		<string>mv</string>
+		<string>move</string>
 	</array>
 	<key>foldingStartMarker</key>
 	<string>/\*\*|\{\s*$</string>
@@ -189,13 +189,25 @@
 		</dict>
 		<dict>
 			<key>match</key>
+			<string>\b([a-zA-Z_$]\w*\x{00BB})\b</string>
+			<key>name</key>
+			<string>variable.name.label.move</string>
+		</dict>
+		<dict>
+			<key>match</key>
 			<string>\b(import|export)\b</string>
 			<key>name</key>
 			<string>keyword.control.move</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(module|exports|__filename|__dirname)\b</string>
+			<string>\b(xor)\b</string>
+			<key>name</key>
+			<string>keyword.operator.move</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b(global|module|exports|__filename|__dirname)\b</string>
 			<key>name</key>
 			<string>variable.environment.commonjs</string>
 		</dict>
