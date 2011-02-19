@@ -45,7 +45,7 @@ $(function () {
                     strFit(date.getMinutes(), '0', 2)+':'+
                     strFit(date.getSeconds(), '0', 2)
                  )+'> ';
-    message = prefix + message;
+    //message = prefix + message;
     var el = $output[0];
     el.value = el.value + String(message + '\n');
     try { el.scrollTop = el.scrollHeight; }catch(e){}
@@ -337,8 +337,8 @@ $(function () {
       };
       editor.focus();
       
-      // Compile (but do not evaluate)
-      if (hasCustomContent) executeMoveProgram();
+      //if (hasCustomContent)
+      executeMoveProgram();
     },
     onChange: onEditorChange
   });
@@ -528,13 +528,15 @@ numbers = [1,2,2,3,1].unique()
 print numbers
 numbers.sort().forEach ^(number){ print "Number: "+number }
 
-Cat = {age: 5}
-Dog = Object.create Cat
-print Dog.age
-Cat.name = "Zelda"
-print Dog.name  # &lt;- by inferred inheritance from Cat
-Dog.name = "Lassie"
-print(Dog.name, Cat.name)
+Cat = {age: 5, name: "Zelda"}
+Dog = create Cat, {name: "Lassie"}
+
+print Cat.name, 'is', Cat.age, 'years old'
+print Dog.name, 'is', Dog.age, 'years old'
+
+Cat.age = 9
+print Cat.name, 'is', Cat.age, 'years old'
+print Dog.name, 'is', Dog.age, 'years old'
 </data>
   </body>
 </html>
