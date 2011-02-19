@@ -56,7 +56,7 @@ If you want to use move in a web browser, simply use and include the `browser/mo
 
   - When defining functions, any argument can be given a default value using either `:` or `=`. E.g. `foo = ^(bar, baz: 4, names=[], age) {...`.
 
-- **Variables** are implicitly declared -- Move will automatically declare (i.e. "create and attach") a newfound variable in the scope which it first was used. The use of "var" produces a syntax error.
+- **Variables** are implicitly declared -- Move will automatically declare (i.e. "create and attach") a newfound variable in the scope which it first was used. The use of "var" produces a syntax error. A variable will only be declared if there's no variable with the same name which is reachable from the current scope (this is possible since the Move compiler is AST-aware).
 
 - **No commas** required to terminate expressions. Move will determine when a comma is needed so you don't have to (and the code gets more readable).
 
