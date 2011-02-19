@@ -52,7 +52,7 @@ If you want to use move in a web browser, simply use and include the `browser/mo
 
   - Functions can be called using the `foo {key: value}` syntax, passing arguments by name. This greatly increases code readability.
 
-  - Functions can be called using the `foo value` syntax, passing a single argument. Passing a single argument is a common use-case (e.g. `print value`) and works nicely together with chaining to produce flow control-style functions like for instance the built-in `repeat` function.
+  - Functions can be called using the `foo value, ...` syntax, passing arguments in a simple succession. This feature allows Move to have a very limited set of language keywords and instead implement things like print, repeat, create, etc as regular functions. For instance, this allows for creating DSL-like extensions to the language.
 
   - When defining functions, any argument can be given a default value using either `:` or `=`. E.g. `foo = ^(bar, baz: 4, names=[], age) {...`.
 
