@@ -159,6 +159,7 @@ export after = ^(delay, date) {
 # JSON {parse:string} -> value
 # JSON.stringify value -> string
 # JSON.parse string -> value
+JSON = global.JSON
 _JSON = ^(build, parse) {
   if (build)
     JSON.stringify(build)
