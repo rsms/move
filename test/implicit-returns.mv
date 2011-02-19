@@ -35,6 +35,14 @@ x6 = ^(foo){
   } else
     "x6-3"
 }
+x7 = ^(foo){
+  if (foo == "foo") {
+    "x7-1"
+  } else {
+    "should not be returned"
+    "x7-2"
+  }
+}
 
 assert.equal(x1(), "x1")
 assert.equal(x2(), "x2")
@@ -44,3 +52,5 @@ assert.equal(x4 "boll", "x4-2")
 assert.equal(x5 "foo2", "x5-2")
 assert.equal(x6 "foo2", "x6-2-2")
 assert.equal(x6 "foo2-1", "x6-2-1")
+assert.equal(x7 "foo", "x7-1")
+assert.equal(x7 "foo2", "x7-2")
