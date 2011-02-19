@@ -18,10 +18,6 @@
 	<key>patterns</key>
 	<array>
 		<dict>
-			<key>include</key>
-			<string>source.js</string>
-		</dict>
-		<dict>
 			<key>captures</key>
 			<dict>
 				<key>1</key>
@@ -150,6 +146,10 @@
 			<string>meta.function.move</string>
 		</dict>
 		<dict>
+			<key>include</key>
+			<string>source.js</string>
+		</dict>
+		<dict>
 			<key>captures</key>
 			<dict>
 				<key>1</key>
@@ -169,7 +169,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>(?x)(@?)([a-zA-Z_?$][\w?$]*)\s*(\()</string>
+			<string>(?x)(@?)([a-zA-Z_?$][\w?$]*)\s*([\(\{])</string>
 			<key>name</key>
 			<string>meta.function.call.move</string>
 		</dict>
@@ -207,9 +207,21 @@
 		</dict>
 		<dict>
 			<key>match</key>
+			<string>\b(JSON)\b</string>
+			<key>name</key>
+			<string>support.function.es5</string>
+		</dict>
+		<dict>
+			<key>match</key>
 			<string>\b(require)\b</string>
 			<key>name</key>
 			<string>support.function.commonjs</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b(extend|create|inspect|print|repeat|after)\b</string>
+			<key>name</key>
+			<string>support.function.move</string>
 		</dict>
 		<dict>
 			<key>match</key>

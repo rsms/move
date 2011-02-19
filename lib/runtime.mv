@@ -1,7 +1,7 @@
 # Move runtime library
 
 # A few things that need to be defined in order for this very module to compile
-_MoveKWArgsT = global.__move.runtime._MoveKWArgsT;
+_MoveKWArgsT = global.__move.runtime._MoveKWArgsT
 
 # -----------------------------------------------------------------------------
 # ES5 compatibility
@@ -16,7 +16,7 @@ _MoveKWArgsT = global.__move.runtime._MoveKWArgsT;
 IS_KNOWN_ES5_HOST = !!(typeof process != 'undefined' &&
                      ((typeof process.versions == 'object' &&
                        process.versions.node) ||
-                      process.pid));
+                      process.pid))
 
 if (!IS_KNOWN_ES5_HOST) {
   require './es5_object'
@@ -64,6 +64,28 @@ defineConstant(exports, '_MoveKWArgsT', _MoveKWArgsT)
 # -----------------------------------------------------------------------------
 # Base library functions
 
+# extend (object, {member1: value1, ...}) -> object
+# extend (object, ^{...}) -> object
+# extend (object) -> object (no-op)
+export extend = ^(object, addition) {
+  T = addition == null ? 'undefined' : typeof addition
+  if (T == 'object')
+    Object.keys(addition).forEach ^(key) { object[key] = addition[key] }
+  else if (T == 'function')
+    addition.call(object)
+  else if (T != 'undefined')
+    throw new TypeError(
+      '"addition" argument must be either an object or a function, not a '+T)
+  object
+}
+
+# create (prototype, {member1: value1, ...}) -> object
+# create (prototype, ^{...}) -> object
+# create (prototype) -> object
+export create = ^(prototype, body) {
+  extend Object.create(prototype), body
+}
+
 # inspect (value) -> string
 try {
   # Use an existing implementation if available
@@ -75,25 +97,8 @@ try {
   exports.inspect = require('./runtime_inspect').inspect
 }
 
-/**
- * Inherit the prototype methods from one constructor into another.
- *
- * The Function.prototype.inherits from lang.js rewritten as a standalone
- * function (not on Function.prototype).
- *
- * - `ctor`      -- Constructor function which needs to inherit the prototype.
- * - `superCtor` -- Constructor function to inherit prototype from.
- */
-export inherit = ^(ctor, superCtor) {
-  ctor.prototype = Object.create(superCtor.prototype, {
-    constructor: { value: ctor, enumerable: false }
-  })
-}
-
-# -----------------------------------------------------------------------------
-# Single-argument functions (print, repeat, etc)
-
 # Print something (e.g. to a console or other output)
+# print ...
 if (typeof console != 'undefined' && console.log) {
   if (typeof window != 'undefined') {
     # In a browser setting we use eval, and eval has the restriction that
@@ -116,17 +121,25 @@ if (typeof console != 'undefined' && console.log) {
 #
 # If called with shorthand single argument, `block` is repeated until it returns
 # a false value
-export repeat = ^(times) {
+export repeat = ^(times, block) {
   if (typeof times == 'function') {
     # short-hand call style
     while (true) if (!times()) break
     return
   }
-  ^(block){
+  if (typeof block == 'function') {
     if (times != undefined) {
       for (i=0; i<times; ++i) if (block(i) == true) break
     } else {
       while (true) if (!block()) break
+    }
+  } else {
+    return ^(block){
+      if (times != undefined) {
+        for (i=0; i<times; ++i) if (block(i) == true) break
+      } else {
+        while (true) if (!block()) break
+      }
     }
   }
 }

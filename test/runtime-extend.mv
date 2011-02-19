@@ -1,0 +1,20 @@
+import assert
+
+EQ = assert.strictEqual
+foo = { a: "A" }
+
+# `b` should not be defined
+EQ foo.b, undefined
+
+# Extend foo with `b` and `c` from an object
+extend foo, {b: 'B', c: ^{ "C" }}
+
+EQ foo.b, 'B'
+EQ (typeof foo.c, 'function')
+EQ foo.c(), 'C'
+EQ foo.d, undefined
+
+# Extend foo with `d` using a block
+extend foo, ^{ @d = 'D' }
+
+EQ foo.d, 'D'

@@ -1,0 +1,49 @@
+import assert
+
+EQ = assert.strictEqual
+
+# Create some prototype chains
+animal = {
+  type: "Animal",
+  toString: ^{ @type }
+}
+creature = create animal
+frog = create animal, {
+  toString: ^{ "I'm a frog (" + @type + ")" }
+}
+# Keyword argument call-style (not really recommended but let's test it)
+cat = create {
+  prototype: animal,
+  body: {
+    name: "Zelda"
+  }
+}
+
+# Basic functionality
+EQ ""+animal, "Animal"
+EQ ""+creature, "Animal"
+EQ ""+frog, "I'm a frog (Animal)"
+EQ ""+cat, "Animal"
+EQ cat.name, "Zelda"
+
+# Setting a property directly on the object shall not alter the prototype
+cat.type = "Furry animal"
+EQ cat.type, "Furry animal"
+EQ frog.type, "Animal"
+EQ animal.type, "Animal"
+
+# Alter a prototype to confirm differental inheritance (verifying there's no
+# copying going on in create)
+animal.type = "Creature"
+EQ cat.type, "Furry animal" # local property ovverides prototype
+EQ frog.type, "Creature"    # should fall through to prototype
+EQ animal.type, "Creature"
+
+# Creation with initializer block
+cat2 = create animal, ^{
+  @name = "Busta Rhymes"
+  @date_born = new Date('2008-01-01')
+  @days_old = ^{ ((new Date) - @date_born)/1000/60/60/24 }
+}
+EQ cat2.name, "Busta Rhymes"
+EQ (typeof cat2.days_old(), "number")

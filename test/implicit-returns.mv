@@ -10,9 +10,9 @@ x3 = ^{
   if (foo == "foo")
     "x3"
 }
-assert.equal(x1(), "x1")
-assert.equal(x2(), "x2")
-assert.equal(x3(), "x3")
+assert.equal x1(), "x1"
+assert.equal x2(), "x2"
+assert.equal x3(), "x3"
 
 x4 = ^(foo){
   if (foo == "foo")
@@ -20,8 +20,8 @@ x4 = ^(foo){
   else
     "x4-2"
 }
-assert.equal(x4 "foo", "x4-1")
-assert.equal(x4 "boll", "x4-2")
+assert.equal x4("foo"), "x4-1"
+assert.equal x4("boll"), "x4-2"
 
 x5 = ^(foo){
   if (foo == "foo")
@@ -31,9 +31,9 @@ x5 = ^(foo){
   else
     "x5-3"
 }
-assert.equal(x5 "foo", "x5-1")
-assert.equal(x5 "bar", "x5-2")
-assert.equal(x5 "xxx", "x5-3")
+assert.equal x5("foo"), "x5-1"
+assert.equal x5("bar"), "x5-2"
+assert.equal x5("xxx"), "x5-3"
 
 x6 = ^(foo){
   if (foo == "foo")
@@ -46,8 +46,8 @@ x6 = ^(foo){
   } else
     "x6-3"
 }
-assert.equal(x6 "foo2", "x6-2-2")
-assert.equal(x6 "foo2-1", "x6-2-1")
+assert.equal x6("foo2"), "x6-2-2"
+assert.equal x6("foo2-1"), "x6-2-1"
 
 # Test for bug where each statement in a block would be wrapped in a return
 x7 = ^(foo){
@@ -60,5 +60,5 @@ x7 = ^(foo){
     "x7-2"
   }
 }
-assert.equal(x7 "foo", "x7-1")
-assert.equal(x7 "xxx", "x7-2")
+assert.equal x7("foo"), "x7-1"
+assert.equal x7("xxx"), "x7-2"

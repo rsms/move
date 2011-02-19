@@ -10,4 +10,4 @@ print 'Printing "hello" in 500ms...'
 
 timer = after { date: '2011/02/01' } ^{ print 'hello again' }
 print 'Printing "hello again" after date 2011-02-01'
-print('Timer =>', timer)
+print 'Timer =>', timer

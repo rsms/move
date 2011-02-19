@@ -519,9 +519,10 @@ $(function () {
       </vbox>
     </box>
     <data class="default-program">hello_to = ^(name){ "Hello "+name }
-repeat {times: 3} ^{
-  print hello_to {name: "John"}
-}
+repeat {times: 3} ^{ print hello_to {name: "John"} }
+
+# Same thing as the above, but in shorthand form:
+repeat 3, ^{ print hello_to "Julia" }
 
 numbers = [1,2,2,3,1].unique()
 print numbers
