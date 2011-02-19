@@ -15,7 +15,27 @@ A simple Move program which prints "Hello John" three times:
       print hello {name: "John"}
     }
 
+Same program as above, but using shorthand call-style:
+
+    hello = ^(name){ "Hello "+name }
+    repeat 3, ^{ print hello "John" }
+
 Move compiles directly to optimized JavaScript which can run on almost any computer (in a web browser or a runtime like Node.js).
+
+The above program compiles down to the following JavaScript:
+
+    "use strict";
+    var repeat = Move.runtime.repeat,
+        print  = Move.runtime.print,
+        hello  = function hello(name) {
+      // <keyword argument logic here>
+      return "Hello " + name;
+    };
+    return repeat(3, function () {
+      return print(hello("John"));
+    });
+
+*Note: The above JavaScript has been simplified for the purpose of demonstration.*
 
 ## Installing and using Move
 
@@ -39,6 +59,10 @@ There's also a simple API which can be accessed from the move module:
     //   };
 
 If you want to use move in a web browser, simply use and include the `browser/move.js` file (no dependencies). Including this file will export a single global symbol called "move" (`window.move`) which contains the Move library (see `lib/index.js`) including functionality for compiling and executing Move code as well as providing the ES5 normalizing but small runtime library. Have a look at `browser/try/index.html` for inspiration.
+
+### Extras
+
+There are some extras (or "support stuff") which can be found in the `extras` directory. For instance, a TextMate bundle adding Move syntax support including commands like Cmd+R to run a Move program, Cmd+B to compile and display generated JavaScript, Cmd+Shift+B to compile and display the AST. Some of these commands require Node.js to be installed.
 
 ## Differences to JavaScript
 
