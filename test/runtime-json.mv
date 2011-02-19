@@ -1,0 +1,11 @@
+import assert
+
+value = {hello:5, foo:[6,7]}
+#print JSON value
+#print JSON {build:value}
+#print JSON {parse:JSON value}
+assert.equal(JSON value, '{"hello":5,"foo":[6,7]}')
+assert.equal(JSON {build:value}, '{"hello":5,"foo":[6,7]}')
+assert.equal(JSON.stringify value, '{"hello":5,"foo":[6,7]}')
+assert.deepEqual(JSON.parse '{"hello":5,"foo":[6,7]}', value)
+assert.deepEqual(JSON {parse:'{"hello":5,"foo":[6,7]}'}, value)

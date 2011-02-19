@@ -63,7 +63,7 @@ $(function () {
   };
   
   // Replace the default print (goes to console.log) to our #output area
-  __move.runtime.print = function () {
+  move.runtime.print = function () {
     var kw;
     if (arguments.length === 1 &&
         typeof (kw = arguments[0]) === 'object' && kw.__kw === true) {
@@ -89,6 +89,7 @@ $(function () {
     }
     console.log('Compiling & executing');
     clearOutput();
+    $output.css({opacity:0.5}).animate({opacity:1}, 200);
     var moveSource = editor.getCode(), jsSource;
     try {
       jsSource = move.compile(moveSource, compilerOptions);

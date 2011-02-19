@@ -11,8 +11,10 @@
         for (i=0; i<arguments.length; ++i) {
           value = arguments[i]
           value = (typeof value == 'string') ? value : inspect value
-          body.appendChild document.createTextNode(value+'\n')
+          body.appendChild document.createTextNode value+
+              (i != arguments.length-1 ? ' ' : '')
         }
+        body.appendChild document.createTextNode '\n'
       }
     </script>
     <!-- Embedded Move code -->

@@ -64,6 +64,7 @@ defineConstant(exports, '_MoveKWArgsT', _MoveKWArgsT)
 # -----------------------------------------------------------------------------
 # Base library functions
 
+# inspect (value) -> string
 try {
   # Use an existing implementation if available
   inspect = require('util').inspect
@@ -72,6 +73,21 @@ try {
 } catch (e) {
   # Load our implementation
   exports.inspect = require('./runtime_inspect').inspect
+}
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype).
+ *
+ * - `ctor`      -- Constructor function which needs to inherit the prototype.
+ * - `superCtor` -- Constructor function to inherit prototype from.
+ */
+export inherit = ^(ctor, superCtor) {
+  ctor.prototype = Object.create(superCtor.prototype, {
+    constructor: { value: ctor, enumerable: false }
+  })
 }
 
 # -----------------------------------------------------------------------------
@@ -133,3 +149,52 @@ export after = ^(delay, date) {
   }
   return ^(block) { setTimeout(block, delay) }
 }
+
+# -----------------------------------------------------------------------------
+# Keyword variants of common stuff
+
+
+# JSON value -> string
+# JSON {build:value} -> string
+# JSON {parse:string} -> value
+# JSON.stringify value -> string
+# JSON.parse string -> value
+_JSON = ^(build, parse) {
+  if (build)
+    JSON.stringify(build)
+  else if (parse)
+    JSON.parse(parse)
+  else
+    throw new TypeError('Expected either "parse" or "build" argument')
+}
+# To retain compatibility with the standard JSON object interface
+_JSON.parse = JSON.parse
+_JSON.stringify = JSON.stringify
+exports.JSON = _JSON
+
+
+# Wraps an EventEmitter addListener-style function with keyword arguments and
+# shorthand block-style calls
+wrapEventEmitter = ^(target, propertyName) {
+  _orig = target[propertyName]
+  addListener = ^(event, call) {
+    if (call) {
+      _orig.call(this, event, call)
+    } else {
+      self = this
+      return ^(block) { _orig.call(self, event, block) }
+    }
+  }
+  target[propertyName] = addListener
+}
+
+# most things that emit events are based on events.EventEmitter
+try { import events } catch(e) {}
+if (events && events.EventEmitter) {
+  wrapEventEmitter(events.EventEmitter.prototype, 'addListener')
+  events.EventEmitter.prototype.on = events.EventEmitter.prototype.addListener
+}
+
+# process has a custom implementation
+if (typeof process != 'undefined' && typeof process.on == 'function')
+  wrapEventEmitter(process, 'on')
