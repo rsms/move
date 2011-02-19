@@ -51,6 +51,11 @@ $(function () {
     try { el.scrollTop = el.scrollHeight; }catch(e){}
   };
   
+  // Clearing output
+  var clearOutput = function () {
+    $output[0].value = "";
+  };
+  
   // Inspection function
   var inspect = function (obj) {
     if (typeof obj === 'string') return obj;
@@ -83,6 +88,7 @@ $(function () {
       exectimer = setTimeout(function(){ exectimer = null; }, 50);
     }
     console.log('Compiling & executing');
+    clearOutput();
     var moveSource = editor.getCode(), jsSource;
     try {
       jsSource = move.compile(moveSource, compilerOptions);

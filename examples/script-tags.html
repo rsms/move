@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<!-- This document demonstrates how to use Move with <script> tags in HTML -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Move in HTML</title>
+    <script type="text/move">
+      # A print function which append output to <body>
+      body = document.getElementsByTagName('body')[0]
+      move.runtime.print = ^{
+        for (i=0; i<arguments.length; ++i) {
+          value = arguments[i]
+          value = (typeof value == 'string') ? value : inspect value
+          body.appendChild document.createTextNode(value+'\n')
+        }
+      }
+    </script>
+    <!-- Embedded Move code -->
+    <script type="text/move">
+print "Hello world"
+    </script>
+    <!--
+    Remotely located Move code
+
+    Note: Some browsers (e.g. Chrome) is unable to load local files over XHR,
+          which is what Move uses to load remote scripts. If the below script
+          does not run for you, either:
+
+          - Don't care as this is just a demo :)
+          - Check your JavaScript console for error description to become wiser
+          - Serve this file from a web server over HTTP and it should work
+    -->
+    <script src="repeat.mv" type="text/move"></script>
+    <script src="../browser/move.js"></script>
+  </head>
+  <body style="white-space:pre; font-family:monospace;"><b>Move in HTML using &lt;script&gt; tags</b></body>
+</html>

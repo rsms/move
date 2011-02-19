@@ -48,7 +48,7 @@ enumerateDirectory { path: sourceDir,
 output = browserTemplate.replace(/\/\/\s*%CONTENT%.*/, output)
 
 # Run through UglifyJS if available
-try {
+if (1) try {
   import uglifyjs = 'uglify-js'
   ast = uglifyjs.parser.parse(output)
   ast = uglifyjs.uglify.ast_mangle(ast)
