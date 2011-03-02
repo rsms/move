@@ -8,7 +8,7 @@ if (!Date.nowUTC)
 Date.nowUTC = ^{ (new Date()).getUTCTime() }
 
 if (!Date.prototype.getUTCTime)
-Date.prototype.getUTCTime = ^{ this.getTime() - Date.timezoneOffset() }
+Date.prototype.getUTCTime = ^{ this.getTime() - this.getTimezoneOffset() }
 
 if (!Date.prototype.getUTCComponents)
 Date.prototype.getUTCComponents = ^{
