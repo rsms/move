@@ -61,21 +61,25 @@ if (Object.defineProperty) {
 # keyword arguments
 defineConstant(exports, '_MoveKWArgsT', _MoveKWArgsT)
 
+# String is aliased as Text
+defineConstant(exports, 'Text', String)
+String.prototype.toText = String.prototype.toString
+
 # -----------------------------------------------------------------------------
 # Base library functions
 
 # extend (object, {member1: value1, ...}) -> object
 # extend (object, ^{...}) -> object
 # extend (object) -> object (no-op)
-export extend = ^(object, addition) {
-  T = addition == null ? 'undefined' : typeof addition
+export extend = ^(object, body) {
+  T = body == null ? 'undefined' : typeof body
   if (T == 'object')
-    Object.keys(addition).forEach ^(key) { object[key] = addition[key] }
+    Object.keys(body).forEach ^(key) { object[key] = body[key] }
   else if (T == 'function')
-    addition.call(object)
+    body.call(object)
   else if (T != 'undefined')
     throw new TypeError(
-      '"addition" argument must be either an object or a function, not a '+T)
+      '"body" argument must be either an object or a function, not a '+T)
   object
 }
 
@@ -87,14 +91,16 @@ export create = ^(prototype, body) {
 }
 
 # inspect (value) -> string
-try {
-  # Use an existing implementation if available
-  inspect = require('util').inspect
-  if (typeof inspect != 'function') throw 1
-  exports.inspect = inspect
-} catch (e) {
-  # Load our implementation
-  exports.inspect = require('./runtime_inspect').inspect
+if (typeof Object.inspect != 'function') {
+  try {
+    # Use an existing implementation if available
+    inspect = require('util').inspect
+    if (typeof inspect != 'function') throw 1
+    Object.inspect = inspect
+  } catch (e) {
+    # Load our implementation
+    Object.inspect = require('./runtime_inspect').inspect
+  }
 }
 
 # Print something (e.g. to a console or other output)
