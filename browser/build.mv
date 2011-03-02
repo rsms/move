@@ -56,7 +56,7 @@ if (1) try {
   output = uglifyjs.uglify.gen_code(ast)
 } catch (e){}
 
-# Write output to move.js
-fs.writeFileSync(__dirname + '/move.js', output)
+# Write output to /web/move.js
+fs.writeFileSync(__dirname + '/../web/move.js', output)
 
 print output.substr(0, 500)+'\n...\n\nOK!'
