@@ -1,7 +1,7 @@
 { "name":        "move",
   "description": "JavaScript moving forward",
   "author":      "Rasmus Andersson - http://rsms.me/",
-  "version":     "0.0.2",
+  "version":     "0.1.0",
   "directories": {"lib" : "./lib"},
   "main":        "lib/index.js",
   "keywords":    ["language", "compiler", "javascript", "move"],
