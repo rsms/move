@@ -94,9 +94,8 @@ export create = ^(prototype, body) {
 if (typeof Object.inspect != 'function') {
   try {
     # Use an existing implementation if available
-    inspect = require('util').inspect
-    if (typeof inspect != 'function') throw 1
-    Object.inspect = inspect
+    Object.inspect = require('util').inspect
+    if (typeof Object.inspect != 'function') throw 1
   } catch (e) {
     # Load our implementation
     Object.inspect = require('./runtime_inspect').inspect
