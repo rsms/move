@@ -59,7 +59,7 @@ $(function () {
   // Inspection function
   var inspect = function (obj) {
     if (typeof obj === 'string') return obj;
-    return __move.runtime.inspect(obj, false, 10);
+    return Object.inspect(obj, false, 10);
   };
   
   // Replace the default print (goes to console.log) to our #output area
