@@ -6,10 +6,10 @@ banner = "Usage: move [options] [<filename>]"
 
 # Options
 available_options = [
-  ['-c', '--compile',   "Compile to JavaScript"],
-  ['-e', '--eval [CODE]', "Compile and execute Move code from the command line"],
-  [      '--ast',       "Parse (but don't compile) and output the AST"],
-  [      '--version',   "Display version"],
+  #['-c', '--compile',   "Compile to JavaScript"],
+  #['-e', '--eval [CODE]', "Compile and execute Move code from the command line"],
+  #[      '--ast',       "Parse (but don't compile) and output the AST"],
+  #[      '--version',   "Display version"],
   ['-h', '--help',      "Display help"] ]
 
 # stuff collected and parsed from the command line
@@ -18,7 +18,7 @@ sources = []
 
 # Output printers
 usage = ^(die) {
-  console.error (new optparse.OptionParser(available_options, banner)).help()
+  console.error((new optparse.OptionParser(available_options, banner)).help())
   if (die != undefined) process.exit(die)
 }
 
@@ -32,7 +32,7 @@ export main = ^{
   if (options.run) {
     # Check that we have some input
     if (!sources.length) {
-      console.error "At least one file must to be specified"
+      console.error "At least one file must be specified"
       usage(1)
     }
     
