@@ -68,7 +68,7 @@ Built-in objects and functions
 
 ### Object.prototype {}
 
-- `constructor → function` — Specifies the function that creates an object's prototype.
+- `constructor ←→ function` — Specifies the function that creates an object's prototype.
 
 - `toText() → text` — Text representation of the object.
 
@@ -91,9 +91,9 @@ Built-in objects and functions
 
 ### Array.prototype {}
 
-- `length → number` — Number of items in the list.
+- `length ←→ number` — Number of items in the list.
 
-- `[number] → value` — Access or modify the value at a specific index.
+- `[number] ←→ value` — Access or modify the value at a specific index.
 
 - `concat(list2, list3, ..., listN) → list` — Returns a new array comprised of this array joined with other array(s) and/or value(s).
 
@@ -216,8 +216,8 @@ Example:
 John</samp>
 
     foo = ^{ print @name }
-    foo()
-    foo.call({name: "John"})
+    foo {}
+    foo.call {name: "John"}
 
 
 ## Date {}
@@ -267,13 +267,13 @@ John</samp>
 - `getUTCSeconds() → number` — Returns the seconds (0-59) in the specified date according to universal time.
 - `getUTCTime() → number` — Returns the numeric value of the specified date as the number of milliseconds since January 1, 1970, 00:00:00 UTC (negative for prior times), universal time.
 - `getUTCComponents() → list` — Date and time components (numbers) in Universal Time Coordinate. *list* contains:
-  - `[0] → year` — Full (Gregorian) year (i.e. year 2011 is represented by the number 2011)
-  - `[1] → month` — 1-based month number (i.e. March is represented by the number 3)
-  - `[2] → day` — 1-based day-of-month (i.e. Jan 4th is represented by the number 4)
-  - `[3] → hours` — Hour of the day in the (inclusive) range 0-23
-  - `[4] → minutes` — Minutes of the hour in the (inclusive) range 0-59
-  - `[5] → seconds` — Seconds of the minute in the (inclusive) range 0-59
-  - `[6] → milliseconds` — Milliseconds of the second in the (inclusive) range 0-999
+  - `[0] ←→ year` — Full (Gregorian) year (i.e. year 2011 is represented by the number 2011)
+  - `[1] ←→ month` — 1-based month number (i.e. March is represented by the number 3)
+  - `[2] ←→ day` — 1-based day-of-month (i.e. Jan 4th is represented by the number 4)
+  - `[3] ←→ hours` — Hour of the day in the (inclusive) range 0-23
+  - `[4] ←→ minutes` — Minutes of the hour in the (inclusive) range 0-59
+  - `[5] ←→ seconds` — Seconds of the minute in the (inclusive) range 0-59
+  - `[6] ←→ milliseconds` — Milliseconds of the second in the (inclusive) range 0-999
 - `setDate(number) → number` — Sets the day of the month (1-31) for a specified date according to local time.
 - `setFullYear(number) → number` — Sets the full year (4 digits for 4-digit years) for a specified date according to local time.
 - `setHours(number) → number` — Sets the hours (0-23) for a specified date according to local time.
@@ -313,19 +313,19 @@ John</samp>
 
 ### RegExp.prototype {}
 
-- `global → true|false` — Whether to test the regular expression against all possible matches in a text, or only against the first.
+- `global ←→ true|false` — Whether to test the regular expression against all possible matches in a text, or only against the first.
 
-- `ignoreCase → true|false` — Whether to ignore case while attempting a match.
+- `ignoreCase ←→ true|false` — Whether to ignore case while attempting a match.
 
-- `multiline → true|false` — Whether or not to search in text across multiple lines.
+- `multiline ←→ true|false` — Whether or not to search in text across multiple lines.
 
-- `lastIndex → number` — The index at which to start the next match.
+- `lastIndex ←→ number` — The index at which to start the next match.
 
 - `source → text` — The text of the pattern.
 
 - `exec(text) → list` — Executes a search for a match in its text parameter. The returned list contains the matched groups as text plus it has the following properties:
-  - `index → number` — The 0-based index of the match in the text.
-  - `input → text` — The original input text.
+  - `index ←→ number` — The 0-based index of the match in the text.
+  - `input ←→ text` — The original input text.
 
 - `test(text) → true|false` — Tests for a match in its text parameter.
 
@@ -411,7 +411,7 @@ Hello</samp>
 
 ### after {}
 
-- `after{delay: milliseconds}`, `after(milliseconds) → ^(^{...})` — Returns an "executor" function which when called will execute the passed function after *delay* number of milliseconds.
+- `after{delay: milliseconds} → ^(^{...})`, `after(milliseconds) → ^(^{...})` — Returns an "executor" function which when called will execute the passed function after *delay* number of milliseconds.
 
 Example:
 <samp>3 seconds later</samp>

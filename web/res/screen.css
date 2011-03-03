@@ -3,7 +3,7 @@
 body {
   background:white; color:#555;
   font:15px georgia, serif;
-  line-height:1.4;
+  line-height: 1.4;
   font-weight: lighter;
 }
 @media print {

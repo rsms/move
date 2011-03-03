@@ -207,27 +207,21 @@ function waitForStyles() {
   for (var i = 0; i < document.styleSheets.length; i++)
     if (/googleapis/.test(document.styleSheets[i].href)) {
       document.body.className += " custom-fonts-loaded";
-      if (document.location.hash && document.location.hash !== "#") {
-        var urlHash = document.location.hash;
-        document.location.hash = "#";
-        setTimeout(function(){
-          document.location.hash = urlHash;
-          window.updateMenuOrigin();
-        },100);
-      }
+      window.updateMenuOrigin();
       return;
     }
   setTimeout(waitForStyles, 100);
 }
-setTimeout(function() {
+
   if (/AppleWebKit/.test(navigator.userAgent) && /iP[oa]d|iPhone/.test(navigator.userAgent)) return;
   var link = document.createElement("LINK");
   link.type = "text/css";
   link.rel = "stylesheet";
   link.href = "http://fonts.googleapis.com/css?family=Droid+Serif:regular,italic,bold|Droid+Sans+Mono";
   document.documentElement.getElementsByTagName("HEAD")[0].appendChild(link);
+  //document.body.className += " custom-fonts-loaded";
   waitForStyles();
-}, 20);
+
 })();
 
     </script>
