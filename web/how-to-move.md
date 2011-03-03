@@ -13,7 +13,7 @@ software design much earlier, not having to spend too much time thinking about
 the language itself.
 
 
-## Why?
+## Why? {#how-to-move/1}
 
 The first thing we must discuss is *"Why should I learn to program computers?"*.
 It's a very good question without a single and universally good explanation, so
@@ -45,7 +45,7 @@ And it's fun.
 Now, let's get Moving!
 
 
-## Values and data
+## Values and data {#how-to-move/2}
 
 A *value* is a piece of information. Something that *does not do anything* but
 is rather used by and passed around a program. You can think of a *value* as the
@@ -70,7 +70,7 @@ The fifth kind of value is a special kind of object called *function*:
 - `^(a, b){ a + b }` — A function which produces the sum of two numbers
 
 
-## Organizing values
+## Organizing values {#how-to-move/3}
 
 When you want to keep a value around there's something called a *variable*.
 To put a value into a variable, we make up a name for the variable, then use
@@ -97,7 +97,7 @@ simply assign another value to our `name` variable:
 When we print `name`, "John" is displayed rather than "Julia". Pretty neat, hu?!
 
 
-## Reusable programs with *functions*
+## Reusable programs with *functions* {#how-to-move/4}
 
 A *function* is a block of code which can be called (or "performed" if you will)
 many times. We can put commonly used code inside functions to avoid re-writing

@@ -28,7 +28,16 @@ ob_start('mdown_output_filter', 0);
   <head>
     <meta charset="utf-8">
     <title>Move</title>
-    <meta name="viewport" content="width=840">
+    <meta name="viewport" content="width=860">
+    <link rel="shortcut icon" href="res/favicon.png">
+
+    <meta property="fb:admins" content="rsms">
+    <meta property="fb:app_id" content="158328320889704">
+    <meta property="og:url" content="http://movelang.org/">
+    <meta property="og:image" content="http://movelang.org/res/logo.png">
+    <meta property="og:site_name" content="Move">
+    <meta property="og:title" content="The Move programming language">
+
     <script src="move.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
     <script>__move.debug = true;</script>
@@ -44,15 +53,16 @@ $menu.find('a[href="#"]').last().click ^{ window.scrollTo 0, 0 }
 
 // Sticky menu
 $menu.$wrapper = $menu.find('> wrapper').first()
+$window = $ window
 initialOrigin = $menu.offset()
 menuTop = initialOrigin.top
 sectionAfterMenu = $menu.next()
 sectionAfterMenu.topMargin = parseInt sectionAfterMenu.css 'margin-top'
-pageYOffset = (window.pageYOffset != undefined) ? ^{ window.pageYOffset }
-                                                : ^{ window.scrollY }
 menuIsFloating = false
+isPanningDevice = navigator.userAgent.indexOf('Safari/') != -1 &&
+                  navigator.userAgent.indexOf('Mobile/') != -1
 updateMenuOrigin = ^{
-  y = menuTop - pageYOffset()
+  y = menuTop - $window.scrollTop()
   if (y >= 0) {
     if (menuIsFloating) {
       menuIsFloating = false
@@ -72,21 +82,29 @@ updateMenuOrigin = ^{
       menuIsFloating = true
     }
     $menu.css {
-      position: 'fixed',
-      top: Math.max(0, menuTop - pageYOffset()) + 'px',
-      left: '-8px',
-      width: window.innerWidth + 'px'
+      position: isPanningDevice ? 'absolute' : 'fixed',
+      top:      (isPanningDevice ? $window.scrollTop()
+                                 : Math.max(0, menuTop - $window.scrollTop())) +
+                'px',
+      left:     '-8px',
+      width:    window.innerWidth + 'px'
     }
   }
 }
 
+window.updateMenuOrigin = updateMenuOrigin
 updateMenuOrigin()
 $(window).bind 'scroll', updateMenuOrigin
 
+if (isPanningDevice) {
+  $(window).bind 'load', ^{ after {delay: 500} updateMenuOrigin }
+  setInterval updateMenuOrigin, 1000
+}
     </script>
     <link rel="stylesheet" href="res/screen.css" type="text/css" media="all">
   </head>
   <body>
+    <div id="fb-root"></div>
     <header>
       <wrapper>
         <h1><a href="/"><span>Move</span></a></h1>
@@ -128,11 +146,15 @@ Here is a simple Move program which outputs "Hello John" three times:
     <section class="body">
       <wrapper>
 <?= mdown('library.md') ?>
+        <h3>Comments about the library</h3>
+        <fb:comments href="http://movelang.org/#library" num_posts="3" width="800"></fb:comments>
       </wrapper>
     </section>
     <section class="body">
       <wrapper>
 <?= mdown('language.md') ?>
+        <h3>Comments about the Move language</h3>
+        <fb:comments href="http://movelang.org/#language" num_posts="3" width="800"></fb:comments>
       </wrapper>
     </section>
     <!--section id="about" class="body">
@@ -183,8 +205,18 @@ $(function(){
 (function (){
 function waitForStyles() {
   for (var i = 0; i < document.styleSheets.length; i++)
-    if (/googleapis/.test(document.styleSheets[i].href))
-      return document.body.className += " custom-fonts-loaded";
+    if (/googleapis/.test(document.styleSheets[i].href)) {
+      document.body.className += " custom-fonts-loaded";
+      if (document.location.hash && document.location.hash !== "#") {
+        var urlHash = document.location.hash;
+        document.location.hash = "#";
+        setTimeout(function(){
+          document.location.hash = urlHash;
+          window.updateMenuOrigin();
+        },100);
+      }
+      return;
+    }
   setTimeout(waitForStyles, 100);
 }
 setTimeout(function() {
@@ -199,5 +231,6 @@ setTimeout(function() {
 })();
 
     </script>
+    <script src="http://connect.facebook.net/en_US/all.js#appId=158328320889704&amp;xfbml=1"></script>
   </body>
 </html>

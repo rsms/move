@@ -123,6 +123,7 @@ footer {
   background: #DDDDC9 url('paper-bg2.png') repeat scroll left top;
   border-bottom:1px solid #D7D6CF;
   -webkit-font-smoothing: antialiased;
+  z-index:99999;
 }
   #menu.floating {
     -moz-box-shadow: 0 0 7px rgba(0,0,0,0.3);
@@ -241,6 +242,8 @@ span.dec { color: #606; }
   span.atv { color: #060; }
 }
 
+
+#fb-root { display:none; }
 
 
 
