@@ -7,7 +7,7 @@ Built-in objects and functions
 
 ## Number {}
 
-- `literal → number` — Numbers are created using literal numbers like `123.4` or `0xf4`. Refer to the [language reference](#language-reference) for details.
+- `literal → number` — Numbers are created using literal numbers like `123.4` or `0xf4`. Refer to the [language reference on numbers](#types/number) for details.
 
 - `Number(value) → number` — Convert a value to a number. Returns the `NaN` atom if the conversion failed.
 
@@ -68,6 +68,10 @@ Built-in objects and functions
 
 ### Object.prototype {}
 
+- `.name ←→ value` — Access or modify the value for property named *name*.
+
+- `[text] ←→ value` — Access or modify the value for property named *text*.
+
 - `constructor ←→ function` — Specifies the function that creates an object's prototype.
 
 - `toText() → text` — Text representation of the object.
@@ -99,7 +103,7 @@ Built-in objects and functions
 
 - `every(^(value, index, o) → true|false, this=this) → true|false` — Returns true if every element in this array satisfies the provided testing function.
 
-- `filter(^(value, index, o) → value, this=this) → list` — Creates a new array with all of the elements of this array for which the provided filtering function returns true.
+- `filter(^(value, index, o) → true|false, this=this) → list` — Creates a new array with all of the elements of this array for which the provided filtering function returns true.
 
 - `forEach(^(value, index, o))` — Calls a function for each element in the array.
 
@@ -173,7 +177,7 @@ Built-in objects and functions
 
 - `search(regexp) → number` — Executes the search for a match between a regular expression and a specified string. Returns the index of the regular expression inside the string. Faster than `match` but returns less information.
 
-- `slice(startIndex, endIndex=@length-1) → text` — Extracts a section of a string and returns a new string.
+- `slice(startIndex, endIndex=@length) → text` — Extracts a section of a string and returns a new string.
 
 - `split(text|regexp, limit=Number.POSITIVE\_INFINITY) → [text, text, ...]` — Splits text into a list of texts by separating the text into smaller chunks.
 
@@ -222,7 +226,7 @@ John</samp>
 
 ## Date {}
 
-- `Date() → text` — Current date and time as text in a locale-specific format
+- `Date(year=0, month=0, day=0, hours=0, minutes=0, seconds=0, milliseconds=0) → text` — Date and time as text in a locale-specific format
 
 - `new Date → date` — Current date and time as a date object
 
