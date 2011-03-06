@@ -3,7 +3,7 @@ import assert
 EQ = assert.strictEqual
 
 # Three arguments, all with default values, producing a text concatenation
-x = ^(a=1, b=2, c=3){ ''+a+b+c }
+x = ^(a:1, b:2, c:3){ ''+a+b+c }
 EQ x{b:9}, "193"
 EQ x{a:9}, "923"
 EQ x{a:9, b:8}, "983"
@@ -15,7 +15,7 @@ EQ x(9,8,7), "987"
 EQ x(), "123"
 
 # No default value for an argument should result in the "undefined" atom
-x = ^(a=1, b, c=3){ ''+a+b+c }
+x = ^(a:1, b, c:3){ ''+a+b+c }
 EQ x{b:9}, "193"
 EQ x{a:9}, "9undefined3"
 EQ x{a:9, b:8}, "983"
@@ -42,7 +42,7 @@ EQ x{&kwargs}, "183"
 EQ x{&JSON.parse('{"b":8}')}, "183"
 
 # Access to arguments.keywords
-x = ^(a=1, b=2, c=3){
+x = ^(a:1, b:2, c:3){
   arguments.keywords ? Object.keys(arguments.keywords).sort().join(', ')
                      : 'undefined'
 }
@@ -57,7 +57,7 @@ EQ x{b:11}, "__kw, b"
 EQ x{}, "__kw"
 
 # Test keyword argument values accessed from arguments.keywords
-x = ^(a=1, b=2, c=3){
+x = ^(a:1, b:2, c:3){
   kwargs = arguments.keywords
   Object.keys(kwargs).sort().filter(^(key){
     key != '__kw'
