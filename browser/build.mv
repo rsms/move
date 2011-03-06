@@ -1,10 +1,10 @@
 import fs, move
 
 # Function which produces the text content of a file
-read = ^(path, encoding="utf8") { fs.readFileSync(path, encoding) }
+read = ^(path, encoding: "utf8") { fs.readFileSync(path, encoding) }
 
 # Function which enumerate all files in `dir` matching a pattern
-enumerateDirectory = ^(path, pattern=/.*/, apply){
+enumerateDirectory = ^(path, pattern: /.*/, apply){
   fs.readdirSync(path).forEach(^(name) {
     if (pattern.test(name)) apply(name)
   })
