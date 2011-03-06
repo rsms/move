@@ -1,0 +1,35 @@
+# Tests slices of text (e.g. x[1:2])
+import assert
+
+# Read slices
+x = "move"
+assert.equal x[0:0], ""
+assert.equal x[0:1], "m"
+assert.equal x[0:2], "mo"
+assert.equal x[0:3], "mov"
+assert.equal x[0:4], "move"
+assert.equal x[0:],  "move"
+
+assert.equal x[:0], ""
+assert.equal x[:1], "m"
+assert.equal x[:2], "mo"
+assert.equal x[:3], "mov"
+assert.equal x[:4], "move"
+assert.equal x[:],  "move"
+
+assert.equal x[1:0], ""
+assert.equal x[1:1], ""
+assert.equal x[1:2], "o"
+assert.equal x[1:3], "ov"
+assert.equal x[1:4], "ove"
+assert.equal x[1:],  "ove"
+
+assert.equal x[2:0], ""
+assert.equal x[2:1], ""
+assert.equal x[2:2], ""
+assert.equal x[2:3], "v"
+assert.equal x[2:4], "ve"
+assert.equal x[2:],  "ve"
+
+assert.equal x[1:4], "ove"
+assert.equal x[1:4][1:2], "v"
