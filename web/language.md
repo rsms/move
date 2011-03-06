@@ -130,7 +130,7 @@ Arguments can have explicit default values which are denoted by a postfix assign
 
 - &nbsp;`^{ 5 + 7 }` — A function which does not expect any arguments
 
-- &nbsp;`^(a=5, b=7){ a + b }` — A function with default values for its arguments
+- &nbsp;`^(a: 5, b: 7){ a + b }` — A function with default values for its arguments
 
 - &nbsp;<code>^(a, b){ if (a > 4) return a; a + b }</code> — A function which use the "return" keyword to, in some cases, prematurely return a value and stop execution of that function's code.
 

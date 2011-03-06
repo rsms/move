@@ -135,14 +135,14 @@ our function.
 
 Let's add a "title" argument to our `hello` function:
 
-    hello = ^(title = "Mr."){ "Hello "+title+" "+name }
+    hello = ^(title: "Mr."){ "Hello "+title+" "+name }
 
 When calling a function you can pass it arguments:
 <samp>Hello Ms. John</samp>
 
     print hello {title: "Ms."}
 
-Notice how we wrote `title = "Mr."` when we created our `hello` function.
+Notice how we wrote `title: "Mr."` when we created our `hello` function.
 This is the *default value* of the "title" argument.
 
 Let's call our function again, but this time we don't specify the "title" argument:
