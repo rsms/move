@@ -75,9 +75,9 @@ substrings:
 A List (or Array) is a form of compound value which contains other values in a
 ordered sequence. Lists are composed by enclosing zero or more values in a square bracket character pair ("[" and "]"), separated by comma characters. Lists can also be created by programmatic composition. The built-in <tt>Array</tt> object's prototype is the prototype used for new lists.
 
-- &nbsp;`["Kittens", "are", "cute"]` — A list containing three pieces of text: "Kittens", "are" and "cute"
+- `["Kittens", "are", "cute"]` — A list containing three pieces of text: "Kittens", "are" and "cute"
 
-- &nbsp;`["Kittens", 123, ["are", "cute"]]` — A list containing three values of different types: some text, a number and another list.
+- `["Kittens", 123, ["are", "cute"]]` — A list containing three values of different types: some text, a number and another list.
 
 Example of programmatic composition:
 <samp>["Kittens", "are", "cute"]</samp>
@@ -97,7 +97,7 @@ together creates a new piece of text being the two texts glued together. Therefo
 
 An Object is a set of (unique) keys with associated values. Keys must be text values, but an associated value can be of any type. Objects are denoted by a pair of curly brackets ("{" and "}") holding zero or more key-value pairs. Keys are written either as regular text with wrapping quotation marks or without wrapping quotation marks for text which conforms to the rule that it is a valid name (starts with a-z, A-Z, _ or $ and is followed by zero or more letters, numbers, etc). A key is terminated by a colon character and is followed by a value expression. Two successive key-value pairs are separated by a comma character.
 
-- &nbsp;`{a:1, b:2}` — An object with two pairs: Key "a" represents the value 1 and
+- `{a:1, b:2}` — An object with two pairs: Key "a" represents the value 1 and
   key "b" represents the value 2.
 
 Example:
@@ -126,11 +126,11 @@ a function.
 
 Arguments can have explicit default values which are denoted by a postfix assignment operator ("=") for the argument name followed by a value. If no explicit default value is given, the "undefined" atom is used.
 
-- &nbsp;`^(a, b){ a + b }` — A function which produces the sum of two numbers
+- `^(a, b){ a + b }` — A function which produces the sum of two numbers
 
-- &nbsp;`^{ 5 + 7 }` — A function which does not expect any arguments
+- `^{ 5 + 7 }` — A function which does not expect any arguments
 
-- &nbsp;`^(a: 5, b: 7){ a + b }` — A function with default values for its arguments
+- `^(a: 5, b: 7){ a + b }` — A function with default values for its arguments
 
 - &nbsp;<code>^(a, b){ if (a > 4) return a; a + b }</code> — A function which use the "return" keyword to, in some cases, prematurely return a value and stop execution of that function's code.
 
@@ -155,13 +155,13 @@ Here we assign something to x in the outer scope which will tell Move that "x" s
 
 Move has a set of "atoms" which are basically pre-defined constants with itself as its value. They are called "atoms" since there is only one single, global and immutable instance (or "version" if you will) of each of these special values:
 
-- &nbsp;`undefined` — Means that something is not defined. E.g. A function's argument without an explicit default value will have this atom as its value unless provided during a call to such a function.
+- `undefined` — Means that something is not defined. E.g. A function's argument without an explicit default value will have this atom as its value unless provided during a call to such a function.
 
-- &nbsp;`null` — Means "empty" or "nothing". Handy in the case `undefined` is not suitable (i.e. you have defined a value but it's empty).
+- `null` — Means "empty" or "nothing". Handy in the case `undefined` is not suitable (i.e. you have defined a value but it's empty).
 
-- &nbsp;`true` — Represents truth and is the product of a truthy logical comparison (e.g. <code>4 &lt; 6 == true</code>)
+- `true` — Represents truth and is the product of a truthy logical comparison (e.g. <code>4 &lt; 6 == true</code>)
 
-- &nbsp;`false` — Represents something being false or "no" and is the product of a false logical comparison (e.g. <code>4 &gt; 6 == false</code>)
+- `false` — Represents something being false or "no" and is the product of a false logical comparison (e.g. <code>4 &gt; 6 == false</code>)
 
 Example:
 <samp>true
@@ -173,3 +173,21 @@ true</samp>
     Yes = true
     print Yes == true
 
+
+### Slices
+
+Move features a syntax for extracting and assigning slices of collections.
+
+- `"hello"[1:3]` — Yields "el"
+
+- `[1,2,3,4][1:3]` — Yields [2,3]
+
+- `x = [1,2,3,4]; x[1:3] = [9]` — Replaces items [2,3] with [9], leaving *x* as [1,9,4]
+
+This special slice syntax compiles down to two different method calls depending on whether a slice is read or written:
+
+- For reading/extracting slices a ***slice*** method is called on the left hand-side expression with the arguments. I.e. `foo[1:3]` compiles down to `foo.slice(1, 3)`. You can implement a "slice" method for any object to allow that object (prototype) to be accessible through slice notation. Both lists and text support slice access by default.
+
+- For writing/modifying slices of collections a ***_move_setSlice*** method is called. I.e. `foo[1:3] = bar` compiles down to `foo._move_setSlice(1, 3, bar)`. A slice assignment operation returns the (old) slice that was replaced. You can implement a "_move_setSlice" method for any object to allow that object (prototype) to be modifiable through slice notation. Lists (but not text, which is immutable) support slice assignment by default.
+
+*Slice syntax was introduced in Move 0.2.0*
