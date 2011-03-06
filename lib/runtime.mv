@@ -30,18 +30,7 @@ if (!IS_KNOWN_ES5_HOST) {
 
 require './runtime_string'
 require './runtime_date'
-
-# Array.prototype
-if (typeof Array.prototype.unique != 'function')
-Array.prototype.unique = ^{
-  a = [], l = @length
-  for (i=0; i<l; ++i) {
-    for (j=i+1; j<l; ++j)
-      if (this[i] === this[j]) j = ++i
-    a.push this[i]
-  }
-  a
-}
+require './runtime_array'
 
 # -----------------------------------------------------------------------------
 # Constants
