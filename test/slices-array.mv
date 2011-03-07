@@ -31,6 +31,27 @@ assert.deepEqual x[2:3], [3]
 assert.deepEqual x[2:4], [3,4]
 assert.deepEqual x[2:], [3,4]
 
+# Negative offsets reduce from end
+assert.deepEqual x[:-1], [1,2,3]
+assert.deepEqual x[:-2], [1,2]
+assert.deepEqual x[:-3], [1]
+assert.deepEqual x[:-4], []
+
+# Invalid offsets should be handled in a clever way
+assert.deepEqual x[:-5], []
+assert.deepEqual x[5:1], []
+assert.deepEqual x[0:0], []
+assert.deepEqual x[1:0], []
+assert.deepEqual x[0:1], [1]
+
+assert.deepEqual x[-1:], [1,2,3,4]
+assert.deepEqual x[-1:0], []
+assert.deepEqual x[-1:1], [1]
+
+# These are not slices, but should behave like this
+assert.deepEqual x[5], undefined
+# assert.deepEqual x[-1], [4]
+
 assert.deepEqual x[1:4], [2,3,4]
 assert.deepEqual x[1:4][1:2], [3]
 
