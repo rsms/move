@@ -178,11 +178,15 @@ true</samp>
 
 Move features a syntax for extracting and assigning slices of collections.
 
-- `"hello"[1:3]` — Yields "el"
+- `foo[1:3]` — Returns a slice of *foo* including items at index 1, 2 and 3.
+- `foo[:3]` — Returns a slice of *foo* including items at index 0, 1, 2 and 3.
+- `foo[1:]` — Returns a slice of *foo* including items at index 1 up until (and including) the last item.
+- `foo[:-2]` — Returns a slice of *foo* including items at index 0 up until index *foo.length - 2*.
+- `foo[-2:]` — Returns a slice of *foo* including items at index *foo.length - 2* up until (and including) the last item.
 
-- `[1,2,3,4][1:3]` — Yields [2,3]
-
-- `x = [1,2,3,4]; x[1:3] = [9]` — Replaces items [2,3] with [9], leaving *x* as [1,9,4]
+- `foo[1:3] = [1,2]` — Replaces items of *foo* in the range *[1,3]* with items "1" and "2"
+- `foo[1:3] = [9]` — Replaces items of *foo* in the range *[1,3]* with "9"
+- `foo[1:3] = 9` — Replaces items of *foo* in the range *[1,3]* with "9"
 
 This special slice syntax compiles down to two different method calls depending on whether a slice is read or written:
 
@@ -191,3 +195,27 @@ This special slice syntax compiles down to two different method calls depending 
 - For writing/modifying slices of collections a ***_move_setSlice*** method is called. I.e. `foo[1:3] = bar` compiles down to `foo._move_setSlice(1, 3, bar)`. A slice assignment operation returns the (old) slice that was replaced. You can implement a "_move_setSlice" method for any object to allow that object (prototype) to be modifiable through slice notation. Lists (but not text, which is immutable) support slice assignment by default.
 
 *Slice syntax was introduced in Move 0.2.0*
+
+Example:
+<samp>el
+hel
+&nbsp;
+&nbsp;
+[ 2, 3 ]
+[ 3, 4 ]
+&nbsp;
+[ 1, 2, 3, 4 ]
+&nbsp;
+[ 1, 9, 4 ]</samp>
+
+    print "hello"[1:3]
+    print "hello"[:-2]
+
+    x = [1,2,3,4]
+    print x[1:3]
+    print x[-2:]
+
+    print x
+    x[1:3] = [9]
+    print x
+

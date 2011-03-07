@@ -33,3 +33,24 @@ assert.equal x[2:],  "ve"
 
 assert.equal x[1:4], "ove"
 assert.equal x[1:4][1:2], "v"
+
+# Negative end offsets reduce from end
+assert.deepEqual x[:-1], "mov"
+assert.deepEqual x[:-2], "mo"
+assert.deepEqual x[:-3], "m"
+assert.deepEqual x[:-4], ""
+
+# Negative start offsets
+assert.deepEqual x[-1:], "e"
+assert.deepEqual x[-2:], "ve"
+assert.deepEqual x[-3:], "ove"
+assert.deepEqual x[-4:], "move"
+
+# Negative start and end offsets
+assert.deepEqual x[-3:-1], "ov"
+
+# Invalid offsets should be handled in a clever way
+assert.deepEqual x[:-9], ""
+assert.deepEqual x[9:123], ""
+assert.deepEqual x[-9:], "move"
+assert.deepEqual x[-9:2], "mo"
