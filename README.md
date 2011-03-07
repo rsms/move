@@ -58,7 +58,7 @@ There's also a simple API which can be accessed from the move module:
     //     return 5 * Math.PI;
     //   };
 
-If you want to use move in a web browser, simply use and include the `web/move.js` file (no dependencies). Including this file will export a single global symbol called "move" (`window.move`) which contains the Move library (see `lib/index.js`) including functionality for compiling and executing Move code as well as providing the ES5 normalizing but small runtime library. Have a look at `web/try/index.html` for inspiration.
+If you want to use move in a web browser, simply use and include the [move.js](https://github.com/rsms/move/raw/master/web/move.js) file (no dependencies). Including this file will export a single global symbol called "move" (`window.move`) which contains the Move library (see `lib/index.js`) including functionality for compiling and executing Move code as well as providing the ES5 normalizing but small runtime library. Have a look at `web/try/index.html` for inspiration.
 
 ### Extras
 
