@@ -31,7 +31,7 @@ ob_start('mdown_output_filter', 0);
     <meta name="viewport" content="width=860">
     <link rel="shortcut icon" href="res/favicon.png">
 
-    <meta property="fb:admins" content="rsms">
+    <meta property="fb:admins" content="728642302">
     <meta property="fb:app_id" content="158328320889704">
     <meta property="og:url" content="http://movelang.org/">
     <meta property="og:image" content="http://movelang.org/res/logo.png">
