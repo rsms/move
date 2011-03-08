@@ -111,7 +111,7 @@ if (isPanningDevice) {
       </wrapper>
       <wrapper type="text/markdown">
 Move is a modern and simple *programming language* which can run on virtually
-any computer. Move is primarily aimed toward people not previously familiar with
+any computer. Move is primarily aimed towards people not previously familiar with
 programming computers.
       </wrapper>
     </header>

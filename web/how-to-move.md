@@ -35,7 +35,7 @@ a level above the actual result.
 Say we want to make a web site which changes
 the color of its background according to the time of day
 (for instance dark colors during the night and bright colors during the day), we
-need to *visualize the reults* before we start working. Just as the painter
+need to *visualize the results* before we start working. Just as the painter
 visualizes her motif before drawing it. When we have a good enough picture in
 our head of what we want to create it's time to start programming. So, in a way
 we work our way from an abstract idea to a concrete result.
@@ -129,7 +129,7 @@ we add two curly brackets at the end of `hello`. This will tell Move to
 Functions is a very powerful tool when writing programs.
 
 When creating a function, we can specify *function arguments*, which are
-sorrounded by parentheses and put in between the "^" and the "{".
+surrounded by parentheses and put in between the "^" and the "{".
 These "arguments" are just like *variables*, but which are only available inside
 our function.
 
