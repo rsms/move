@@ -68,3 +68,8 @@ x = ^(a:1, b:2, c:3){
 EQ x{a:11,b:22,c:33}, "a=11, b=22, c=33"
 EQ x{a:11,c:33}, "a=11, c=33"
 EQ x{c:'1,2,3'}, "c=1,2,3"
+
+# Test passing null for keyword arguments
+x = ^(a) { ""+a }
+EQ x(null), "null"
+
