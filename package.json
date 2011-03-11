@@ -1,14 +1,12 @@
 { "name":        "move",
-  "description": "JavaScript moving forward",
-  "author":      "Rasmus Andersson - http://rsms.me/",
-  "version":     "0.2.1",
+  "version":     "0.2.2",
+  "description": "A programming language",
+  "homepage":    "http://movelang.org/",
+  "author":      "Rasmus Andersson (http://rsms.me/)",
   "directories": {"lib" : "./lib"},
   "main":        "lib/index.js",
   "bin":         {"move": "./bin/move"},
   "keywords":    ["language", "compiler", "javascript", "move"],
-  "licenses":    [{
-      "type":    "MIT",
-      "url":     "http://github.com/jashkenas/coffee-script/raw/master/LICENSE"
-  }],
-  "engines": { "node": ">=0.3.0" }
+  "engines":     {"node": ">=0.3.0"},
+  "repository":  {"type": "git", "url": "http://github.com/rsms/move.git"}
 }
