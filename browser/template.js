@@ -6,8 +6,8 @@ if (typeof window.global === 'undefined')
 
 // Module system
 var modules = {};
-var require = function require(id) {
-  if (++(require.depth) > 20)
+var _require = function _require(id) {
+  if (++(_require.depth) > 20)
     throw new Error('Recursive module dependencies');
   id = id.replace(/^[\/.]+/g, '');
   var module = modules[id];
@@ -16,17 +16,17 @@ var require = function require(id) {
   if (module.block) {
     var block = module.block;
     module.block = null;
-    block(module.exports, require, module);
+    block(module.exports, _require, module);
   }
-  require.depth--;
+  _require.depth--;
   return module.exports;
 };
-require.depth = 0;
+_require.depth = 0;
 
 // %CONTENT%
 
-var move = require('index');
-move.runtime.require = require;
+var move = _require('index');
+move.runtime._require = _require;
 
 // --------------------------------------------------------------
 // Loading and executing <script>s

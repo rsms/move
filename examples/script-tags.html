@@ -10,7 +10,7 @@
       move.runtime.print = ^{
         for (i=0; i<arguments.length; ++i) {
           value = arguments[i]
-          value = (typeof value == 'string') ? value : inspect value
+          value = (typeof value == 'string') ? value : Object.inspect value
           body.appendChild document.createTextNode value+
               (i != arguments.length-1 ? ' ' : '')
         }
@@ -33,7 +33,7 @@ print "Hello world"
           - Serve this file from a web server over HTTP and it should work
     -->
     <script src="repeat.mv" type="text/move"></script>
-    <script src="../browser/move.js"></script>
+    <script src="../web/move.js"></script>
   </head>
   <body style="white-space:pre; font-family:monospace;"><b>Move in HTML using &lt;script&gt; tags</b></body>
 </html>
