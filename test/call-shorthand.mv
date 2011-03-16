@@ -24,3 +24,11 @@ assert.equal value, "ABC"
 # Should translate into: value = foo2("A", foo2("B", "C"))
 value = foo2 "A", foo2 "B", "C"
 assert.equal value, "ABCundefinedundefined"
+
+# Linebreak terminates argument list
+obj = {
+  a: foo "hello1",
+  b: foo "hello2",
+}
+assert.equal obj.a, "hello1"
+assert.equal obj.b, "hello2"
