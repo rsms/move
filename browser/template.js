@@ -44,27 +44,44 @@ move.scriptCompilationOptions = {};
 // Internal (used to run all Move <script>s found)
 var runScripts = function runScripts() {
   var script, i, L, scripts, jscode,
-      compileOptions = move.scriptCompilationOptions;
+      compileOptions = move.scriptCompilationOptions,
+      nextQIndex = 0, completeQ = [], pending = 0;
+  var incr = function () { ++pending; }
+  var decr = function () {
+    if ((--pending) === 0) {
+      // all loaded -- exec in order
+      var i = 0, L = completeQ.length;
+      for (;i<L;++i)
+        move.onScriptLoaded.apply(move, completeQ[i]);
+    }
+  }
   scripts = document.getElementsByTagName('script');
+  incr();
   for (i=0, L=scripts.length; i < L; ++i) {
     script = scripts[i];
     if (script && script.type === 'text/move') {
-      if (script.src) {
-        compileOptions.filename = script.src;
-        move.compileURL(script.src, compileOptions, function (err, jscode) {
-          move.onScriptLoaded(err, jscode, script);
-        });
-      } else {
-        try {
-          compileOptions.filename = '<script>';
-          jscode = move.compile(script.innerHTML, compileOptions);
-          move.onScriptLoaded(null, jscode, script);
-        } catch (e) {
-          move.onScriptLoaded(e, script);
+      (function (qIndex) {
+        incr();
+        if (script.src) {
+          compileOptions.filename = script.src;
+          move.compileURL(script.src, compileOptions, function (err, jscode) {
+            completeQ[qIndex] = [err, jscode, script];
+            decr();
+          });
+        } else {
+          try {
+            compileOptions.filename = '<script>';
+            jscode = move.compile(script.innerHTML, compileOptions);
+            completeQ[qIndex] = [null, jscode, script];
+          } catch (e) {
+            completeQ[qIndex] = [e, null, script];
+          }
+          decr();
         }
-      }
+      })(nextQIndex++);
     }
   }
+  decr();
   return null;
 };
 if (window.addEventListener) {

@@ -54,7 +54,9 @@ if (1) try {
   ast = uglifyjs.uglify.ast_mangle(ast)
   ast = uglifyjs.uglify.ast_squeeze(ast)
   output = uglifyjs.uglify.gen_code(ast)
-} catch (e){}
+} catch (e){} else {
+  output = '/*jslint devel: true, browser: true, evil: true, forin: true, es5: true */' + output;
+}
 
 # Write output to /web/move.js
 fs.writeFileSync(__dirname + '/../web/move.js', output)
