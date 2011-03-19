@@ -22,6 +22,8 @@ function mdown_output_filter($buffer, $flags) {
 }
 ob_start('mdown_output_filter', 0);
 
+$http = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]) ? 'https' : 'http';
+
 ?>
 <!DOCTYPE HTML>
 <html lang="en">
@@ -33,13 +35,13 @@ ob_start('mdown_output_filter', 0);
 
     <meta property="fb:admins" content="728642302">
     <meta property="fb:app_id" content="158328320889704">
-    <meta property="og:url" content="http://movelang.org/">
-    <meta property="og:image" content="http://movelang.org/res/logo.png">
+    <meta property="og:url" content="<?=$http?>://movelang.org/">
+    <meta property="og:image" content="<?=$http?>://movelang.org/res/logo.png">
     <meta property="og:site_name" content="Move">
     <meta property="og:title" content="The Move programming language">
 
     <script src="move.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+    <script src="<?=$http?>://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
     <script>__move.debug = true;</script>
     <script type="text/move">
 
@@ -146,15 +148,13 @@ Here is a simple Move program which outputs "Hello John" three times:
     <section class="body">
       <wrapper>
 <?= mdown('library.md') ?>
-        <h3>Comments about the library</h3>
-        <fb:comments href="http://movelang.org/#library" num_posts="3" width="800"></fb:comments>
       </wrapper>
     </section>
     <section class="body">
       <wrapper>
 <?= mdown('language.md') ?>
         <h3>Comments about the Move language</h3>
-        <fb:comments href="http://movelang.org/#language" num_posts="3" width="800"></fb:comments>
+        <fb:comments href="<?=$http?>://movelang.org/#language" num_posts="3" width="800"></fb:comments>
       </wrapper>
     </section>
     <!--section id="about" class="body">
@@ -217,7 +217,7 @@ function waitForStyles() {
   var link = document.createElement("LINK");
   link.type = "text/css";
   link.rel = "stylesheet";
-  link.href = "http://fonts.googleapis.com/css?family=Droid+Serif:regular,italic,bold|Droid+Sans+Mono";
+  link.href = "<?=$http?>://fonts.googleapis.com/css?family=Droid+Serif:regular,italic,bold|Droid+Sans+Mono";
   document.documentElement.getElementsByTagName("HEAD")[0].appendChild(link);
   //document.body.className += " custom-fonts-loaded";
   waitForStyles();
@@ -225,6 +225,6 @@ function waitForStyles() {
 })();
 
     </script>
-    <script src="http://connect.facebook.net/en_US/all.js#appId=158328320889704&amp;xfbml=1"></script>
+    <script src="<?=$http?>://connect.facebook.net/en_US/all.js#appId=158328320889704&amp;xfbml=1"></script>
   </body>
 </html>
