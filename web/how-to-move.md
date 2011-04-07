@@ -94,7 +94,7 @@ simply assign another value to our `name` variable:
 
     name = "John"
 
-When we print `name`, "John" is displayed rather than "Julia". Pretty neat, hu?!
+When we print `name`, "John" is displayed rather than "Julia". Pretty neat, huh?!
 
 
 ## Reusable programs with *functions* {#how-to-move/4}
@@ -126,7 +126,7 @@ we add two curly brackets at the end of `hello`. This will tell Move to
 
     print hello{}
 
-Functions is a very powerful tool when writing programs.
+Functions are a very powerful tool when writing programs.
 
 When creating a function, we can specify *function arguments*, which are
 surrounded by parentheses and put in between the "^" and the "{".
