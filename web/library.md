@@ -26,7 +26,7 @@ Built-in objects and functions
 
 - `toExponential(fractionDigits) → text` — Returns text representing the number in exponential notation. `fractionDigits` defaults to as many digits as necessary to specify the number.
 
-- `toFixed(digits=0) → text` — Returns text representing the number in fixed-point notation.
+- `toFixed(digits:0) → text` — Returns text representing the number in fixed-point notation.
 
 - `toPrecision(precision) → text` — Returns text representing the number to a specified precision in fixed-point or exponential notation. If `precision` is not given, this function produce the same result as the [`toText`](#Object.prototype) function.
 
@@ -63,7 +63,7 @@ Built-in objects and functions
 
 - `Object.isFrozen(obj) → true|false` — Checks if Object.freeze() has been called on this object.
 
-- `Object.inspect(value, showHidden=false, depth=2) → text` — Returns a human-readable representation of the *value* including its properties (if *showHidden* is false, only "enumerable" properties are displayed, otherwise all properties are displayed).
+- `Object.inspect(value, showHidden:false, depth:2) → text` — Returns a human-readable representation of the *value* including its properties (if *showHidden* is false, only "enumerable" properties are displayed, otherwise all properties are displayed).
 
 
 ### Object.prototype {}
@@ -88,7 +88,7 @@ Built-in objects and functions
 
 - `[value1, value2, ..., valueN] → list` — Creates a list holding zero or more values.
 
-- `Array(length=0) → list` — Creates a list with a certain initial length. Not specifying a length is equivalent to using the list literal "`[]`".
+- `Array(length:0) → list` — Creates a list with a certain initial length. Not specifying a length is equivalent to using the list literal "`[]`".
 
 - `Array.isArray(value) → true|false` — Test if a value is a list or not.
 
@@ -101,19 +101,19 @@ Built-in objects and functions
 
 - `concat(list2, list3, ..., listN) → list` — Returns a new array comprised of this array joined with other array(s) and/or value(s).
 
-- `every(^(value, index, o) → true|false, this=this) → true|false` — Returns true if every element in this array satisfies the provided testing function.
+- `every(^(value, index, o) → true|false, this:this) → true|false` — Returns true if every element in this array satisfies the provided testing function.
 
-- `filter(^(value, index, o) → true|false, this=this) → list` — Creates a new array with all of the elements of this array for which the provided filtering function returns true.
+- `filter(^(value, index, o) → true|false, this:this) → list` — Creates a new array with all of the elements of this array for which the provided filtering function returns true.
 
-- `forEach(^(value, index, o))` — Calls a function for each element in the array.
+- `forEach(^(value, index, o), thisObject:null)` — Calls a function for each element in the array.
 
-- `indexOf(value, startIndex=0) → number` — Returns the first (least) index of an element within the array equal to the specified value, or -1 if none is found.
+- `indexOf(value, startIndex:0) → number` — Returns the first (least) index of an element within the array equal to the specified value, or -1 if none is found.
 
-- `lastIndexOf(value, startIndex=@length-1) → number` — Returns the last (greatest) index of an element within the array equal to the specified value, or -1 if none is found.
+- `lastIndexOf(value, startIndex:@length-1) → number` — Returns the last (greatest) index of an element within the array equal to the specified value, or -1 if none is found.
 
-- `join(glueText="") → text` — Joins all elements of an array into text.
+- `join(glueText:"") → text` — Joins all elements of an array into text.
 
-- `map(^(value, index, o) → value, this=this) → list` — Creates a new array with the results of calling a provided function on every element in this array.
+- `map(^(value, index, o) → value, this:this) → list` — Creates a new array with the results of calling a provided function on every element in this array.
 
 - `push(value1, ..., value1) → number` — Adds one or more elements to the end of an array and returns the new length of the array.
 
@@ -123,17 +123,17 @@ Built-in objects and functions
 
 - `shift() → value` — Removes the first element from an array and returns that element.
 
-- `reduce(^(previousValue, currentValue, index, o) → value, initialValue=undefined) → value` — Apply a function simultaneously against two values of the array (from left-to-right) as to reduce it to a single value.
+- `reduce(^(previousValue, currentValue, index, o) → value, initialValue:undefined) → value` — Apply a function simultaneously against two values of the array (from left-to-right) as to reduce it to a single value.
 
-- `reduceRight(^(previousValue, currentValue, index, o) → value, initialValue=undefined) → value` — Apply a function simultaneously against two values of the array (from right-to-left) as to reduce it to a single value.
+- `reduceRight(^(previousValue, currentValue, index, o) → value, initialValue:undefined) → value` — Apply a function simultaneously against two values of the array (from right-to-left) as to reduce it to a single value.
 
 - `reverse() → list` — Reverses the order of the elements of an array — the first becomes the last, and the last becomes the first. This function does not create a new list, but modifies the calling list in place.
 
-- `slice(startIndex, endIndex=@length) → ` — Extracts a section of an array and returns a new array.
+- `slice(startIndex, endIndex:@length) → ` — Extracts a section of an array and returns a new array.
 
 - `some(^(value, index, o) → true|false) → true|false` — Returns true if at least one element in this array satisfies the provided testing function.
 
-- `sort(^(value1, value2) → number =undefined) → list` — Sorts the elements of an array. This function does not create a new list, but modifies the calling list in place.
+- `sort(^(value1, value2) → number:undefined) → list` — Sorts the elements of an array. This function does not create a new list, but modifies the calling list in place.
 
 - `splice(index, howMany[, element1[, ...[, elementN]]]) → list` — Adds and/or removes elements from an array. Returns the caller.
 
@@ -165,9 +165,9 @@ Built-in objects and functions
 
 - `concat(string2, string3, ..., stringN]) → text` — Combines the text of two strings and returns a new string. Same as `string + string2 + string3 + ... stringN`.
 
-- `indexOf(needle, startIndex=0) → number` — Returns the index within the calling String object of the first occurrence of the specified value, or -1 if not found.
+- `indexOf(needle, startIndex:0) → number` — Returns the index within the calling String object of the first occurrence of the specified value, or -1 if not found.
 
-- `lastIndexOf(needle, startIndex=@length-1) → number` — Returns the index within the calling String object of the last occurrence of the specified value, or -1 if not found.
+- `lastIndexOf(needle, startIndex:@length-1) → number` — Returns the index within the calling String object of the last occurrence of the specified value, or -1 if not found.
 
 - `localeCompare(other) → number` — Returns a number indicating whether a reference string comes before or after or is the same as the given string in sort order.
 
@@ -177,13 +177,13 @@ Built-in objects and functions
 
 - `search(regexp) → number` — Executes the search for a match between a regular expression and a specified string. Returns the index of the regular expression inside the string. Faster than `match` but returns less information.
 
-- `slice(startIndex, endIndex=@length) → text` — Extracts a section of a string and returns a new string.
+- `slice(startIndex, endIndex:@length) → text` — Extracts a section of a string and returns a new string.
 
-- `split(text|regexp, limit=Number.POSITIVE\_INFINITY) → [text, text, ...]` — Splits text into a list of texts by separating the text into smaller chunks.
+- `split(text|regexp, limit:Number.POSITIVE\_INFINITY) → [text, text, ...]` — Splits text into a list of texts by separating the text into smaller chunks.
 
-- `substr(startIndex, length=@length-1) → text` — Returns the characters beginning at the specified location through the specified number of characters.
+- `substr(startIndex, length:@length-1) → text` — Returns the characters beginning at the specified location through the specified number of characters.
 
-- `substring(startIndex, endIndex=@length) → text` — Returns the characters in a string between two indexes in the text.
+- `substring(startIndex, endIndex:@length) → text` — Returns the characters in a string between two indexes in the text.
 
 - `toLowerCase() → text` — Returns a version of the text converted to lower case.
 
@@ -197,21 +197,28 @@ Built-in objects and functions
 
 - `repeat(times) → text` — Returns a new text which is the result of pasting together *times* copies of the calling text.
 
-- `padLeft(length, padding=" ") → text` — Returns a new text which has at least *length* number of characters. If the calling text have less characters than *length*, *padding* is used to fill out the beginning of the text.
+- `padLeft(length, padding:" ") → text` — Returns a new text which has at least *length* number of characters. If the calling text have less characters than *length*, *padding* is used to fill out the beginning of the text.
 
-- `padRight(length, padding=" ") → text` — Returns a new text which has at least *length* number of characters. If the calling text have less characters than *length*, *padding* is used to fill out the end of the text.
+- `padRight(length, padding:" ") → text` — Returns a new text which has at least *length* number of characters. If the calling text have less characters than *length*, *padding* is used to fill out the end of the text.
 
 - `editDistance(text) → number` — Difference of the calling text versus *text* measured in number of edits needed to transform the caller into the *text* argument. (e.g. `"SnataMArIa".editDistance("Santa Maria") → 5` because five edits are needed to transform "SnataMArIa" into "Santa Maria")
 
+- `matchAll(pattern) → list` — Returns a list of matches for *pattern* (a RegExp) in the receiver. Each match object contains the matched groups accessible by group number as well as the following properties:
+  - `index ←→ number` — The 0-based offset of the match in the text.
+  - `input ←→ text` — The original input text.
+
+- `forEachMatch(pattern, ^(match, index, matches), thisObject:null)` — Iterates over all parts of the receiver matching *pattern* (a RegExp). Each match object contains the matched groups accessible by group number as well as the following properties:
+  - `index ←→ number` — The 0-based offset of the match in the text.
+  - `input ←→ text` — The original input text.
 
 
 ## Function {}
 
-- `^(arg1[=val1], arg2[=val2], ..., argN[=valN]) { body } → function` — Create a function with zero or more arguments where "body" is substituted for the function's code block.
+- `^(arg1[:val1], arg2[:val2], ..., argN[:valN]) { body } → function` — Create a function with zero or more arguments where "body" is substituted for the function's code block.
 
 ### Function.prototype {}
 
-- `apply(this, arguments=[]) → value` — Applies the function in the context (the "this" value) of a different object. Arguments can be passed as an Array object.
+- `apply(this, arguments:[]) → value` — Applies the function in the context (the "this" value) of a different object. Arguments can be passed as an Array object.
 
 - `call(this, argument1, argument2, ..., argumentN) → value` — Applies the function in the context (the "this" value) of a different object. Arguments can be passed as a succession of extra arguments.
 
@@ -226,13 +233,13 @@ John</samp>
 
 ## Date {}
 
-- `Date(year=0, month=0, day=0, hours=0, minutes=0, seconds=0, milliseconds=0) → text` — Date and time as text in a locale-specific format
+- `Date(year:0, month:0, day:0, hours:0, minutes:0, seconds:0, milliseconds:0) → text` — Date and time as text in a locale-specific format
 
 - `new Date → date` — Current date and time as a date object
 
 - `new Date(milliseconds) → date` — Create a date object representing the time and day at the *milliseconds* timestamp (UNIX epoch).
 
-- `new Date(year, month, day, hours=0, minutes=0, seconds=0, milliseconds=0) → date` — Create a date object by specifying its components as numbers.
+- `new Date(year, month, day, hours:0, minutes:0, seconds:0, milliseconds:0) → date` — Create a date object by specifying its components as numbers.
 
 - `new Date(text) → date` — Create a date object by parsing text as date and/or time.
 
@@ -246,7 +253,7 @@ John</samp>
 
 - `Date.nowUTC() → number` — Returns the number of milliseconds since January 1, 1970, 00:00:00, universal time.
 
-- `Date.UTC(year, month, day=0, hours=0, minutes=0, seconds=0, milliseconds=0) → number` — Returns the number of milliseconds for the date represented by the arguments, since January 1, 1970, 00:00:00, universal time.
+- `Date.UTC(year, month, day:0, hours:0, minutes:0, seconds:0, milliseconds:0) → number` — Returns the number of milliseconds for the date represented by the arguments, since January 1, 1970, 00:00:00, universal time.
 
 
 ### Date.prototype {}
@@ -307,7 +314,7 @@ John</samp>
 
 - `/pattern/flags → regexp` — Create a regular expression by compiling `pattern` (unquoted text) with regards to `flags` (unquoted text).
 
-- `RegExp(pattern, flags="") → regexp` — Create a regular expression object by compiling `pattern` (text) with regards to `flags` which can have any combination of the following values:
+- `RegExp(pattern, flags:"") → regexp` — Create a regular expression object by compiling `pattern` (text) with regards to `flags` which can have any combination of the following values:
 
   - **g** — global match
   - **i** — ignore case
@@ -328,7 +335,7 @@ John</samp>
 - `source → text` — The text of the pattern.
 
 - `exec(text) → list` — Executes a search for a match in its text parameter. The returned list contains the matched groups as text plus it has the following properties:
-  - `index ←→ number` — The 0-based index of the match in the text.
+  - `index ←→ number` — The 0-based offset of the match in the text.
   - `input ←→ text` — The original input text.
 
 - `test(text) → true|false` — Tests for a match in its text parameter.
