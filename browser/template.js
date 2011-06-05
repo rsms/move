@@ -42,20 +42,22 @@ move.onScriptLoaded = function onScriptLoaded(err, jscode, origin) {
 move.scriptCompilationOptions = {};
 
 // Internal (used to run all Move <script>s found)
-var runScripts = function runScripts() {
+move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
   var script, i, L, scripts, jscode,
       compileOptions = move.scriptCompilationOptions,
       nextQIndex = 0, completeQ = [], pending = 0;
-  var incr = function () { ++pending; }
+  var incr = function () { ++pending; };
   var decr = function () {
     if ((--pending) === 0) {
       // all loaded -- exec in order
       var i = 0, L = completeQ.length;
       for (;i<L;++i)
         move.onScriptLoaded.apply(move, completeQ[i]);
+      if (typeof callback === 'function')
+        callback(null, completeQ);
     }
-  }
-  scripts = document.getElementsByTagName('script');
+  };
+  scripts = (rootElement || document).getElementsByTagName('script');
   incr();
   for (i=0, L=scripts.length; i < L; ++i) {
     script = scripts[i];
@@ -84,10 +86,11 @@ var runScripts = function runScripts() {
   decr();
   return null;
 };
+var _runScripts = function () { move.runBrowserScripts(); };
 if (window.addEventListener) {
-  addEventListener('DOMContentLoaded', runScripts, false);
+  addEventListener('DOMContentLoaded', _runScripts, false);
 } else {
-  attachEvent('onload', runScripts);
+  attachEvent('onload', _runScripts);
 }
 
 return move;

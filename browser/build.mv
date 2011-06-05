@@ -23,11 +23,11 @@ enumerateDirectory { path: sourceDir,
                     apply: ^(filename) {
   # Read text source
   source = read { path: sourceDir + '/' + filename }
-  
+
   # Pass Move sources through the Move compiler
   if (filename.match(/\.(?:mv|move)$/))
     source = move.compile { source: source, filename: filename }
-  
+
   # Derive "module name" from filename
   name = /^(.+)\.[^\.]+$/.exec(filename)[1]
 
