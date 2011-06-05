@@ -1,0 +1,33 @@
+import assert
+
+text = "a beautiful little radio-like device which plays music through the "+
+       "Spotify platform. What’s really neat about Jordi’s Spotify box -- except "+
+       "from its gorgeous design -- is that it brings back the physical "+
+       "interaction with music as an object, but adjusted to the 21st century."
+
+# repeat
+assert.equal "foo bar".repeat(4), "foo barfoo barfoo barfoo bar"
+
+# padLeft
+assert.equal "foo bar".padLeft(20, '.'),  ".............foo bar"
+
+# padRight
+assert.equal "foo bar".padRight(20, '.'), "foo bar............."
+
+# editDistance (Levenshtein)
+# kitten → kitten:
+#  1. kitten → sitten (substitution of 's' for 'k')
+#  2. sitten → sittin (substitution of 'i' for 'e')
+#  3. sittin → sitting (insertion of 'g' at the end).
+assert.equal "kitten".editDistance("sitting"), 3
+
+# matchAll
+matches = text.matchAll /music|play/g
+matches = matches.map ^(match) { [match[0], match.index] }
+assert.deepEqual matches, [['play',43], ['music',49], ['music',221]]
+
+# forEachMatch
+matches = []
+text.forEachMatch /music|play/g, ^(match) { matches.push match[0], match.index }
+assert.deepEqual matches, ['play',43, 'music',49, 'music',221]
+
