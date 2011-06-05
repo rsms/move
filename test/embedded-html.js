@@ -15,7 +15,7 @@ var jscode, source =
 '}\n';
 
 jscode = move.compile(source, {preprocess:['ehtml']});
-console.log(jscode);
+//console.log(jscode);
 
 assert.notEqual(jscode.indexOf("EHTML('<div id=\"photos\">'"), -1);
 assert.notEqual(jscode.indexOf("EHTML('<img src=\"image' + i + '.jpg\"/>')"), -1);
