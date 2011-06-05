@@ -38,8 +38,8 @@ move.onScriptLoaded = function onScriptLoaded(err, jscode, origin) {
   Function(jscode)();
 };
 
-// Compilation options used for <scrip> Move code which can be customized.
-move.scriptCompilationOptions = {};
+// Compilation options used for <script> Move code
+move.scriptCompilationOptions = {preprocess:['ehtml']};
 
 // Internal (used to run all Move <script>s found)
 move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
