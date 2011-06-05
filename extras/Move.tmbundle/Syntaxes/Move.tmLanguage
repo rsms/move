@@ -146,6 +146,72 @@
 			<string>meta.function.move</string>
 		</dict>
 		<dict>
+			<key>begin</key>
+			<string>(?&lt;=[=(:!]|^|return)\s*(/)(?![/*+{}?])</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.begin.js</string>
+				</dict>
+			</dict>
+			<key>end</key>
+			<string>(/)[igm]*</string>
+			<key>endCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.end.js</string>
+				</dict>
+			</dict>
+			<key>name</key>
+			<string>string.regexp.move</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>match</key>
+					<string>\\.</string>
+					<key>name</key>
+					<string>constant.character.escape.js</string>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>begin</key>
+			<string>(?&lt;=[\w?$]\s|[\w?$]\s\s|[\w?$]\s\s\s|[\w?$]\s\s\s\s)(/)(?![/*+{}?])</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.begin.js</string>
+				</dict>
+			</dict>
+			<key>end</key>
+			<string>(/)[igm]*</string>
+			<key>endCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.end.js</string>
+				</dict>
+			</dict>
+			<key>name</key>
+			<string>string.regexp.move</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>match</key>
+					<string>\\.</string>
+					<key>name</key>
+					<string>constant.character.escape.js</string>
+				</dict>
+			</array>
+		</dict>
+		<dict>
 			<key>include</key>
 			<string>source.js</string>
 		</dict>
@@ -168,8 +234,35 @@
 					<string>punctuation.definition.parameters.begin.move</string>
 				</dict>
 			</dict>
+			<key>comment</key>
+			<string>match stuff like: @foo(123) and foo {n:123}</string>
 			<key>match</key>
-			<string>(?x)(@?)([a-zA-Z_?$][\w?$]*)\s*([\(\{])</string>
+			<string>(@?)([a-zA-Z_?$][\w?$]*)\s*([\(\{])</string>
+			<key>name</key>
+			<string>meta.function.call.move</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>variable.definition.readwrite.instance.move</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>entity.invocation.function.move</string>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>match stuff like: @foo "bar", foo.bar /xy/ and foo 123</string>
+			<key>match</key>
+			<string>(?x)
+			  (?:\b(@)|\.|\b)
+			  ([a-zA-Z_?$][\w?$]*)
+			  \s+
+			  (?=(?:(?!instanceof)['"\w\/]))</string>
 			<key>name</key>
 			<string>meta.function.call.move</string>
 		</dict>
@@ -228,39 +321,6 @@
 			<string>\b(self|that)\b</string>
 			<key>name</key>
 			<string>variable.support.move</string>
-		</dict>
-		<dict>
-			<key>begin</key>
-			<string>(?&lt;=[=(:!]|^|return)\s*(/)(?![/*+{}?])</string>
-			<key>beginCaptures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.string.begin.js</string>
-				</dict>
-			</dict>
-			<key>end</key>
-			<string>(/)[igm]*</string>
-			<key>endCaptures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.string.end.js</string>
-				</dict>
-			</dict>
-			<key>name</key>
-			<string>string.regexp.move</string>
-			<key>patterns</key>
-			<array>
-				<dict>
-					<key>match</key>
-					<string>\\.</string>
-					<key>name</key>
-					<string>constant.character.escape.js</string>
-				</dict>
-			</array>
 		</dict>
 	</array>
 	<key>scopeName</key>
