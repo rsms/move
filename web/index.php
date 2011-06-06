@@ -45,10 +45,6 @@ $http = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]) ? 'https' : 'http';
     <script>__move.debug = true;</script>
     <script type="text/move">
 
-#md2html = (new Showdown.converter).makeHtml
-#$('*[type=text/markdown]').each(^{ e = $ this; e.html md2html e.html() })
-#if (window.onDidMarkdown) window.onDidMarkdown()
-
 // Menu
 $menu = $ '#menu'
 $menu.find('a[href="#"]').last().click ^{ window.scrollTo 0, 0 }
