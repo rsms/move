@@ -14,6 +14,14 @@ enumerateDirectory = ^(path, pattern: /.*/, apply){
 output = ''
 browserTemplate = read { path: __dirname + '/template.js' }
 
+# Static includes
+browserTemplate.forEachMatch /\/\*#include\s+(.+)\*\//gm, ^(m) {
+  content = read { path:  __dirname + '/' + m[1] }
+  browserTemplate = browserTemplate.substr(0, m.index) +
+      content +
+      browserTemplate.substr(m.index + m[0].length)
+}
+
 # Source directory
 sourceDir = __dirname + '/../lib'
 

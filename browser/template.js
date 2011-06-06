@@ -29,6 +29,10 @@ var move = _require('index');
 move.runtime._require = _require;
 
 // --------------------------------------------------------------
+/*#include require.js*/
+move.require = Require();
+
+// --------------------------------------------------------------
 // Loading and executing <script>s
 
 // Called when a Move script has been compiled (or failed to compile or load)
@@ -40,6 +44,17 @@ move.onScriptLoaded = function onScriptLoaded(err, jscode, origin) {
 
 // Compilation options used for <script> Move code
 move.scriptCompilationOptions = {preprocess:['ehtml']};
+
+// Module wrapper
+var wrapAsModule = function wrapAsModule(jscode, src, uri) {
+  var moduleId = src.replace(/\.[^\.]+$/, '');
+  return '__move.require.define('+
+    JSON.stringify(moduleId)+','+
+    JSON.stringify(uri || src)+','+
+    'function(require,module,exports) {'+
+      jscode +
+    '});\n';
+};
 
 // Internal (used to run all Move <script>s found)
 move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
@@ -62,25 +77,33 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
   for (i=0, L=scripts.length; i < L; ++i) {
     script = scripts[i];
     if (script && script.type === 'text/move') {
-      (function (qIndex) {
+      (function (qIndex, script) {
         incr();
         if (script.src) {
           compileOptions.filename = script.src;
           move.compileURL(script.src, compileOptions, function (err, jscode) {
+            jscode = wrapAsModule(jscode, script.getAttribute('src'), script.src);
             completeQ[qIndex] = [err, jscode, script];
             decr();
           });
         } else {
           try {
-            compileOptions.filename = '<script>';
+            var id = script.getAttribute('module');
+            compileOptions.filename = '<'+(id || 'main')+'>';
             jscode = move.compile(script.innerHTML, compileOptions);
+            if (id) {
+              jscode = wrapAsModule(jscode, id+'.mv');
+            } else {
+              jscode = '(function(require,module,exports) {'+
+                  jscode + '})(__move.require, {exports:{}}, {});\n';
+            }
             completeQ[qIndex] = [null, jscode, script];
           } catch (e) {
             completeQ[qIndex] = [e, null, script];
           }
           decr();
         }
-      })(nextQIndex++);
+      })(nextQIndex++, script);
     }
   }
   decr();

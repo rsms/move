@@ -4,6 +4,7 @@
   <head>
     <meta charset="utf-8">
     <title>Move in HTML</title>
+    <script src="../web/move.js"></script>
     <script type="text/move">
       # A print function which append output to <body>
       body = document.getElementsByTagName('body')[0]
@@ -33,7 +34,15 @@ print "Hello world"
           - Serve this file from a web server over HTTP and it should work
     -->
     <script src="repeat.mv" type="text/move"></script>
-    <script src="../web/move.js"></script>
+    <!-- Remote code is treated as a module and isn't loaded until required -->
+    <script type="text/move">require 'repeat'</script>
+    <!-- Modules can also be embedded -->
+    <script module="foo" type="text/move">export bar = 1234</script>
+    <script type="text/move">
+    import foo
+    print 'foo:', foo
+    </script>
+
   </head>
   <body style="white-space:pre; font-family:monospace;"><b>Move in HTML using &lt;script&gt; tags</b></body>
 </html>
