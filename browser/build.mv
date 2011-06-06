@@ -22,6 +22,9 @@ browserTemplate.forEachMatch /\/\*#include\s+(.+)\*\//gm, ^(m) {
       browserTemplate.substr(m.index + m[0].length)
 }
 
+# %VERSION% -> "x.x.x"
+browserTemplate = browserTemplate.replace /%VERSION%/g, JSON move.version()
+
 # Source directory
 sourceDir = __dirname + '/../lib'
 
@@ -62,7 +65,7 @@ if (1) try {
   ast = uglifyjs.uglify.ast_mangle(ast)
   ast = uglifyjs.uglify.ast_squeeze(ast)
   output = uglifyjs.uglify.gen_code(ast)
-} catch (e){} else {
+} catch (e) { console.error(e); } else {
   output = '/*jslint devel: true, browser: true, evil: true, forin: true, es5: true */' + output;
 }
 

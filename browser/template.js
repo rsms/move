@@ -29,6 +29,9 @@ var move = _require('index');
 move.runtime._require = _require;
 
 // --------------------------------------------------------------
+move.version = function () { return %VERSION%; };
+
+// --------------------------------------------------------------
 /*#include require.js*/
 move.require = Require();
 
