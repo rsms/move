@@ -95,7 +95,7 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
             compileOptions.filename = '<'+(id || 'main')+'>';
             jscode = move.compile(script.innerHTML, compileOptions);
             if (id) {
-              jscode = wrapAsModule(jscode, id+'.mv');
+              jscode = wrapAsModule(jscode, id);
             } else {
               jscode = '(function(require,module,exports) {'+
                   jscode + '})(__move.require, {exports:{}}, {});\n';
