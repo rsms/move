@@ -5,7 +5,7 @@
     <title>Interactive Move</title>
     <script src="../move.js"></script>
     <script src="codemirror/codemirror.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
     <script>
 $(function () {
   // Got console?
@@ -16,7 +16,7 @@ $(function () {
   var compilerOptions = {
     globals: ['__js_source']
   };
-  
+
   // Etc
   var $input = $('#input');
   var $output = $('#output');
@@ -35,7 +35,7 @@ $(function () {
   var editor = {
     getCode: function() { return $input.value(); }
   };
-  
+
   // Writing output
   var appendOutput = function (message) {
     var date = new Date;
@@ -50,18 +50,18 @@ $(function () {
     el.value = el.value + String(message + '\n');
     try { el.scrollTop = el.scrollHeight; }catch(e){}
   };
-  
+
   // Clearing output
   var clearOutput = function () {
     $output[0].value = "";
   };
-  
+
   // Inspection function
   var inspect = function (obj) {
     if (typeof obj === 'string') return obj;
     return Object.inspect(obj, false, 10);
   };
-  
+
   // Replace the default print (goes to console.log) to our #output area
   move.runtime.print = function () {
     var kw;
@@ -75,7 +75,7 @@ $(function () {
       appendOutput(args.join(' '));
     }
   };
-  
+
   // Evaluate a Move program
   var exectimer = null;
   var isFirefox = (navigator.userAgent.indexOf('Firefox') !== -1);
@@ -120,7 +120,7 @@ $(function () {
           left: (origin.left + (inputWidth - $lineMessage.outerWidth())) + 'px',
           top: origin.top + 'px'
         }).fadeIn(100);
-        
+
         // Append error message
         appendOutput('Syntax error: '+e.message);
         return;
@@ -128,10 +128,10 @@ $(function () {
         throw e;
       }
     };
-    
+
     if (onlyCompile)
       return;
-    
+
     // Evaluate
     var result;
     try {
@@ -151,18 +151,18 @@ $(function () {
       appendOutput(''+e);
       return;
     }
-    
+
     // Append result to output
     //appendOutput(inspect(result));
   };
-  
-  
+
+
   var clearOverlays = function () {
     $lineHelper.fadeOut(60);
     $lineMessage.fadeOut(60);
   };
-  
-  
+
+
   // Execute Cmd+R key listener
   var metaIsPressed, ctrlIsPressed;
   $input.bind('keydown', function (ev) {
@@ -195,8 +195,8 @@ $(function () {
     if (ev.keyCode === 91) metaIsPressed = false;
     else if (ev.keyCode === 17) ctrlIsPressed = false;
   });
-  
-  
+
+
   // Tooltips
   /*var tips = {
     'input': 'Press Cmd+R to run your Move code'
@@ -213,16 +213,16 @@ $(function () {
   };
   $input.bind('focus', function () { setContextTip('input'); })
              .bind('blur', function () { clearContextTip('input'); });*/
-  
+
 
   // Cmd --> Ctrl for non-OS X systems
   if (navigator.userAgent.indexOf('OS X') === -1) {
     $('#context-tip').text($('#context-tip').text().replace(/Cmd\+/g, 'Ctrl+'));
   }
-  
+
   // Give the input field focus
   $input.focus();
-  
+
   // Layout
   var layout = function (){
     clearOverlays();
@@ -232,7 +232,7 @@ $(function () {
   };
   $(window).bind('resize', layout);
   layout();
-  
+
   // Load default program
   var textarea = document.getElementById('input');
   var content, hasCustomContent = false;
@@ -245,7 +245,7 @@ $(function () {
   }
   if (!content) content = $('data.default-program').text();
   textarea.value = content;
-  
+
   // Enable CodeMirror editor (place a return stmt here to disable it)
   textarea = CodeMirror.replace(textarea);
   var home = document.createElement("div");
@@ -306,7 +306,7 @@ $(function () {
       leftParen = rightParen = null;
     },
     onLoad: function(){
-      
+
       // Configure key bindings
       var metaIsPressed, ctrlIsPressed;
       editor.grabKeys(function () {}, function (keyCode) {
@@ -336,7 +336,7 @@ $(function () {
         return origKeyUp.call(editor.editor, ev);
       };
       editor.focus();
-      
+
       //if (hasCustomContent)
       executeMoveProgram();
     },
@@ -403,7 +403,7 @@ $(function () {
         width: 100%;
         box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box;
       }
-      
+
       #side-pane {
         margin:0; padding:0;
         padding:15px;
@@ -412,7 +412,7 @@ $(function () {
         color: #fff;
         text-shadow: #555 0 1px 1px;
       }
-      
+
       #line-helper, #line-message {
         display: none;
         position: absolute;
@@ -457,7 +457,7 @@ $(function () {
       #line-message.error {
         background-color: #FF9C9A;
       }
-      
+
       vbox, hbox, box {
         display: box; display: -webkit-box; display: -moz-box;
         box-align: stretch; -webkit-box-align: stretch; -moz-box-align: stretch;
@@ -476,10 +476,10 @@ $(function () {
       vbox > *, hbox > * {
         box-flex: 1; -webkit-box-flex: 1; -moz-box-flex: 1;
       }
-      
+
       vbox.io > div { box-flex: 0; -webkit-box-flex: 0; -moz-box-flex: 0; }
       #input { box-flex: 2; -webkit-box-flex: 2; -moz-box-flex: 2; }
-      
+
       body {
         display: -moz-box;
         display: -webkit-box;
@@ -538,5 +538,15 @@ Cat.age = 9
 print Cat.name, 'is', Cat.age, 'years old'
 print Dog.name, 'is', Dog.age, 'years old'
 </data>
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-9078556-5']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
   </body>
 </html>

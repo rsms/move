@@ -40,9 +40,8 @@ $http = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"]) ? 'https' : 'http';
     <meta property="og:site_name" content="Move">
     <meta property="og:title" content="The Move programming language">
 
-    <script src="move.js"></script>
+    <script src="https://github.com/rsms/move/raw/stable/web/move.js"></script>
     <script src="<?=$http?>://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
-    <script>__move.debug = true;</script>
     <script type="text/move">
 
 // Menu
@@ -203,7 +202,7 @@ function waitForStyles() {
   for (var i = 0; i < document.styleSheets.length; i++)
     if (/googleapis/.test(document.styleSheets[i].href)) {
       document.body.className += " custom-fonts-loaded";
-      window.updateMenuOrigin();
+      if (window.updateMenuOrigin) window.updateMenuOrigin();
       return;
     }
   setTimeout(waitForStyles, 100);
@@ -222,5 +221,15 @@ function waitForStyles() {
 
     </script>
     <script src="<?=$http?>://connect.facebook.net/en_US/all.js#appId=158328320889704&amp;xfbml=1"></script>
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-9078556-5']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
   </body>
 </html>
