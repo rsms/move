@@ -1,5 +1,5 @@
 # Runtime instantiator
-export EHTML = ^(html) {
+__move.EHTML = EHTML = ^(html) {
   if (!EHTML.spawnerElement)
     EHTML.spawnerElement = document.createElement 'div'
   EHTML.spawnerElement.innerHTML = html
@@ -8,9 +8,18 @@ export EHTML = ^(html) {
   el
 }
 
+EHTML.classNameWrapper = ^(className) {
+  className = ' '+className
+  ^(html) {
+    node = __move.EHTML html
+    node.className += className
+    node
+  }
+}
+
 
 # Preprocessor
-export preprocessEHTML = ^(src) {
+export preprocessEHTML = ^(src, options) {
   i = 0
   skipString = ^(endch) {
     prevCh = null
@@ -87,7 +96,7 @@ export preprocessEHTML = ^(src) {
 
     #print 'ranges:', ranges
 
-    ehtml = "__move.EHTML('"+ehtml+"')"
+    ehtml = "EHTML('"+ehtml+"')"
     #print 'ehtml:', ehtml
     ehtml
   }
@@ -154,8 +163,11 @@ export preprocessEHTML = ^(src) {
 
       prevCh = ch
     }
+
     output
   }
 
-  parseAny()
+  output = 'EHTML = __move.EHTML\n' + parseAny()
+  #print output
+  output
 }
