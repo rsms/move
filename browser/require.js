@@ -70,7 +70,7 @@ var Require = function Require(parentExports) {
       id = normalizeId(id, parentId);
     }
     if (!require.modules.hasOwnProperty(id)) {
-      throw new Error('module not found '+JSON.stringify(originalInputId));
+      throw new Error('Module not found '+JSON.stringify(originalInputId));
     }
     var mod = require.modules[id];
     if (mod.exports === undefined) {
