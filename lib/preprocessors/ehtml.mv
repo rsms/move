@@ -17,9 +17,8 @@ EHTML.classNameWrapper = ^(className) {
   }
 }
 
-
 # Preprocessor
-export preprocessEHTML = ^(src, options) {
+export process = ^(src, options) {
   i = 0
   skipString = ^(endch) {
     prevCh = null
