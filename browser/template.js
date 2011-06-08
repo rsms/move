@@ -49,10 +49,10 @@ move.onScriptLoaded = function onScriptLoaded(err, jscode, origin) {
 move.scriptCompilationOptions = {preprocess:['ehtml']};
 
 // Module wrapper
-var wrapAsModule = function wrapAsModule(jscode, src, uri) {
-  var moduleId = src.replace(/\.[^\.]+$/, '');
+var wrapAsModule = function wrapAsModule(jscode, src, uri, id) {
+  if (!id) id = src.replace(/\.[^\.]+$/, '');
   return '__move.require.define('+
-    JSON.stringify(moduleId)+','+
+    JSON.stringify(id)+','+
     JSON.stringify(uri || src)+','+
     'function(require,module,exports) {'+
       jscode +
@@ -95,7 +95,7 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
             compileOptions.filename = '<'+(id || 'main')+'>';
             jscode = move.compile(script.innerHTML, compileOptions);
             if (id) {
-              jscode = wrapAsModule(jscode, id);
+              jscode = wrapAsModule(jscode, null, null, id);
             } else {
               jscode = '(function(require,module,exports) {'+
                   jscode + '})(__move.require, {exports:{}}, {});\n';
