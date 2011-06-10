@@ -40,7 +40,7 @@ move.require = Require();
 
 // Called when a Move script has been compiled (or failed to compile or load)
 // For a <script> tag source, `origin` is the HTMLElement instance
-move.onScriptLoaded = function onScriptLoaded(err, jscode, origin) {
+move.compileScript = function compileScript(err, jscode, origin) {
   if (err) throw err;
   Function(jscode)();
 };
@@ -70,7 +70,7 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
       // all loaded -- exec in order
       var i = 0, L = completeQ.length;
       for (;i<L;++i)
-        move.onScriptLoaded.apply(move, completeQ[i]);
+        move.compileScript.apply(move, completeQ[i]);
       if (typeof callback === 'function')
         callback(null, completeQ);
     }
