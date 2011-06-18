@@ -449,7 +449,7 @@
 			  (?:\b(@)|\.|\b)
 			  ([a-zA-Z_?$][\w?$]*)
 			  \s+
-			  (?=(?:(?!instanceof)['"\w\/\^]))</string>
+			  (?=(?:(?!instanceof)['"\w\/\^\[@]))</string>
 			<key>name</key>
 			<string>meta.function.call.move</string>
 		</dict>
