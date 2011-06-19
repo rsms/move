@@ -1,0 +1,86 @@
+
+visibleMenus = {}
+overlay = null
+enabled = true
+
+hideMenu = ^(menu_el){
+  menu_el.style.webkitTransition = 'opacity 200ms ease-out'
+  menu_el.style.opacity = '0'
+  clearTimeout menu_el.hideTimer
+  if (enabled) {
+    menu_el.hideTimer = after {delay:200} ^{ menu_el.style.display = 'none' }
+  } else {
+    menu_el.style.display = 'none'
+  }
+  overlay.style.display = 'none'
+}
+
+hideAllMenus = ^(ev) {
+  cancelEvent ev;
+  (Object.keys visibleMenus).forEach ^(k) {
+    hideMenu visibleMenus[k]
+  }
+}
+
+disableContextMenus = ^(ev) {
+  enabled = false
+  hideAllMenus ev
+}
+
+cancelEvent = ^(ev) {
+  if (ev) {
+    ev.preventDefault()
+    ev.stopPropagation()
+  }
+}
+
+mkhandler = ^(menu_id) { ^(ev) {
+  if (!enabled)
+    return
+
+  ev.preventDefault()
+
+  menu_el = document.getElementById menu_id
+  clearTimeout menu_el.hideTimer
+
+  menu_el.style.left = ev.pageX + 'px'
+  menu_el.style.top = ev.pageY + 'px'
+  menu_el.style.webkitTransition = 'none'
+  menu_el.style.opacity = '1'
+  menu_el.style.display = 'block'
+  menu_el.addEventListener 'mousedown', hideAllMenus, false
+
+  v = menu_el.getElementsByTagName 'a'
+  for (i=0,L=v.length; i < L; ++i) {
+    a = v[i]
+    a.addEventListener 'click', cancelEvent, false
+    if ((a.href.indexOf '#disable-context-menu') != -1) {
+      a.addEventListener 'mouseup', disableContextMenus, false
+    } else {
+      a.addEventListener 'mouseup', ^(ev) {
+        window.open @href, @getAttribute 'target'
+        hideMenu menu_el
+        cancelEvent ev
+      }, false
+    }
+  }
+
+  visibleMenus[menu_id] = menu_el
+
+  if (!overlay) {
+    overlay = document.createElement 'context-menu-overlay'
+    overlay.addEventListener 'mousedown', hideAllMenus, false
+    overlay.addEventListener 'touchstart', hideAllMenus, false
+    document.body.appendChild overlay
+  }
+  overlay.style.display = 'block'
+}}
+
+# Attach menu handlers
+v = document.getElementsByTagName 'a'
+for (i=0,L=v.length; i < L; ++i) {
+  el = v[i]
+  if (menu_id = el.getAttribute 'context-menu') {
+    el.addEventListener 'contextmenu', (mkhandler menu_id), false
+  }
+}

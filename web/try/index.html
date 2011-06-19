@@ -217,7 +217,7 @@ $(function () {
 
   // Cmd --> Ctrl for non-OS X systems
   if (navigator.userAgent.indexOf('OS X') === -1) {
-    $('#context-tip').text($('#context-tip').text().replace(/Cmd\+/g, 'Ctrl+'));
+    $('.context-tip').text($('.context-tip').text().replace(/Cmd\+/g, 'Ctrl+'));
   }
 
   // Give the input field focus
@@ -501,11 +501,10 @@ $(function () {
     <box>
       <vbox>
         <header>
-          <div id="context-tip">
+          <div id="context-tip" class="context-tip">
             Press Cmd+R to run your Move code
           </div>
           <h1><span>Move</span></h1>
-          <!--a href="http://movelang.org/">movelang.org</a-->
         </header>
         <hbox>
           <vbox class="io">
@@ -513,7 +512,10 @@ $(function () {
             <textarea id="output" class="code"></textarea>
           </vbox>
           <div id="side-pane">
-            Tips and ticks, baby
+            <div class="context-tip">
+              Press Cmd+R to run your Move code.
+            </div>
+
           </div>
         </hbox>
       </vbox>

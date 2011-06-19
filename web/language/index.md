@@ -1,13 +1,21 @@
-# Language reference {#language}
+---
+layout: page
+title: Language
+in_main_menu: yes
+---
+
+# Language reference
 
 This is a summary of the Move language and not a complete reference. Please see [the ECMA-262 specification](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-262.pdf) for details.
 
-## Value types {#types}
+---
+
+## Value types
 
 There are five different value types in Move: numbers, text, lists, objects and
 functions.
 
-### Numbers {#types/number}
+### Numbers
 
 Numbers can be written in either decimal, hexadecimal or octal notation.
 
@@ -43,7 +51,7 @@ true</samp>
     print 1234 == 1234.0
 
 
-### Text {#types/text}
+### Text
 
 Text can contain any Unicode characters and is stored as UTF-16 text. A piece of
 text is denoted by enclosing quotation marks (" and " or ' and ') with any text except line breaks or (same as the enclosing) quotation marks. Standard
@@ -70,7 +78,7 @@ substrings:
     print "Kittens are cute".split(" ")
 
 
-### Lists & arrays {#types/list}
+### Lists & arrays
 
 A List (or Array) is a form of compound value which contains other values in a
 ordered sequence. Lists are composed by enclosing zero or more values in a square bracket character pair ("[" and "]"), separated by comma characters. Lists can also be created by programmatic composition. The built-in <tt>Array</tt> object's prototype is the prototype used for new lists.
@@ -89,7 +97,7 @@ Example of programmatic composition:
     print list
 
 
-### Objects {#types/object}
+### Objects
 
 The Object type is fundamental to Move (and JavaScript) as all other values are in fact Objects. E.g. a Number is a special type of Object. We say that "Move contains five different types of values" which is a simplification. Move has in fact only one type — Object — but at the same time,
 the language and the runtime *treats some Object subtypes differently*, like Numbers which can be used for mathematical operations or text which when "added"
@@ -114,7 +122,7 @@ undefined
     print obj.c
 
 
-### Functions {#types/function}
+### Functions
 
 Functions are denoted by a circumflex accent character ("^") optionally followed by argument declarations wrapped in a parenthesis character pair ("(" and ")"), finally followed by a block of code wrapped in a pair of curly bracket characters ("{" and "}").
 
@@ -151,7 +159,7 @@ Here we assign something to x in the outer scope which will tell Move that "x" s
     print x
 
 
-### Atoms {#types/atom}
+### Atoms
 
 Move has a set of "atoms" which are basically pre-defined constants with itself as its value. They are called "atoms" since there is only one single, global and immutable instance (or "version" if you will) of each of these special values:
 
@@ -174,7 +182,7 @@ true</samp>
     print Yes == true
 
 
-### Slices
+## List slices
 
 Move features a syntax for extracting and assigning slices of collections.
 
@@ -219,3 +227,38 @@ hel
     x[1:3] = [9]
     print x
 
+
+## Embedded HTML
+
+Embedded HTML -- or "EHTML" -- is a way to embed HTML inside Move code:
+<samp>...&lt;div class="profile-picture"&gt;↩
+&lt;img src="profile-pictures/↩
+rsms.jpg" alt=""&gt;&lt;/div&gt;...</samp>
+
+    img = ^(src, alt) { <img src="{src}" alt="{alt}" />  }
+
+    profilePicture = ^(username) {
+      div = <div class="profile-picture" />
+      div.appendChild img 'profile-pictures/'+username+'.jpg'
+      div
+    }
+
+    document.body.appendChild profilePicture 'rsms'
+
+EHTML is enabled by default when running in a web browser. It's otherwise disabled by default. EHTML is a preprocessor and can be explicitly enabled or disabled using the "enable" and "disable" pragma directives.
+
+The following will cause errors during compilation in Node.js:
+
+    foo = <div/>
+
+But if we tell the compiler to preprocess EHTML even though we are not in a web browser, the code will compile just fine in Node.js:
+
+    #pragma enable ehtml
+    foo = <div/>
+
+Same thing goes for the "disable" pragma. The following code will cause compilation errors in any environment:
+
+    #pragma disable ehtml
+    foo = <div/>
+
+*Embedded HTML was introduced in Move 0.3.0*

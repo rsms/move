@@ -1,3 +1,7 @@
+---
+layout: none
+---
+
 /* Base */
 * { margin:0; padding:0; font-family:inherit; }
 body {
@@ -30,6 +34,7 @@ body.custom-fonts-loaded tt, body.custom-fonts-loaded samp {
 }
 
 img { border:none; vertical-align:bottom; }
+img[align="right"] { float:right; margin:0 0 1em 1em; }
 strong { font-weight:bold; }
 hr { height:1px; border:none; background-color:#ddd; }
 
@@ -67,28 +72,31 @@ ol > li, ul > li { margin-left:1.4em; }
 
 /*:target { border-bottom:2px solid #FE0; }*/
 
+
+{% include context-menu.css %}
+
+
 header {
   display:block;
-  /*background:#d8cfc2;*/
-  color:#302a1e;
-  background: #DDDDC9 url('paper-bg.png') repeat scroll 0 17px;
-  padding-bottom:1em;
-  line-height:20px;
+  padding-bottom:20px;
+  margin:50px 0 0 0;
+  height:122px;
+  line-height:18px;
+  border-bottom: 1px solid #ddd;
 }
-@media screen, tv, projection {
-  header h1 {
-    display:block;
-    margin:0;
-    padding:30px 0 10px 0;
-  }
-  header h1 span { display:none; }
-  header h1 a {
-    display: block;
-    width: 308px;
-    height: 92px;
-    background: url('logo.png') no-repeat scroll 0 0;
-  }
+header h1, header p.description {
+  display:inline-block;
+  padding:0; margin:0;
+  vertical-align: bottom;
 }
+header h1 { width:343px; xbackground:#dfd; }
+header p.description {
+  width: 425px;
+  padding:0 0 25px 30px;
+  font-size:13px;
+  color: #888;
+}
+
 
 section {
   display: block;
@@ -101,66 +109,23 @@ section {
   }
   section h1 {
     margin-top:-1.5em; /* this hack gives anchors some extra space at the top */
-    padding-top:2em;
-    margin-left:-0.618em;
+    padding-top:1.5em;
+  }
+  section h2 {
+    /*margin-left:-0.618em;*/
   }
   section h2, section h3, section h4 {
     margin-top:-2em; /* this hack gives anchors some extra space at the top */
     padding-top:2.5em;
-    margin-left:-0.618em;
   }
 
 footer {
   display: block;
   color: #999;
+  padding:1em 0;
 }
 
-/* Menu */
-#menu {
-  /* effective height is 38px */
-  font: 18px helvetica, sans-serif;
-  margin:0; padding:0;
-  background: #DDDDC9 url('paper-bg2.png') repeat scroll left top;
-  border-bottom:1px solid #D7D6CF;
-  -webkit-font-smoothing: antialiased;
-  z-index:99999;
-}
-  #menu.floating {
-    -moz-box-shadow: 0 0 7px rgba(0,0,0,0.3);
-    -webkit-box-shadow: 0 0 7px rgba(0,0,0,0.3);
-    box-shadow: 0 0 7px rgba(0,0,0,0.3);
-    border-color: #C4C3BD;
-  }
-  #menu menu-items {
-    display:block;
-    height: 36px;
-    margin:0 -8px 0 -100px;
-    padding-left:92px;
-  }
-  #menu.floating menu-items {
-    background: url('menu-logo.png') no-repeat scroll 0 7px;
-  }
-  #menu img { display:inline-block; padding:0; margin:0; }
-  #menu a {
-    color: #68685D;
-    display: inline-block;
-    margin: 0 2px 0 0;
-    padding:1px 8px 0 8px;
-    line-height:36px;
-    text-shadow: #FDFDF0 0 1px 1px;
-  }
-  #menu a:hover {
-    text-decoration: none;
-    color: #000;
-    background-color: #CBCBBC;
-    background-color: rgba(0, 0, 0, 0.07);
-  }
-  #menu a:last-child { display:none; }
-  #menu.floating a:last-child { display:inline-block; float:right; }
-
-@media print {
-  #menu { display:none !important; }
-}
+{% include navigation-menu.css %}
 
 /* code */
 section.body samp, pre.prettyprint, section.body pre {
@@ -194,7 +159,6 @@ section.body samp {
   }
   section.body samp, pre.prettyprint {
     padding:0.4em 0.6em;
-    
     line-height:20px;
   }
   pre.prettyprint {
@@ -217,30 +181,8 @@ section.body samp {
     white-space:pre-wrap;
   }
 }
-span.str { color: #080; }
-span.kwd { color: #295AA4; }
-span.com { color: #999; }
-span.typ { color: #808; }
-span.lit { color: #066; }
-span.pun, span.opn, span.clo { color: #660; }
-span.pln { color: #000; }
-span.tag { color: #008; }
-span.atn { color: #606; }
-span.atv { color: #080; }
-span.dec { color: #606; }
-/* Use higher contrast and font-styling for printable form. */
-@media print {
-  span.str { color: #060; }
-  span.kwd { color: #006; font-weight: bold; }
-  span.com { color: #999; font-style: italic; }
-  span.typ { color: #404; font-weight: bold; }
-  span.lit { color: #044; }
-  span.pun, span.opn, span.clo { color: #440; }
-  span.pln { color: #000; }
-  span.tag { color: #006; font-weight: bold; }
-  span.atn { color: #404; }
-  span.atv { color: #060; }
-}
+
+{% include syntax-highlight.css %}
 
 
 #fb-root { display:none; }

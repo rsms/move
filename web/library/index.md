@@ -1,11 +1,14 @@
-# Move standard library {#library}
+---
+layout: page
+title: Library
+---
+
+# Move standard library
 
 Built-in objects and functions
 
 
-
-
-## Number {}
+## Number
 
 - `literal → number` — Numbers are created using literal numbers like `123.4` or `0xf4`. Refer to the [language reference on numbers](#types/number) for details.
 
@@ -22,7 +25,7 @@ Built-in objects and functions
 - `Number.POSITIVE_INFINITY → number` — Special value representing infinity; returned on overflow.
 
 
-### Number.prototype {}
+### Number.prototype
 
 - `toExponential(fractionDigits) → text` — Returns text representing the number in exponential notation. `fractionDigits` defaults to as many digits as necessary to specify the number.
 
@@ -33,7 +36,7 @@ Built-in objects and functions
 
 
 
-## Object {}
+## Object
 
 - `{key1: value1, key2: value2, ..., keyN: valueN} → object` — Creates a new object with zero or more value properties.
 
@@ -66,7 +69,7 @@ Built-in objects and functions
 - `Object.inspect(value, showHidden:false, depth:2) → text` — Returns a human-readable representation of the *value* including its properties (if *showHidden* is false, only "enumerable" properties are displayed, otherwise all properties are displayed).
 
 
-### Object.prototype {}
+### Object.prototype
 
 - `.name ←→ value` — Access or modify the value for property named *name*.
 
@@ -84,7 +87,7 @@ Built-in objects and functions
 
 
 
-## Array {}
+## Array
 
 - `[value1, value2, ..., valueN] → list` — Creates a list holding zero or more values.
 
@@ -93,7 +96,7 @@ Built-in objects and functions
 - `Array.isArray(value) → true|false` — Test if a value is a list or not.
 
 
-### Array.prototype {}
+### Array.prototype
 
 - `length ←→ number` — Number of items in the list.
 
@@ -142,7 +145,7 @@ Built-in objects and functions
 
 
 
-## Text {}
+## Text
 
 *Text* is an alias for the JavaScript built-in type `String` and is the object prototype used for text values. The use of `Text` in favor for `String` is recommended but not enforced.
 
@@ -153,7 +156,7 @@ Built-in objects and functions
 - `Text.fromCharCode(number) → text` — Text of character representing a Unicode character code.
 
 
-### Text.prototype {}
+### Text.prototype
 
 - `length → number` — Number of characters.
 
@@ -212,11 +215,11 @@ Built-in objects and functions
   - `input ←→ text` — The original input text.
 
 
-## Function {}
+## Function
 
 - `^(arg1[:val1], arg2[:val2], ..., argN[:valN]) { body } → function` — Create a function with zero or more arguments where "body" is substituted for the function's code block.
 
-### Function.prototype {}
+### Function.prototype
 
 - `apply(this, arguments:[]) → value` — Applies the function in the context (the "this" value) of a different object. Arguments can be passed as an Array object.
 
@@ -231,7 +234,7 @@ John</samp>
     foo.call {name: "John"}
 
 
-## Date {}
+## Date
 
 - `Date(year:0, month:0, day:0, hours:0, minutes:0, seconds:0, milliseconds:0) → text` — Date and time as text in a locale-specific format
 
@@ -256,7 +259,7 @@ John</samp>
 - `Date.UTC(year, month, day:0, hours:0, minutes:0, seconds:0, milliseconds:0) → number` — Returns the number of milliseconds for the date represented by the arguments, since January 1, 1970, 00:00:00, universal time.
 
 
-### Date.prototype {}
+### Date.prototype
 
 - `getDate() → number` — Returns the day of the month (1-31) for the specified date according to local time.
 - `getDay() → number` — Returns the day of the week (0-6) for the specified date according to local time.
@@ -310,7 +313,7 @@ John</samp>
 
 
 
-## RegExp {}
+## RegExp
 
 - `/pattern/flags → regexp` — Create a regular expression by compiling `pattern` (unquoted text) with regards to `flags` (unquoted text).
 
@@ -322,7 +325,7 @@ John</samp>
     multiple lines (i.e., match the beginning or end of each line (delimited by
     \n or \r), not only the very beginning or end of the whole input string)
 
-### RegExp.prototype {}
+### RegExp.prototype
 
 - `global ←→ true|false` — Whether to test the regular expression against all possible matches in a text, or only against the first.
 
@@ -342,14 +345,14 @@ John</samp>
 
 
 
-## Boolean {}
+## Boolean
 
 - `Boolean(value) → true|false` — Returns the ["true" atom](#types/atom) if *value* is truthy. Otherwise the "false" atom is returned.
 
 
 
 
-## JSON {}
+## JSON
 
 - `JSON(value) → text`, `JSON{build: value} → text`, `JSON.stringify(value) → text` — Takes any serializable object and returns the [JSON](http://json.org/) representation.
 
@@ -358,11 +361,11 @@ John</samp>
 
 
 
-## Move {}
+## Move
 
 *Move* houses the Move runtime library. All members of *Move* are available directly (i.e. access by "foo" instead of "Move.foo") and need not be "prefixed".
 
-### create {}
+### create
 
 - `create(prototype, body) → object` — Creates a new object whose prototype is the *prototype* object and whose value properties are those specified by the *body* object (e.g. `{key1: value1, key2: value2, ..., keyN: valueN}`). Note that *body* is not a property specification as accepted by [Object.create](#Object), but a regular object literal with keys and values.
 
@@ -379,7 +382,7 @@ Example:
     print "Cat: " + cat
 
 
-### extend {}
+### extend
 
 - `extend(object, body) → object` — Extend *object* by adding a (shallow) copy of all property values from the *body* object.
 
@@ -395,14 +398,14 @@ Example:
     print fruit
 
 
-### print {}
+### print
 
 - `print(value1, value2, ..., valueN)` — Present zero or more values in a visual fashion. How the values are presented is defined by the implementation. By default *print* will send the values to the runtime engine's *console.log* if exists or do nothing.
 
 The *print* function is often overridden in user-specific implementations by simply assigning a custom function, e.g. `Move.print = ^{ ...my print logic... }`.
 
 
-### repeat {}
+### repeat
 
 - `repeat{times: number} → ^(^{...})`, `repeat(number) → ^(^{...})` — Returns an "executor" function which when called will call the passed function *number* times. If the passed function returns the *true* atom, repetition is canceled.
 
@@ -420,7 +423,7 @@ Hello</samp>
     }
 
 
-### after {}
+### after
 
 - `after{delay: milliseconds} → ^(^{...})`, `after(milliseconds) → ^(^{...})` — Returns an "executor" function which when called will execute the passed function after *delay* number of milliseconds.
 

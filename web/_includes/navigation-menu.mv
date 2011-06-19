@@ -1,0 +1,60 @@
+# Sticky menu
+
+$menu = $ '#menu'
+$filler = $ '#menu-filler'
+$menu.find('a[href="#"]').last().click ^{ window.scrollTo 0, 0 }
+
+$menu.$wrapper = $menu.find('> wrapper').first()
+$window = $ window
+initialOrigin = $menu.offset()
+menuTop = initialOrigin.top
+menuIsFloating = false
+isPanningDevice = navigator.userAgent.indexOf('Safari/') != -1 &&
+                  navigator.userAgent.indexOf('Mobile/') != -1
+
+updateMenuOrigin = ^{
+  y = menuTop - $window.scrollTop()
+  if (y >= 0) {
+    if (menuIsFloating) {
+      menuIsFloating = false
+      $menu.css {
+        position: 'static',
+        width: 'auto'
+      }
+      $menu.removeClass 'floating'
+      $filler.removeClass 'enabled'
+    }
+  } else {
+    if (!menuIsFloating) {
+      $filler.css {height: $menu.height() + 'px'}
+      $filler.addClass 'enabled'
+      $menu.addClass 'floating'
+      menuIsFloating = true
+    }
+    $menu.css {
+      position: isPanningDevice ? 'absolute' : 'fixed',
+      top:      (isPanningDevice ? $window.scrollTop()
+                                 : Math.max(0, menuTop - $window.scrollTop())) +
+                'px',
+      left:     '-7px',
+      width:    window.innerWidth + 'px'
+    }
+  }
+}
+
+window.updateMenuOrigin = updateMenuOrigin
+updateMenuOrigin()
+$(window).bind 'scroll', updateMenuOrigin
+$(window).bind 'resize', updateMenuOrigin
+
+if (isPanningDevice) {
+  $(window).bind 'load', ^{ after {delay: 500} updateMenuOrigin }
+  setInterval updateMenuOrigin, 1000
+}
+
+
+$menu.find('a').each ^{
+  if ((@getAttribute 'href') == document.location.pathname) {
+    @className += ' current'
+  }
+}
