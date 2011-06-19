@@ -66,4 +66,6 @@ fi
 # Back home
 cd "$SRC_DIR" || exit $?
 
-echo "Done. Deploy with: git push origin gh-pages"
+echo "---- Done ----"
+echo "Deploy with:"
+echo "  git push origin gh-pages"

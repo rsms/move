@@ -4,9 +4,9 @@ server_port: 3000
 pygments: false
 lsi: false
 
-#source: ./web
 destination: ./.build
-#plugins: ./web/_plugins
+exclude:
+  - build.sh
 
 url: http://movelang.org
 
