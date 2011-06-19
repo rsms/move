@@ -12,7 +12,7 @@
     <script src="/move.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
     <link rel="stylesheet" href="/res/screen.css" type="text/css" media="all">
-    <link rel="alternate" type="application/json" title="package.json" href="/package.json">
+    <link rel="alternate" type="application/json" title="package.json" href="http://movelang.org/package.json">
     <script type="text/move">
 visibleMenus = {}
 overlay = null
@@ -165,7 +165,7 @@ $menu.find('a').each ^{
     <!-- Open Graph -->
     <meta property="fb:admins" content="728642302">
     <meta property="fb:app_id" content="158328320889704">
-    <meta property="og:url" content="/how-to-move/index.html">
+    <meta property="og:url" content="http://movelang.org/how-to-move/index.html">
     <meta property="og:site_name" content="Move">
     
     <meta property="og:title" content="How to Move">
@@ -210,57 +210,78 @@ programming computers.
 
     <section class="body">
   <wrapper>
-    <h1 id='how_to_move'>How to Move</h1>
+    <h1>How to Move</h1>
 
-<p>Move takes a mix of concepts proven successful in other programming languages, simplifies these concepts in the context of non-computer scientists while avoiding some of the more obscure constructions.</p>
+<p>Move takes a mix of concepts proven successful in other programming languages,
+simplifies these concepts in the context of non-computer scientists while
+avoiding some of the more obscure constructions.</p>
 
-<p>By learning to program with Move you will learn what programming is. A common misconception about programming is that you learn a language. That&#8217;s not entirely false, but what takes time and effort is learning how to <em>design</em> programs. So by learning a simple but yet fully featured language like Move, you minimize the initial effort required to get up to speed and can dive into the adventure of software design much earlier, not having to spend too much time thinking about the language itself.</p>
+<p>By learning to program with Move you will learn what programming is. A common
+misconception about programming is that you learn a language. That&rsquo;s not entirely
+false, but what takes time and effort is learning how to <em>design</em> programs. So by
+learning a simple but yet fully featured language like Move, you minimize the
+initial effort required to get up to speed and can dive into the adventure of
+software design much earlier, not having to spend too much time thinking about
+the language itself.</p>
 
-<h2 id='why'>Why?</h2>
+<h2>Why?</h2>
 
-<p>The first thing we must discuss is <em>&#8220;Why should I learn to program computers?&#8221;</em>. It&#8217;s a very good question without a single and universally good explanation, so let&#8217;s simplify the answer: <strong>To create things</strong>.</p>
+<p>The first thing we must discuss is <em>&ldquo;Why should I learn to program computers?&rdquo;</em>.
+It&rsquo;s a very good question without a single and universally good explanation, so
+let&rsquo;s simplify the answer: <strong>To create things</strong>.</p>
 
 <p>Programming is usually a good fit for one or both of the following things:</p>
 
 <ol>
-<li>
-<p>Realizing ideas, like creating a website or a game. Or having the computer draw you some graphics based on some data.</p>
-</li>
-
-<li>
-<p>Simplifying and speeding up otherwise tedious, repetitive work. For instance, having the computer walk through thousands of files to find certain sentences.</p>
-</li>
+<li><p>Realizing ideas, like creating a website or a game. Or having the computer
+draw you some graphics based on some data.</p></li>
+<li><p>Simplifying and speeding up otherwise tedious, repetitive work. For instance,
+having the computer walk through thousands of files to find certain sentences.</p></li>
 </ol>
 
-<p>The tricky part is that programming is by definition abstract and our brains work best with concrete stuff, like &#8220;here&#8217;s a stone, move it over there&#8221;. Just like writing a novel or painting a fictional picture, programming works on a level above the actual result.</p>
 
-<p>Say we want to make a web site which changes the color of its background according to the time of day (for instance dark colors during the night and bright colors during the day), we need to <em>visualize the results</em> before we start working. Just as the painter visualizes her motif before drawing it. When we have a good enough picture in our head of what we want to create it&#8217;s time to start programming. So, in a way we work our way from an abstract idea to a concrete result.</p>
+<p>The tricky part is that programming is by definition abstract and our brains
+work best with concrete stuff, like &ldquo;here&rsquo;s a stone, move it over there&rdquo;.
+Just like writing a novel or painting a fictional picture, programming works on
+a level above the actual result.</p>
 
-<p>And it&#8217;s fun.</p>
+<p>Say we want to make a web site which changes
+the color of its background according to the time of day
+(for instance dark colors during the night and bright colors during the day), we
+need to <em>visualize the results</em> before we start working. Just as the painter
+visualizes her motif before drawing it. When we have a good enough picture in
+our head of what we want to create it&rsquo;s time to start programming. So, in a way
+we work our way from an abstract idea to a concrete result.</p>
 
-<p>Now, let&#8217;s get Moving!</p>
+<p>And it&rsquo;s fun.</p>
 
-<h2 id='values_and_data'>Values and data</h2>
+<p>Now, let&rsquo;s get Moving!</p>
 
-<p>A <em>value</em> is a piece of information. Something that <em>does not do anything</em> but is rather used by and passed around a program. You can think of a <em>value</em> as the coffee in your coffee cup. There are only five different types in Move.</p>
+<h2>Values and data</h2>
+
+<p>A <em>value</em> is a piece of information. Something that <em>does not do anything</em> but
+is rather used by and passed around a program. You can think of a <em>value</em> as the
+coffee in your coffee cup. There are only five different types in Move.</p>
 
 <p>The first two types of values are <em>simple values</em>:</p>
 
 <ul>
 <li><code>5.31</code> — A number</li>
-
-<li><code>&quot;John&quot;</code> — A piece of text</li>
+<li><code>"John"</code> — A piece of text</li>
 </ul>
 
-<p>The other two value types are so called <em>compound values</em> — values which <em>hold other values</em>:</p>
+
+<p>The other two value types are so called <em>compound values</em> — values which
+<em>hold other values</em>:</p>
 
 <ul>
 <li><code>[1, 2, 3]</code> — A list (with three number values)</li>
-
 <li><code>{a:1, b:2}</code> — An object (with two number members)</li>
 </ul>
 
-<p><em>Compound types</em> can contain any other value, including other <em>compound types</em> which makes these little buggers a very powerful tool.</p>
+
+<p><em>Compound types</em> can contain any other value, including other <em>compound types</em>
+which makes these little buggers a very powerful tool.</p>
 
 <p>The fifth kind of value is a special kind of object called <em>function</em>:</p>
 
@@ -268,71 +289,110 @@ programming computers.
 <li><code>^(a, b){ a + b }</code> — A function which produces the sum of two numbers</li>
 </ul>
 
-<h2 id='organizing_values'>Organizing values</h2>
 
-<p>When you want to keep a value around there&#8217;s something called a <em>variable</em>. To put a value into a variable, we make up a name for the variable, then use the <em>equal sign</em> (<code>=</code>) and finally write our value.</p>
+<h2>Organizing values</h2>
 
-<p>Here we store the value <code>&quot;Julia&quot;</code> into a variable called <code>name</code>:</p>
+<p>When you want to keep a value around there&rsquo;s something called a <em>variable</em>.
+To put a value into a variable, we make up a name for the variable, then use
+the <em>equal sign</em> (<code>=</code>) and finally write our value.</p>
 
-<pre><code>name = &quot;Julia&quot;</code></pre>
+<p>Here we store the value <code>"Julia"</code> into a variable called <code>name</code>:</p>
 
-<p>Later in our program we can refer to <code>name</code> and get the value <code>&quot;Julia&quot;</code> back. For instance, we might output the value of <code>name</code> to the screen: <samp>Julia</samp></p>
+<pre><code>name = "Julia"
+</code></pre>
 
-<pre><code>print name</code></pre>
+<p>Later in our program we can refer to <code>name</code> and get the value <code>"Julia"</code> back.
+For instance, we might output the value of <code>name</code> to the screen:
+<samp>Julia</samp></p>
 
-<p>As the name suggests, a <em>variable</em> can <em>vary</em>, meaning we can assign any value to a variable at any time.</p>
+<pre><code>print name
+</code></pre>
 
-<p>For example, if we want our program above to output another name, we simply assign another value to our <code>name</code> variable:</p>
+<p>As the name suggests, a <em>variable</em> can <em>vary</em>, meaning we can assign any value
+to a variable at any time.</p>
 
-<pre><code>name = &quot;John&quot;</code></pre>
+<p>For example, if we want our program above to output another name, we
+simply assign another value to our <code>name</code> variable:</p>
 
-<p>When we print <code>name</code>, &#8220;John&#8221; is displayed rather than &#8220;Julia&#8221;. Pretty neat, huh?!</p>
+<pre><code>name = "John"
+</code></pre>
 
-<h2 id='reusable_programs_with_functions'>Reusable programs with <em>functions</em></h2>
+<p>When we print <code>name</code>, &ldquo;John&rdquo; is displayed rather than &ldquo;Julia&rdquo;. Pretty neat, huh?!</p>
 
-<p>A <em>function</em> is a block of code which can be called (or &#8220;performed&#8221; if you will) many times. We can put commonly used code inside functions to avoid re-writing the same thing several times.</p>
+<h2>Reusable programs with <em>functions</em></h2>
 
-<p><em>Functions</em> are actually just <em>objects</em> (one of the five kinds of values we looked at earlier) with the addition of some code attached to it. Here is a simple function which glues together the text &#8220;Hello &#8221; with our <code>name</code> variable:</p>
+<p>A <em>function</em> is a block of code which can be called (or &ldquo;performed&rdquo; if you will)
+many times. We can put commonly used code inside functions to avoid re-writing
+the same thing several times.</p>
 
-<pre><code>hello = ^{ &quot;Hello &quot;+name }</code></pre>
+<p><em>Functions</em> are actually just <em>objects</em> (one of the five kinds of values we
+looked at earlier) with the addition of some code attached to it. Here is a simple
+function which glues together the text &ldquo;Hello &rdquo; with our <code>name</code> variable:</p>
 
-<p>Earlier we used something called <code>print</code> to output values to the screen. <code>print</code> is not magic, but just a simple <em>function</em> which knows how to display values on the screen.</p>
+<pre><code>hello = ^{ "Hello "+name }
+</code></pre>
 
-<p>Let&#8217;s see what happens when we print our <code>hello</code> function: <samp>[Function: hello]</samp></p>
+<p>Earlier we used something called <code>print</code> to output values to the screen. <code>print</code>
+is not magic, but just a simple <em>function</em> which knows how to display
+values on the screen.</p>
 
-<pre><code>print hello</code></pre>
+<p>Let&rsquo;s see what happens when we print our <code>hello</code> function:
+<samp>[Function: hello]</samp></p>
 
-<p>But&#8230; What?! Well, we only printed the <em>function</em> but we never <em>called</em> it, so our code that glues together text was never run. Let&#8217;s try it again, but this time we add two curly brackets at the end of <code>hello</code>. This will tell Move to <em>call the function</em>: <samp>Hello John</samp></p>
+<pre><code>print hello
+</code></pre>
 
-<pre><code>print hello{}</code></pre>
+<p>But&hellip; What?! Well, we only printed the <em>function</em> but we never <em>called</em> it, so
+our code that glues together text was never run. Let&rsquo;s try it again, but this time
+we add two curly brackets at the end of <code>hello</code>. This will tell Move to
+<em>call the function</em>:
+<samp>Hello John</samp></p>
+
+<pre><code>print hello{}
+</code></pre>
 
 <p>Functions are a very powerful tool when writing programs.</p>
 
-<p>When creating a function, we can specify <em>function arguments</em>, which are surrounded by parentheses and put in between the &#8221;^&#8221; and the &#8220;{&#8220;. These &#8220;arguments&#8221; are just like <em>variables</em>, but which are only available inside our function.</p>
+<p>When creating a function, we can specify <em>function arguments</em>, which are
+surrounded by parentheses and put in between the &ldquo;<sup>"</sup> and the &rdquo;{&ldquo;.
+These "arguments&rdquo; are just like <em>variables</em>, but which are only available inside
+our function.</p>
 
-<p>Let&#8217;s add a &#8220;title&#8221; argument to our <code>hello</code> function:</p>
+<p>Let&rsquo;s add a &ldquo;title&rdquo; argument to our <code>hello</code> function:</p>
 
-<pre><code>hello = ^(title: &quot;Mr.&quot;){ &quot;Hello &quot;+title+&quot; &quot;+name }</code></pre>
+<pre><code>hello = ^(title: "Mr."){ "Hello "+title+" "+name }
+</code></pre>
 
-<p>When calling a function you can pass it arguments: <samp>Hello Ms. John</samp></p>
+<p>When calling a function you can pass it arguments:
+<samp>Hello Ms. John</samp></p>
 
-<pre><code>print hello {title: &quot;Ms.&quot;}</code></pre>
+<pre><code>print hello {title: "Ms."}
+</code></pre>
 
-<p>Notice how we wrote <code>title: &quot;Mr.&quot;</code> when we created our <code>hello</code> function. This is the <em>default value</em> of the &#8220;title&#8221; argument.</p>
+<p>Notice how we wrote <code>title: "Mr."</code> when we created our <code>hello</code> function.
+This is the <em>default value</em> of the &ldquo;title&rdquo; argument.</p>
 
-<p>Let&#8217;s call our function again, but this time we don&#8217;t specify the &#8220;title&#8221; argument: <samp>Hello Mr. John</samp></p>
+<p>Let&rsquo;s call our function again, but this time we don&rsquo;t specify the &ldquo;title&rdquo; argument:
+<samp>Hello Mr. John</samp></p>
 
-<pre><code>print hello{}</code></pre>
+<pre><code>print hello{}
+</code></pre>
 
-<p>See. <code>title</code> represents its <em>default value</em> (&#8220;Mr.&#8221;).</p>
+<p>See. <code>title</code> represents its <em>default value</em> (&ldquo;Mr.&rdquo;).</p>
 
-<p>For simple functions like our <code>hello</code> it might become &#8220;clutterish&#8221; or generally cumbersome to write <code>{title: &quot;Ms.&quot;}</code> every time. In these cases, there&#8217;s an alternate way of calling functions: the <em>shorthand call-style</em> which gives a function&#8217;s arguments <em>in the order they where defined when creating the function</em>: <samp>Hello Ms. John</samp></p>
+<p>For simple functions like our <code>hello</code> it might become &ldquo;clutterish&rdquo; or generally
+cumbersome to write <code>{title: "Ms."}</code> every time. In these cases, there&rsquo;s an
+alternate way of calling functions: the <em>shorthand call-style</em> which gives a
+function&rsquo;s arguments <em>in the order they where defined when creating the function</em>:
+<samp>Hello Ms. John</samp></p>
 
-<pre><code>print hello &quot;Ms.&quot;</code></pre>
+<pre><code>print hello "Ms."
+</code></pre>
 
-<p>&#8230;</p>
+<p>&hellip;</p>
 
 <p><em>This guide is currently work in progress and will evolve over time</em></p>
+
   </wrapper>
 </section>
 

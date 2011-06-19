@@ -12,7 +12,7 @@
     <script src="/move.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
     <link rel="stylesheet" href="/res/screen.css" type="text/css" media="all">
-    <link rel="alternate" type="application/json" title="package.json" href="/package.json">
+    <link rel="alternate" type="application/json" title="package.json" href="http://movelang.org/package.json">
     <script type="text/move">
 visibleMenus = {}
 overlay = null
@@ -165,7 +165,7 @@ $menu.find('a').each ^{
     <!-- Open Graph -->
     <meta property="fb:admins" content="728642302">
     <meta property="fb:app_id" content="158328320889704">
-    <meta property="og:url" content="/library/index.html">
+    <meta property="og:url" content="http://movelang.org/library/index.html">
     <meta property="og:site_name" content="Move">
     
     <meta property="og:title" content="Library">
@@ -210,821 +210,389 @@ programming computers.
 
     <section class="body">
   <wrapper>
-    <h1 id='move_standard_library'>Move standard library</h1>
+    <h1>Move standard library</h1>
 
 <p>Built-in objects and functions</p>
 
-<h2 id='number'>Number</h2>
+<h2>Number</h2>
 
 <ul>
-<li>
-<p><code>literal → number</code> — Numbers are created using literal numbers like <code>123.4</code> or <code>0xf4</code>. Refer to the <a href='#types/number'>language reference on numbers</a> for details.</p>
-</li>
-
-<li>
-<p><code>Number(value) → number</code> — Convert a value to a number. Returns the <code>NaN</code> atom if the conversion failed.</p>
-</li>
-
-<li>
-<p><code>Number.MAX_VALUE → number</code> — The largest positive representable number. The largest negative representable number is <code>-MAX_VALUE</code>. Read-only.</p>
-</li>
-
-<li>
-<p><code>Number.MIN_VALUE → number</code> — The smallest positive representable number — that is, the positive number closest to zero (without actually being zero). The smallest negative representable number is <code>-MIN_VALUE</code>. Read-only.</p>
-</li>
-
-<li>
-<p><code>Number.NaN → NaN</code> — Special &#8220;not a number&#8221; value. Read-only.</p>
-</li>
-
-<li>
-<p><code>Number.NEGATIVE_INFINITY → number</code> — Special value representing negative infinity; returned on overflow. Read-only.</p>
-</li>
-
-<li>
-<p><code>Number.POSITIVE_INFINITY → number</code> — Special value representing infinity; returned on overflow.</p>
-</li>
+<li><p><code>literal → number</code> — Numbers are created using literal numbers like <code>123.4</code> or <code>0xf4</code>. Refer to the <a href="#types/number">language reference on numbers</a> for details.</p></li>
+<li><p><code>Number(value) → number</code> — Convert a value to a number. Returns the <code>NaN</code> atom if the conversion failed.</p></li>
+<li><p><code>Number.MAX_VALUE → number</code> — The largest positive representable number. The largest negative representable number is <code>-MAX_VALUE</code>. Read-only.</p></li>
+<li><p><code>Number.MIN_VALUE → number</code> — The smallest positive representable number — that is, the positive number closest to zero (without actually being zero). The smallest negative representable number is <code>-MIN_VALUE</code>. Read-only.</p></li>
+<li><p><code>Number.NaN → NaN</code> — Special &ldquo;not a number&rdquo; value. Read-only.</p></li>
+<li><p><code>Number.NEGATIVE_INFINITY → number</code> — Special value representing negative infinity; returned on overflow. Read-only.</p></li>
+<li><p><code>Number.POSITIVE_INFINITY → number</code> — Special value representing infinity; returned on overflow.</p></li>
 </ul>
 
-<h3 id='numberprototype'>Number.prototype</h3>
+
+<h3>Number.prototype</h3>
 
 <ul>
-<li>
-<p><code>toExponential(fractionDigits) → text</code> — Returns text representing the number in exponential notation. <code>fractionDigits</code> defaults to as many digits as necessary to specify the number.</p>
-</li>
-
-<li>
-<p><code>toFixed(digits:0) → text</code> — Returns text representing the number in fixed-point notation.</p>
-</li>
-
-<li>
-<p><code>toPrecision(precision) → text</code> — Returns text representing the number to a specified precision in fixed-point or exponential notation. If <code>precision</code> is not given, this function produce the same result as the <a href='#Object.prototype'><code>toText</code></a> function.</p>
-</li>
+<li><p><code>toExponential(fractionDigits) → text</code> — Returns text representing the number in exponential notation. <code>fractionDigits</code> defaults to as many digits as necessary to specify the number.</p></li>
+<li><p><code>toFixed(digits:0) → text</code> — Returns text representing the number in fixed-point notation.</p></li>
+<li><p><code>toPrecision(precision) → text</code> — Returns text representing the number to a specified precision in fixed-point or exponential notation. If <code>precision</code> is not given, this function produce the same result as the <a href="#Object.prototype"><code>toText</code></a> function.</p></li>
 </ul>
 
-<h2 id='object'>Object</h2>
+
+<h2>Object</h2>
 
 <ul>
-<li>
-<p><code>{key1: value1, key2: value2, ..., keyN: valueN} → object</code> — Creates a new object with zero or more value properties.</p>
-</li>
-
-<li>
-<p><code>Object.create(prototype, properties) → object</code> — Creates a new object whose prototype is the passed in parent object <code>prototype</code> and whose properties are those specified by <code>properties</code>. See also: <a href='#create'><code>create</code></a>.</p>
-</li>
-
-<li>
-<p><code>Object.keys(obj) → [text, ...]</code> — Returns a list of the ownProperties of an object that are enumerable.</p>
-</li>
-
-<li>
-<p><code>Object.defineProperty(obj, prop, desc)</code> — Defines a property on an object with the given descriptor</p>
-</li>
-
-<li>
-<p><code>Object.defineProperties(obj, props)</code> — Adds own properties and/or updates the attributes of existing own properties of an object</p>
-</li>
-
-<li>
-<p><code>Object.getOwnPropertyNames(obj) → [text, ...]</code> — Returns a list of the ownProperties of an object including ones that are not enumerable.</p>
-</li>
-
-<li>
-<p><code>Object.getPrototypeOf(obj) → object</code> — Returns the prototype of an object.</p>
-</li>
-
-<li>
-<p><code>Object.getOwnPropertyDescriptor(obj, property) → object</code> — Returns an object with keys describing the description of a property (value, writable, enumerable, configurable)</p>
-</li>
-
-<li>
-<p><code>Object.preventExtensions(obj)</code> — Prevents any new properties from being added to the given object.</p>
-</li>
-
-<li>
-<p><code>Object.isExtensible(obj) → true|false</code> — Checks if Object.preventExtensions() has been called on this object.</p>
-</li>
-
-<li>
-<p><code>Object.seal(obj)</code> — Prevents code from adding or deleting properties, or changing the descriptors of any property on an object. Property values can be changed however.</p>
-</li>
-
-<li>
-<p><code>Object.isSealed(obj) → true|false</code> — Checks if Object.seal() has been called on this object.</p>
-</li>
-
-<li>
-<p><code>Object.freeze(obj)</code> — Same as Object.seal, except property values cannot be changed.</p>
-</li>
-
-<li>
-<p><code>Object.isFrozen(obj) → true|false</code> — Checks if Object.freeze() has been called on this object.</p>
-</li>
-
-<li>
-<p><code>Object.inspect(value, showHidden:false, depth:2) → text</code> — Returns a human-readable representation of the <em>value</em> including its properties (if <em>showHidden</em> is false, only &#8220;enumerable&#8221; properties are displayed, otherwise all properties are displayed).</p>
-</li>
+<li><p><code>{key1: value1, key2: value2, ..., keyN: valueN} → object</code> — Creates a new object with zero or more value properties.</p></li>
+<li><p><code>Object.create(prototype, properties) → object</code> — Creates a new object whose prototype is the passed in parent object <code>prototype</code> and whose properties are those specified by <code>properties</code>. See also: <a href="#create"><code>create</code></a>.</p></li>
+<li><p><code>Object.keys(obj) → [text, ...]</code> — Returns a list of the ownProperties of an object that are enumerable.</p></li>
+<li><p><code>Object.defineProperty(obj, prop, desc)</code> — Defines a property on an object with the given descriptor</p></li>
+<li><p><code>Object.defineProperties(obj, props)</code> — Adds own properties and/or updates the attributes of existing own properties of an object</p></li>
+<li><p><code>Object.getOwnPropertyNames(obj) → [text, ...]</code> — Returns a list of the ownProperties of an object including ones that are not enumerable.</p></li>
+<li><p><code>Object.getPrototypeOf(obj) → object</code> — Returns the prototype of an object.</p></li>
+<li><p><code>Object.getOwnPropertyDescriptor(obj, property) → object</code> — Returns an object with keys describing the description of a property (value, writable, enumerable, configurable)</p></li>
+<li><p><code>Object.preventExtensions(obj)</code> — Prevents any new properties from being added to the given object.</p></li>
+<li><p><code>Object.isExtensible(obj) → true|false</code> — Checks if Object.preventExtensions() has been called on this object.</p></li>
+<li><p><code>Object.seal(obj)</code> — Prevents code from adding or deleting properties, or changing the descriptors of any property on an object. Property values can be changed however.</p></li>
+<li><p><code>Object.isSealed(obj) → true|false</code> — Checks if Object.seal() has been called on this object.</p></li>
+<li><p><code>Object.freeze(obj)</code> — Same as Object.seal, except property values cannot be changed.</p></li>
+<li><p><code>Object.isFrozen(obj) → true|false</code> — Checks if Object.freeze() has been called on this object.</p></li>
+<li><p><code>Object.inspect(value, showHidden:false, depth:2) → text</code> — Returns a human-readable representation of the <em>value</em> including its properties (if <em>showHidden</em> is false, only &ldquo;enumerable&rdquo; properties are displayed, otherwise all properties are displayed).</p></li>
 </ul>
 
-<h3 id='objectprototype'>Object.prototype</h3>
+
+<h3>Object.prototype</h3>
 
 <ul>
-<li>
-<p><code>.name ←→ value</code> — Access or modify the value for property named <em>name</em>.</p>
-</li>
-
-<li>
-<p><code>[text] ←→ value</code> — Access or modify the value for property named <em>text</em>.</p>
-</li>
-
-<li>
-<p><code>constructor ←→ function</code> — Specifies the function that creates an object&#8217;s prototype.</p>
-</li>
-
-<li>
-<p><code>toText() → text</code> — Text representation of the object.</p>
-</li>
-
-<li>
-<p><code>valueOf() → object</code> — Returns the primitive value of the object.</p>
-</li>
-
-<li>
-<p><code>hasOwnProperty(name) → true|false</code> — Returns a boolean indicating whether an object contains the specified property as a direct property of that object and not inherited through the prototype chain.</p>
-</li>
-
-<li>
-<p><code>isPrototypeOf(value) → true|false</code> — Returns a boolean indication whether the specified object is in the prototype chain of the object this method is called upon.</p>
-</li>
+<li><p><code>.name ←→ value</code> — Access or modify the value for property named <em>name</em>.</p></li>
+<li><p><code>[text] ←→ value</code> — Access or modify the value for property named <em>text</em>.</p></li>
+<li><p><code>constructor ←→ function</code> — Specifies the function that creates an object&rsquo;s prototype.</p></li>
+<li><p><code>toText() → text</code> — Text representation of the object.</p></li>
+<li><p><code>valueOf() → object</code> — Returns the primitive value of the object.</p></li>
+<li><p><code>hasOwnProperty(name) → true|false</code> — Returns a boolean indicating whether an object contains the specified property as a direct property of that object and not inherited through the prototype chain.</p></li>
+<li><p><code>isPrototypeOf(value) → true|false</code> — Returns a boolean indication whether the specified object is in the prototype chain of the object this method is called upon.</p></li>
 </ul>
 
-<h2 id='array'>Array</h2>
+
+<h2>Array</h2>
 
 <ul>
-<li>
-<p><code>[value1, value2, ..., valueN] → list</code> — Creates a list holding zero or more values.</p>
-</li>
-
-<li>
-<p><code>Array(length:0) → list</code> — Creates a list with a certain initial length. Not specifying a length is equivalent to using the list literal &#8221;<code>[]</code>&#8221;.</p>
-</li>
-
-<li>
-<p><code>Array.isArray(value) → true|false</code> — Test if a value is a list or not.</p>
-</li>
+<li><p><code>[value1, value2, ..., valueN] → list</code> — Creates a list holding zero or more values.</p></li>
+<li><p><code>Array(length:0) → list</code> — Creates a list with a certain initial length. Not specifying a length is equivalent to using the list literal &ldquo;<code>[]</code>&rdquo;.</p></li>
+<li><p><code>Array.isArray(value) → true|false</code> — Test if a value is a list or not.</p></li>
 </ul>
 
-<h3 id='arrayprototype'>Array.prototype</h3>
+
+<h3>Array.prototype</h3>
 
 <ul>
-<li>
-<p><code>length ←→ number</code> — Number of items in the list.</p>
-</li>
-
-<li>
-<p><code>[number] ←→ value</code> — Access or modify the value at a specific index.</p>
-</li>
-
-<li>
-<p><code>concat(list2, list3, ..., listN) → list</code> — Returns a new array comprised of this array joined with other array(s) and/or value(s).</p>
-</li>
-
-<li>
-<p><code>every(^(value, index, o) → true|false, this:this) → true|false</code> — Returns true if every element in this array satisfies the provided testing function.</p>
-</li>
-
-<li>
-<p><code>filter(^(value, index, o) → true|false, this:this) → list</code> — Creates a new array with all of the elements of this array for which the provided filtering function returns true.</p>
-</li>
-
-<li>
-<p><code>forEach(^(value, index, o), thisObject:null)</code> — Calls a function for each element in the array.</p>
-</li>
-
-<li>
-<p><code>indexOf(value, startIndex:0) → number</code> — Returns the first (least) index of an element within the array equal to the specified value, or -1 if none is found.</p>
-</li>
-
-<li>
-<p><code>lastIndexOf(value, startIndex:@length-1) → number</code> — Returns the last (greatest) index of an element within the array equal to the specified value, or -1 if none is found.</p>
-</li>
-
-<li>
-<p><code>join(glueText:&quot;&quot;) → text</code> — Joins all elements of an array into text.</p>
-</li>
-
-<li>
-<p><code>map(^(value, index, o) → value, this:this) → list</code> — Creates a new array with the results of calling a provided function on every element in this array.</p>
-</li>
-
-<li>
-<p><code>push(value1, ..., value1) → number</code> — Adds one or more elements to the end of an array and returns the new length of the array.</p>
-</li>
-
-<li>
-<p><code>unshift(value1, ..., value1) → number</code> — Adds one or more elements to the front of an array and returns the new length of the array.</p>
-</li>
-
-<li>
-<p><code>pop() → value</code> — Removes the last element from an array and returns that element.</p>
-</li>
-
-<li>
-<p><code>shift() → value</code> — Removes the first element from an array and returns that element.</p>
-</li>
-
-<li>
-<p><code>reduce(^(previousValue, currentValue, index, o) → value, initialValue:undefined) → value</code> — Apply a function simultaneously against two values of the array (from left-to-right) as to reduce it to a single value.</p>
-</li>
-
-<li>
-<p><code>reduceRight(^(previousValue, currentValue, index, o) → value, initialValue:undefined) → value</code> — Apply a function simultaneously against two values of the array (from right-to-left) as to reduce it to a single value.</p>
-</li>
-
-<li>
-<p><code>reverse() → list</code> — Reverses the order of the elements of an array — the first becomes the last, and the last becomes the first. This function does not create a new list, but modifies the calling list in place.</p>
-</li>
-
-<li>
-<p><code>slice(startIndex, endIndex:@length) → </code> — Extracts a section of an array and returns a new array.</p>
-</li>
-
-<li>
-<p><code>some(^(value, index, o) → true|false) → true|false</code> — Returns true if at least one element in this array satisfies the provided testing function.</p>
-</li>
-
-<li>
-<p><code>sort(^(value1, value2) → number:undefined) → list</code> — Sorts the elements of an array. This function does not create a new list, but modifies the calling list in place.</p>
-</li>
-
-<li>
-<p><code>splice(index, howMany[, element1[, ...[, elementN]]]) → list</code> — Adds and/or removes elements from an array. Returns the caller.</p>
-</li>
-
-<li>
-<p><code>unique() → list</code> — Returns a new list with duplicate values removed. The order of values are not retained.</p>
-</li>
+<li><p><code>length ←→ number</code> — Number of items in the list.</p></li>
+<li><p><code>[number] ←→ value</code> — Access or modify the value at a specific index.</p></li>
+<li><p><code>concat(list2, list3, ..., listN) → list</code> — Returns a new array comprised of this array joined with other array(s) and/or value(s).</p></li>
+<li><p><code>every(^(value, index, o) → true|false, this:this) → true|false</code> — Returns true if every element in this array satisfies the provided testing function.</p></li>
+<li><p><code>filter(^(value, index, o) → true|false, this:this) → list</code> — Creates a new array with all of the elements of this array for which the provided filtering function returns true.</p></li>
+<li><p><code>forEach(^(value, index, o), thisObject:null)</code> — Calls a function for each element in the array.</p></li>
+<li><p><code>indexOf(value, startIndex:0) → number</code> — Returns the first (least) index of an element within the array equal to the specified value, or -1 if none is found.</p></li>
+<li><p><code>lastIndexOf(value, startIndex:@length-1) → number</code> — Returns the last (greatest) index of an element within the array equal to the specified value, or -1 if none is found.</p></li>
+<li><p><code>join(glueText:"") → text</code> — Joins all elements of an array into text.</p></li>
+<li><p><code>map(^(value, index, o) → value, this:this) → list</code> — Creates a new array with the results of calling a provided function on every element in this array.</p></li>
+<li><p><code>push(value1, ..., value1) → number</code> — Adds one or more elements to the end of an array and returns the new length of the array.</p></li>
+<li><p><code>unshift(value1, ..., value1) → number</code> — Adds one or more elements to the front of an array and returns the new length of the array.</p></li>
+<li><p><code>pop() → value</code> — Removes the last element from an array and returns that element.</p></li>
+<li><p><code>shift() → value</code> — Removes the first element from an array and returns that element.</p></li>
+<li><p><code>reduce(^(previousValue, currentValue, index, o) → value, initialValue:undefined) → value</code> — Apply a function simultaneously against two values of the array (from left-to-right) as to reduce it to a single value.</p></li>
+<li><p><code>reduceRight(^(previousValue, currentValue, index, o) → value, initialValue:undefined) → value</code> — Apply a function simultaneously against two values of the array (from right-to-left) as to reduce it to a single value.</p></li>
+<li><p><code>reverse() → list</code> — Reverses the order of the elements of an array — the first becomes the last, and the last becomes the first. This function does not create a new list, but modifies the calling list in place.</p></li>
+<li><p><code>slice(startIndex, endIndex:@length) →</code> — Extracts a section of an array and returns a new array.</p></li>
+<li><p><code>some(^(value, index, o) → true|false) → true|false</code> — Returns true if at least one element in this array satisfies the provided testing function.</p></li>
+<li><p><code>sort(^(value1, value2) → number:undefined) → list</code> — Sorts the elements of an array. This function does not create a new list, but modifies the calling list in place.</p></li>
+<li><p><code>splice(index, howMany[, element1[, ...[, elementN]]]) → list</code> — Adds and/or removes elements from an array. Returns the caller.</p></li>
+<li><p><code>unique() → list</code> — Returns a new list with duplicate values removed. The order of values are not retained.</p></li>
 </ul>
 
-<h2 id='text'>Text</h2>
+
+<h2>Text</h2>
 
 <p><em>Text</em> is an alias for the JavaScript built-in type <code>String</code> and is the object prototype used for text values. The use of <code>Text</code> in favor for <code>String</code> is recommended but not enforced.</p>
 
 <ul>
-<li>
-<p><code>&quot;literal&quot;|&#39;literal&#39; → text</code> — Text is created by wrapping literal text in either double or single quote characters.</p>
-</li>
-
-<li>
-<p><code>Text(value) → text</code> — Text representation of <code>value</code></p>
-</li>
-
-<li>
-<p><code>Text.fromCharCode(number) → text</code> — Text of character representing a Unicode character code.</p>
-</li>
+<li><p><code>"literal"|'literal' → text</code> — Text is created by wrapping literal text in either double or single quote characters.</p></li>
+<li><p><code>Text(value) → text</code> — Text representation of <code>value</code></p></li>
+<li><p><code>Text.fromCharCode(number) → text</code> — Text of character representing a Unicode character code.</p></li>
 </ul>
 
-<h3 id='textprototype'>Text.prototype</h3>
+
+<h3>Text.prototype</h3>
 
 <ul>
-<li>
-<p><code>length → number</code> — Number of characters.</p>
-</li>
-
-<li>
-<p><code>charAt(number) → text</code> — Returns the character at the specified index.</p>
-</li>
-
-<li>
-<p><code>[number] → text</code> — Text representing the character at position <code>number</code>.</p>
-</li>
-
-<li>
-<p><code>charCodeAt(number) → number</code> — Returns a number indicating the Unicode value of the character at the given index.</p>
-</li>
-
-<li>
-<p><code>concat(string2, string3, ..., stringN]) → text</code> — Combines the text of two strings and returns a new string. Same as <code>string + string2 + string3 + ... stringN</code>.</p>
-</li>
-
-<li>
-<p><code>indexOf(needle, startIndex:0) → number</code> — Returns the index within the calling String object of the first occurrence of the specified value, or -1 if not found.</p>
-</li>
-
-<li>
-<p><code>lastIndexOf(needle, startIndex:@length-1) → number</code> — Returns the index within the calling String object of the last occurrence of the specified value, or -1 if not found.</p>
-</li>
-
-<li>
-<p><code>localeCompare(other) → number</code> — Returns a number indicating whether a reference string comes before or after or is the same as the given string in sort order.</p>
-</li>
-
-<li>
-<p><code>match(regexp) → object</code> — Used to match a regular expression against a string.</p>
-</li>
-
-<li>
-<p><code>replace(text|regexp, replacement|function) → text</code> — Used to find a match between a regular expression and a string, and to replace the matched substring with a new substring.</p>
-</li>
-
-<li>
-<p><code>search(regexp) → number</code> — Executes the search for a match between a regular expression and a specified string. Returns the index of the regular expression inside the string. Faster than <code>match</code> but returns less information.</p>
-</li>
-
-<li>
-<p><code>slice(startIndex, endIndex:@length) → text</code> — Extracts a section of a string and returns a new string.</p>
-</li>
-
-<li>
-<p><code>split(text|regexp, limit:Number.POSITIVE\_INFINITY) → [text, text, ...]</code> — Splits text into a list of texts by separating the text into smaller chunks.</p>
-</li>
-
-<li>
-<p><code>substr(startIndex, length:@length-1) → text</code> — Returns the characters beginning at the specified location through the specified number of characters.</p>
-</li>
-
-<li>
-<p><code>substring(startIndex, endIndex:@length) → text</code> — Returns the characters in a string between two indexes in the text.</p>
-</li>
-
-<li>
-<p><code>toLowerCase() → text</code> — Returns a version of the text converted to lower case.</p>
-</li>
-
-<li>
-<p><code>toUpperCase() → text</code> — Returns a version of the text converted to upper case.</p>
-</li>
-
-<li>
-<p><code>trim() → text</code> — Trims whitespace from both ends of the string</p>
-</li>
-
-<li>
-<p><code>trimRight() → text</code> — Trims whitespace from the right side of the string</p>
-</li>
-
-<li>
-<p><code>trimLeft() → text</code> — Trims whitespace from the left side of the string</p>
-</li>
-
-<li>
-<p><code>repeat(times) → text</code> — Returns a new text which is the result of pasting together <em>times</em> copies of the calling text.</p>
-</li>
-
-<li>
-<p><code>padLeft(length, padding:&quot; &quot;) → text</code> — Returns a new text which has at least <em>length</em> number of characters. If the calling text have less characters than <em>length</em>, <em>padding</em> is used to fill out the beginning of the text.</p>
-</li>
-
-<li>
-<p><code>padRight(length, padding:&quot; &quot;) → text</code> — Returns a new text which has at least <em>length</em> number of characters. If the calling text have less characters than <em>length</em>, <em>padding</em> is used to fill out the end of the text.</p>
-</li>
-
-<li>
-<p><code>editDistance(text) → number</code> — Difference of the calling text versus <em>text</em> measured in number of edits needed to transform the caller into the <em>text</em> argument. (e.g. <code>&quot;SnataMArIa&quot;.editDistance(&quot;Santa Maria&quot;) → 5</code> because five edits are needed to transform &#8220;SnataMArIa&#8221; into &#8220;Santa Maria&#8221;)</p>
-</li>
-
-<li>
-<p><code>matchAll(pattern) → list</code> — Returns a list of matches for <em>pattern</em> (a RegExp) in the receiver. Each match object contains the matched groups accessible by group number as well as the following properties:</p>
+<li><p><code>length → number</code> — Number of characters.</p></li>
+<li><p><code>charAt(number) → text</code> — Returns the character at the specified index.</p></li>
+<li><p><code>[number] → text</code> — Text representing the character at position <code>number</code>.</p></li>
+<li><p><code>charCodeAt(number) → number</code> — Returns a number indicating the Unicode value of the character at the given index.</p></li>
+<li><p><code>concat(string2, string3, ..., stringN]) → text</code> — Combines the text of two strings and returns a new string. Same as <code>string + string2 + string3 + ... stringN</code>.</p></li>
+<li><p><code>indexOf(needle, startIndex:0) → number</code> — Returns the index within the calling String object of the first occurrence of the specified value, or -1 if not found.</p></li>
+<li><p><code>lastIndexOf(needle, startIndex:@length-1) → number</code> — Returns the index within the calling String object of the last occurrence of the specified value, or -1 if not found.</p></li>
+<li><p><code>localeCompare(other) → number</code> — Returns a number indicating whether a reference string comes before or after or is the same as the given string in sort order.</p></li>
+<li><p><code>match(regexp) → object</code> — Used to match a regular expression against a string.</p></li>
+<li><p><code>replace(text|regexp, replacement|function) → text</code> — Used to find a match between a regular expression and a string, and to replace the matched substring with a new substring.</p></li>
+<li><p><code>search(regexp) → number</code> — Executes the search for a match between a regular expression and a specified string. Returns the index of the regular expression inside the string. Faster than <code>match</code> but returns less information.</p></li>
+<li><p><code>slice(startIndex, endIndex:@length) → text</code> — Extracts a section of a string and returns a new string.</p></li>
+<li><p><code>split(text|regexp, limit:Number.POSITIVE\_INFINITY) → [text, text, ...]</code> — Splits text into a list of texts by separating the text into smaller chunks.</p></li>
+<li><p><code>substr(startIndex, length:@length-1) → text</code> — Returns the characters beginning at the specified location through the specified number of characters.</p></li>
+<li><p><code>substring(startIndex, endIndex:@length) → text</code> — Returns the characters in a string between two indexes in the text.</p></li>
+<li><p><code>toLowerCase() → text</code> — Returns a version of the text converted to lower case.</p></li>
+<li><p><code>toUpperCase() → text</code> — Returns a version of the text converted to upper case.</p></li>
+<li><p><code>trim() → text</code> — Trims whitespace from both ends of the string</p></li>
+<li><p><code>trimRight() → text</code> — Trims whitespace from the right side of the string</p></li>
+<li><p><code>trimLeft() → text</code> — Trims whitespace from the left side of the string</p></li>
+<li><p><code>repeat(times) → text</code> — Returns a new text which is the result of pasting together <em>times</em> copies of the calling text.</p></li>
+<li><p><code>padLeft(length, padding:" ") → text</code> — Returns a new text which has at least <em>length</em> number of characters. If the calling text have less characters than <em>length</em>, <em>padding</em> is used to fill out the beginning of the text.</p></li>
+<li><p><code>padRight(length, padding:" ") → text</code> — Returns a new text which has at least <em>length</em> number of characters. If the calling text have less characters than <em>length</em>, <em>padding</em> is used to fill out the end of the text.</p></li>
+<li><p><code>editDistance(text) → number</code> — Difference of the calling text versus <em>text</em> measured in number of edits needed to transform the caller into the <em>text</em> argument. (e.g. <code>"SnataMArIa".editDistance("Santa Maria") → 5</code> because five edits are needed to transform &ldquo;SnataMArIa&rdquo; into &ldquo;Santa Maria&rdquo;)</p></li>
+<li><p><code>matchAll(pattern) → list</code> — Returns a list of matches for <em>pattern</em> (a RegExp) in the receiver. Each match object contains the matched groups accessible by group number as well as the following properties:</p>
 
 <ul>
 <li><code>index ←→ number</code> — The 0-based offset of the match in the text.</li>
-
 <li><code>input ←→ text</code> — The original input text.</li>
 </ul>
 </li>
-
-<li>
-<p><code>forEachMatch(pattern, ^(match, index, matches), thisObject:null)</code> — Iterates over all parts of the receiver matching <em>pattern</em> (a RegExp). Each match object contains the matched groups accessible by group number as well as the following properties:</p>
+<li><p><code>forEachMatch(pattern, ^(match, index, matches), thisObject:null)</code> — Iterates over all parts of the receiver matching <em>pattern</em> (a RegExp). Each match object contains the matched groups accessible by group number as well as the following properties:</p>
 
 <ul>
 <li><code>index ←→ number</code> — The 0-based offset of the match in the text.</li>
-
 <li><code>input ←→ text</code> — The original input text.</li>
 </ul>
 </li>
 </ul>
 
-<h2 id='function'>Function</h2>
+
+<h2>Function</h2>
 
 <ul>
-<li><code>^(arg1[:val1], arg2[:val2], ..., argN[:valN]) { body } → function</code> — Create a function with zero or more arguments where &#8220;body&#8221; is substituted for the function&#8217;s code block.</li>
+<li><code>^(arg1[:val1], arg2[:val2], ..., argN[:valN]) { body } → function</code> — Create a function with zero or more arguments where &ldquo;body&rdquo; is substituted for the function&rsquo;s code block.</li>
 </ul>
 
-<h3 id='functionprototype'>Function.prototype</h3>
+
+<h3>Function.prototype</h3>
 
 <ul>
-<li>
-<p><code>apply(this, arguments:[]) → value</code> — Applies the function in the context (the &#8220;this&#8221; value) of a different object. Arguments can be passed as an Array object.</p>
-</li>
-
-<li>
-<p><code>call(this, argument1, argument2, ..., argumentN) → value</code> — Applies the function in the context (the &#8220;this&#8221; value) of a different object. Arguments can be passed as a succession of extra arguments.</p>
-</li>
+<li><p><code>apply(this, arguments:[]) → value</code> — Applies the function in the context (the &ldquo;this&rdquo; value) of a different object. Arguments can be passed as an Array object.</p></li>
+<li><p><code>call(this, argument1, argument2, ..., argumentN) → value</code> — Applies the function in the context (the &ldquo;this&rdquo; value) of a different object. Arguments can be passed as a succession of extra arguments.</p></li>
 </ul>
 
-<p>Example: <samp>undefined
+
+<p>Example:
+<samp>undefined
 John</samp></p>
 
 <pre><code>foo = ^{ print @name }
 foo {}
-foo.call {name: &quot;John&quot;}</code></pre>
+foo.call {name: "John"}
+</code></pre>
 
-<h2 id='date'>Date</h2>
+<h2>Date</h2>
 
 <ul>
-<li>
-<p><code>Date(year:0, month:0, day:0, hours:0, minutes:0, seconds:0, milliseconds:0) → text</code> — Date and time as text in a locale-specific format</p>
-</li>
-
-<li>
-<p><code>new Date → date</code> — Current date and time as a date object</p>
-</li>
-
-<li>
-<p><code>new Date(milliseconds) → date</code> — Create a date object representing the time and day at the <em>milliseconds</em> timestamp (UNIX epoch).</p>
-</li>
-
-<li>
-<p><code>new Date(year, month, day, hours:0, minutes:0, seconds:0, milliseconds:0) → date</code> — Create a date object by specifying its components as numbers.</p>
-</li>
-
-<li>
-<p><code>new Date(text) → date</code> — Create a date object by parsing text as date and/or time.</p>
-</li>
-
-<li>
-<p><code>Date.parse(text) → date</code> — Create a date object by parsing text as date and/or time.</p>
-</li>
-
-<li>
-<p><code>Date.distantFuture → date</code> — A date in the distant future</p>
-</li>
-
-<li>
-<p><code>Date.distantPast → date</code> — A date in the distant past</p>
-</li>
-
-<li>
-<p><code>Date.now() → number</code> — Returns the number of milliseconds since January 1, 1970, 00:00:00, local time.</p>
-</li>
-
-<li>
-<p><code>Date.nowUTC() → number</code> — Returns the number of milliseconds since January 1, 1970, 00:00:00, universal time.</p>
-</li>
-
-<li>
-<p><code>Date.UTC(year, month, day:0, hours:0, minutes:0, seconds:0, milliseconds:0) → number</code> — Returns the number of milliseconds for the date represented by the arguments, since January 1, 1970, 00:00:00, universal time.</p>
-</li>
+<li><p><code>Date(year:0, month:0, day:0, hours:0, minutes:0, seconds:0, milliseconds:0) → text</code> — Date and time as text in a locale-specific format</p></li>
+<li><p><code>new Date → date</code> — Current date and time as a date object</p></li>
+<li><p><code>new Date(milliseconds) → date</code> — Create a date object representing the time and day at the <em>milliseconds</em> timestamp (UNIX epoch).</p></li>
+<li><p><code>new Date(year, month, day, hours:0, minutes:0, seconds:0, milliseconds:0) → date</code> — Create a date object by specifying its components as numbers.</p></li>
+<li><p><code>new Date(text) → date</code> — Create a date object by parsing text as date and/or time.</p></li>
+<li><p><code>Date.parse(text) → date</code> — Create a date object by parsing text as date and/or time.</p></li>
+<li><p><code>Date.distantFuture → date</code> — A date in the distant future</p></li>
+<li><p><code>Date.distantPast → date</code> — A date in the distant past</p></li>
+<li><p><code>Date.now() → number</code> — Returns the number of milliseconds since January 1, 1970, 00:00:00, local time.</p></li>
+<li><p><code>Date.nowUTC() → number</code> — Returns the number of milliseconds since January 1, 1970, 00:00:00, universal time.</p></li>
+<li><p><code>Date.UTC(year, month, day:0, hours:0, minutes:0, seconds:0, milliseconds:0) → number</code> — Returns the number of milliseconds for the date represented by the arguments, since January 1, 1970, 00:00:00, universal time.</p></li>
 </ul>
 
-<h3 id='dateprototype'>Date.prototype</h3>
+
+<h3>Date.prototype</h3>
 
 <ul>
-<li>
-<p><code>getDate() → number</code> — Returns the day of the month (1-31) for the specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>getDay() → number</code> — Returns the day of the week (0-6) for the specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>getFullYear() → number</code> — Returns the year (4 digits for 4-digit years) of the specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>getHours() → number</code> — Returns the hour (0-23) in the specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>getMilliseconds() → number</code> — Returns the milliseconds (0-999) in the specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>getMinutes() → number</code> — Returns the minutes (0-59) in the specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>getMonth() → number</code> — Returns the month (0-11) in the specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>getSeconds() → number</code> — Returns the seconds (0-59) in the specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>getTime() → number</code> — Returns the numeric value of the specified date as the number of milliseconds since January 1, 1970, 00:00:00 UTC (negative for prior times).</p>
-</li>
-
-<li>
-<p><code>getTimezoneOffset() → number</code> — Returns the time-zone offset in minutes for the current locale.</p>
-</li>
-
-<li>
-<p><code>getUTCDate() → number</code> — Returns the day (date) of the month (1-31) in the specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>getUTCDay() → number</code> — Returns the day of the week (0-6) in the specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>getUTCFullYear() → number</code> — Returns the year (4 digits for 4-digit years) in the specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>getUTCHours() → number</code> — Returns the hours (0-23) in the specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>getUTCMilliseconds() → number</code> — Returns the milliseconds (0-999) in the specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>getUTCMinutes() → number</code> — Returns the minutes (0-59) in the specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>getUTCMonth() → number</code> — Returns the month (0-11) in the specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>getUTCSeconds() → number</code> — Returns the seconds (0-59) in the specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>getUTCTime() → number</code> — Returns the numeric value of the specified date as the number of milliseconds since January 1, 1970, 00:00:00 UTC (negative for prior times), universal time.</p>
-</li>
-
-<li>
-<p><code>getUTCComponents() → list</code> — Date and time components (numbers) in Universal Time Coordinate. <em>list</em> contains:</p>
+<li><code>getDate() → number</code> — Returns the day of the month (1-31) for the specified date according to local time.</li>
+<li><code>getDay() → number</code> — Returns the day of the week (0-6) for the specified date according to local time.</li>
+<li><code>getFullYear() → number</code> — Returns the year (4 digits for 4-digit years) of the specified date according to local time.</li>
+<li><code>getHours() → number</code> — Returns the hour (0-23) in the specified date according to local time.</li>
+<li><code>getMilliseconds() → number</code> — Returns the milliseconds (0-999) in the specified date according to local time.</li>
+<li><code>getMinutes() → number</code> — Returns the minutes (0-59) in the specified date according to local time.</li>
+<li><code>getMonth() → number</code> — Returns the month (0-11) in the specified date according to local time.</li>
+<li><code>getSeconds() → number</code> — Returns the seconds (0-59) in the specified date according to local time.</li>
+<li><code>getTime() → number</code> — Returns the numeric value of the specified date as the number of milliseconds since January 1, 1970, 00:00:00 UTC (negative for prior times).</li>
+<li><code>getTimezoneOffset() → number</code> — Returns the time-zone offset in minutes for the current locale.</li>
+<li><code>getUTCDate() → number</code> — Returns the day (date) of the month (1-31) in the specified date according to universal time.</li>
+<li><code>getUTCDay() → number</code> — Returns the day of the week (0-6) in the specified date according to universal time.</li>
+<li><code>getUTCFullYear() → number</code> — Returns the year (4 digits for 4-digit years) in the specified date according to universal time.</li>
+<li><code>getUTCHours() → number</code> — Returns the hours (0-23) in the specified date according to universal time.</li>
+<li><code>getUTCMilliseconds() → number</code> — Returns the milliseconds (0-999) in the specified date according to universal time.</li>
+<li><code>getUTCMinutes() → number</code> — Returns the minutes (0-59) in the specified date according to universal time.</li>
+<li><code>getUTCMonth() → number</code> — Returns the month (0-11) in the specified date according to universal time.</li>
+<li><code>getUTCSeconds() → number</code> — Returns the seconds (0-59) in the specified date according to universal time.</li>
+<li><code>getUTCTime() → number</code> — Returns the numeric value of the specified date as the number of milliseconds since January 1, 1970, 00:00:00 UTC (negative for prior times), universal time.</li>
+<li><code>getUTCComponents() → list</code> — Date and time components (numbers) in Universal Time Coordinate. <em>list</em> contains:
 
 <ul>
 <li><code>[0] ←→ year</code> — Full (Gregorian) year (i.e. year 2011 is represented by the number 2011)</li>
-
 <li><code>[1] ←→ month</code> — 1-based month number (i.e. March is represented by the number 3)</li>
-
 <li><code>[2] ←→ day</code> — 1-based day-of-month (i.e. Jan 4th is represented by the number 4)</li>
-
 <li><code>[3] ←→ hours</code> — Hour of the day in the (inclusive) range 0-23</li>
-
 <li><code>[4] ←→ minutes</code> — Minutes of the hour in the (inclusive) range 0-59</li>
-
 <li><code>[5] ←→ seconds</code> — Seconds of the minute in the (inclusive) range 0-59</li>
-
 <li><code>[6] ←→ milliseconds</code> — Milliseconds of the second in the (inclusive) range 0-999</li>
 </ul>
 </li>
-
-<li>
-<p><code>setDate(number) → number</code> — Sets the day of the month (1-31) for a specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>setFullYear(number) → number</code> — Sets the full year (4 digits for 4-digit years) for a specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>setHours(number) → number</code> — Sets the hours (0-23) for a specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>setMilliseconds(number) → number</code> — Sets the milliseconds (0-999) for a specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>setMinutes(number) → number</code> — Sets the minutes (0-59) for a specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>setMonth(number) → number</code> — Sets the month (0-11) for a specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>setSeconds(number) → number</code> — Sets the seconds (0-59) for a specified date according to local time.</p>
-</li>
-
-<li>
-<p><code>setTime(number) → number</code> — Sets the Date object to the time represented by a number of milliseconds since January 1, 1970, 00:00:00 UTC, allowing for negative numbers for times prior.</p>
-</li>
-
-<li>
-<p><code>setUTCDate(number) → number</code> — Sets the day of the month (1-31) for a specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>setUTCFullYear(number) → number</code> — Sets the full year (4 digits for 4-digit years) for a specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>setUTCHours(number) → number</code> — Sets the hour (0-23) for a specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>setUTCMilliseconds(number) → number</code> — Sets the milliseconds (0-999) for a specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>setUTCMinutes(number) → number</code> — Sets the minutes (0-59) for a specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>setUTCMonth(number) → number</code> — Sets the month (0-11) for a specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>setUTCSeconds(number) → number</code> — Sets the seconds (0-59) for a specified date according to universal time.</p>
-</li>
-
-<li>
-<p><code>toDateString() → text</code> — Returns the &#8220;date&#8221; portion of the Date as a human-readable string.</p>
-</li>
-
-<li>
-<p><code>toLocaleDateString() → text</code> — Returns the &#8220;date&#8221; portion of the Date as a string, using the current locale&#8217;s conventions.</p>
-</li>
-
-<li>
-<p><code>toLocaleString() → text</code> — Converts a date to a string, using the current locale&#8217;s conventions. Overrides the Object.toLocaleString method.</p>
-</li>
-
-<li>
-<p><code>toLocaleTimeString() → text</code> — Returns the &#8220;time&#8221; portion of the Date as a string, using the current locale&#8217;s conventions.</p>
-</li>
-
-<li>
-<p><code>toTimeString() → text</code> — Returns the &#8220;time&#8221; portion of the Date as a human-readable string.</p>
-</li>
-
-<li>
-<p><code>toUTCString() → text</code> — Converts a date to a string, using the universal time convention.</p>
-</li>
+<li><code>setDate(number) → number</code> — Sets the day of the month (1-31) for a specified date according to local time.</li>
+<li><code>setFullYear(number) → number</code> — Sets the full year (4 digits for 4-digit years) for a specified date according to local time.</li>
+<li><code>setHours(number) → number</code> — Sets the hours (0-23) for a specified date according to local time.</li>
+<li><code>setMilliseconds(number) → number</code> — Sets the milliseconds (0-999) for a specified date according to local time.</li>
+<li><code>setMinutes(number) → number</code> — Sets the minutes (0-59) for a specified date according to local time.</li>
+<li><code>setMonth(number) → number</code> — Sets the month (0-11) for a specified date according to local time.</li>
+<li><code>setSeconds(number) → number</code> — Sets the seconds (0-59) for a specified date according to local time.</li>
+<li><code>setTime(number) → number</code> — Sets the Date object to the time represented by a number of milliseconds since January 1, 1970, 00:00:00 UTC, allowing for negative numbers for times prior.</li>
+<li><code>setUTCDate(number) → number</code> — Sets the day of the month (1-31) for a specified date according to universal time.</li>
+<li><code>setUTCFullYear(number) → number</code> — Sets the full year (4 digits for 4-digit years) for a specified date according to universal time.</li>
+<li><code>setUTCHours(number) → number</code> — Sets the hour (0-23) for a specified date according to universal time.</li>
+<li><code>setUTCMilliseconds(number) → number</code> — Sets the milliseconds (0-999) for a specified date according to universal time.</li>
+<li><code>setUTCMinutes(number) → number</code> — Sets the minutes (0-59) for a specified date according to universal time.</li>
+<li><code>setUTCMonth(number) → number</code> — Sets the month (0-11) for a specified date according to universal time.</li>
+<li><code>setUTCSeconds(number) → number</code> — Sets the seconds (0-59) for a specified date according to universal time.</li>
+<li><code>toDateString() → text</code> — Returns the &ldquo;date&rdquo; portion of the Date as a human-readable string.</li>
+<li><code>toLocaleDateString() → text</code> — Returns the &ldquo;date&rdquo; portion of the Date as a string, using the current locale&rsquo;s conventions.</li>
+<li><code>toLocaleString() → text</code> — Converts a date to a string, using the current locale&rsquo;s conventions. Overrides the Object.toLocaleString method.</li>
+<li><code>toLocaleTimeString() → text</code> — Returns the &ldquo;time&rdquo; portion of the Date as a string, using the current locale&rsquo;s conventions.</li>
+<li><code>toTimeString() → text</code> — Returns the &ldquo;time&rdquo; portion of the Date as a human-readable string.</li>
+<li><code>toUTCString() → text</code> — Converts a date to a string, using the universal time convention.</li>
 </ul>
 
-<h2 id='regexp'>RegExp</h2>
+
+<h2>RegExp</h2>
 
 <ul>
-<li>
-<p><code>/pattern/flags → regexp</code> — Create a regular expression by compiling <code>pattern</code> (unquoted text) with regards to <code>flags</code> (unquoted text).</p>
-</li>
-
-<li>
-<p><code>RegExp(pattern, flags:&quot;&quot;) → regexp</code> — Create a regular expression object by compiling <code>pattern</code> (text) with regards to <code>flags</code> which can have any combination of the following values:</p>
+<li><p><code>/pattern/flags → regexp</code> — Create a regular expression by compiling <code>pattern</code> (unquoted text) with regards to <code>flags</code> (unquoted text).</p></li>
+<li><p><code>RegExp(pattern, flags:"") → regexp</code> — Create a regular expression object by compiling <code>pattern</code> (text) with regards to <code>flags</code> which can have any combination of the following values:</p>
 
 <ul>
 <li><strong>g</strong> — global match</li>
-
 <li><strong>i</strong> — ignore case</li>
-
-<li><strong>m</strong> — Treat beginning and end characters (^ and $) as working over multiple lines (i.e., match the beginning or end of each line (delimited by \n or \r), not only the very beginning or end of the whole input string)</li>
+<li><strong>m</strong> — Treat beginning and end characters (^ and $) as working over
+multiple lines (i.e., match the beginning or end of each line (delimited by
+\n or \r), not only the very beginning or end of the whole input string)</li>
 </ul>
 </li>
 </ul>
 
-<h3 id='regexpprototype'>RegExp.prototype</h3>
+
+<h3>RegExp.prototype</h3>
 
 <ul>
-<li>
-<p><code>global ←→ true|false</code> — Whether to test the regular expression against all possible matches in a text, or only against the first.</p>
-</li>
-
-<li>
-<p><code>ignoreCase ←→ true|false</code> — Whether to ignore case while attempting a match.</p>
-</li>
-
-<li>
-<p><code>multiline ←→ true|false</code> — Whether or not to search in text across multiple lines.</p>
-</li>
-
-<li>
-<p><code>lastIndex ←→ number</code> — The index at which to start the next match.</p>
-</li>
-
-<li>
-<p><code>source → text</code> — The text of the pattern.</p>
-</li>
-
-<li>
-<p><code>exec(text) → list</code> — Executes a search for a match in its text parameter. The returned list contains the matched groups as text plus it has the following properties:</p>
+<li><p><code>global ←→ true|false</code> — Whether to test the regular expression against all possible matches in a text, or only against the first.</p></li>
+<li><p><code>ignoreCase ←→ true|false</code> — Whether to ignore case while attempting a match.</p></li>
+<li><p><code>multiline ←→ true|false</code> — Whether or not to search in text across multiple lines.</p></li>
+<li><p><code>lastIndex ←→ number</code> — The index at which to start the next match.</p></li>
+<li><p><code>source → text</code> — The text of the pattern.</p></li>
+<li><p><code>exec(text) → list</code> — Executes a search for a match in its text parameter. The returned list contains the matched groups as text plus it has the following properties:</p>
 
 <ul>
 <li><code>index ←→ number</code> — The 0-based offset of the match in the text.</li>
-
 <li><code>input ←→ text</code> — The original input text.</li>
 </ul>
 </li>
-
-<li>
-<p><code>test(text) → true|false</code> — Tests for a match in its text parameter.</p>
-</li>
+<li><p><code>test(text) → true|false</code> — Tests for a match in its text parameter.</p></li>
 </ul>
 
-<h2 id='boolean'>Boolean</h2>
+
+<h2>Boolean</h2>
 
 <ul>
-<li><code>Boolean(value) → true|false</code> — Returns the <a href='#types/atom'>&#8220;true&#8221; atom</a> if <em>value</em> is truthy. Otherwise the &#8220;false&#8221; atom is returned.</li>
+<li><code>Boolean(value) → true|false</code> — Returns the <a href="#types/atom">&ldquo;true&rdquo; atom</a> if <em>value</em> is truthy. Otherwise the &ldquo;false&rdquo; atom is returned.</li>
 </ul>
 
-<h2 id='json'>JSON</h2>
+
+<h2>JSON</h2>
 
 <ul>
-<li>
-<p><code>JSON(value) → text</code>, <code>JSON{build: value} → text</code>, <code>JSON.stringify(value) → text</code> — Takes any serializable object and returns the <a href='http://json.org/'>JSON</a> representation.</p>
-</li>
-
-<li>
-<p><code>JSON{parse: text} → value</code>, <code>JSON.parse(text) → value</code> — Takes well formed <a href='http://json.org/'>JSON</a> source and returns the corresponding value.</p>
-</li>
+<li><p><code>JSON(value) → text</code>, <code>JSON{build: value} → text</code>, <code>JSON.stringify(value) → text</code> — Takes any serializable object and returns the <a href="http://json.org/">JSON</a> representation.</p></li>
+<li><p><code>JSON{parse: text} → value</code>, <code>JSON.parse(text) → value</code> — Takes well formed <a href="http://json.org/">JSON</a> source and returns the corresponding value.</p></li>
 </ul>
 
-<h2 id='move'>Move</h2>
 
-<p><em>Move</em> houses the Move runtime library. All members of <em>Move</em> are available directly (i.e. access by &#8220;foo&#8221; instead of &#8220;Move.foo&#8221;) and need not be &#8220;prefixed&#8221;.</p>
+<h2>Move</h2>
 
-<h3 id='create'>create</h3>
+<p><em>Move</em> houses the Move runtime library. All members of <em>Move</em> are available directly (i.e. access by &ldquo;foo&rdquo; instead of &ldquo;Move.foo&rdquo;) and need not be &ldquo;prefixed&rdquo;.</p>
+
+<h3>create</h3>
 
 <ul>
-<li>
-<p><code>create(prototype, body) → object</code> — Creates a new object whose prototype is the <em>prototype</em> object and whose value properties are those specified by the <em>body</em> object (e.g. <code>{key1: value1, key2: value2, ..., keyN: valueN}</code>). Note that <em>body</em> is not a property specification as accepted by <a href='#Object'>Object.create</a>, but a regular object literal with keys and values.</p>
-</li>
-
-<li>
-<p><code>create(prototype) → object</code> — Creates a new object whose prototype is the <em>prototype</em> object.</p>
-</li>
-
-<li>
-<p><code>create(prototype, ^{...}) → object</code> — Creates a new object whose prototype is the <em>prototype</em> object. The second argument (a function) is applied to the newly created object (the &#8220;this&#8221; variable represents the new object within the function) which can be used to initialize any properties.</p>
-</li>
+<li><p><code>create(prototype, body) → object</code> — Creates a new object whose prototype is the <em>prototype</em> object and whose value properties are those specified by the <em>body</em> object (e.g. <code>{key1: value1, key2: value2, ..., keyN: valueN}</code>). Note that <em>body</em> is not a property specification as accepted by <a href="#Object">Object.create</a>, but a regular object literal with keys and values.</p></li>
+<li><p><code>create(prototype) → object</code> — Creates a new object whose prototype is the <em>prototype</em> object.</p></li>
+<li><p><code>create(prototype, ^{...}) → object</code> — Creates a new object whose prototype is the <em>prototype</em> object. The second argument (a function) is applied to the newly created object (the &ldquo;this&rdquo; variable represents the new object within the function) which can be used to initialize any properties.</p></li>
 </ul>
 
-<p>Example: <samp>Cat: I'm furry</samp></p>
 
-<pre><code>animal = { type: &quot;an animal&quot;,
-           toString: ^{ &quot;I&#39;m &quot; + @type } }
-cat = create animal, { type: &quot;furry&quot; }
-print &quot;Cat: &quot; + cat</code></pre>
+<p>Example:
+<samp>Cat: I&rsquo;m furry</samp></p>
 
-<h3 id='extend'>extend</h3>
+<pre><code>animal = { type: "an animal",
+           toString: ^{ "I'm " + @type } }
+cat = create animal, { type: "furry" }
+print "Cat: " + cat
+</code></pre>
+
+<h3>extend</h3>
 
 <ul>
-<li>
-<p><code>extend(object, body) → object</code> — Extend <em>object</em> by adding a (shallow) copy of all property values from the <em>body</em> object.</p>
-</li>
-
-<li>
-<p><code>extend(object, ^{...}) → object</code> — Extend or manipulate <em>object</em> by calling the passed function (second argument) on <em>object</em> (the &#8220;this&#8221; variable will represent <em>object</em>)</p>
-</li>
+<li><p><code>extend(object, body) → object</code> — Extend <em>object</em> by adding a (shallow) copy of all property values from the <em>body</em> object.</p></li>
+<li><p><code>extend(object, ^{...}) → object</code> — Extend or manipulate <em>object</em> by calling the passed function (second argument) on <em>object</em> (the &ldquo;this&rdquo; variable will represent <em>object</em>)</p></li>
 </ul>
 
-<p>Example: <samp>{ bananas: 'yellow',
-  lime: 'green',
-  oranges: 'orange' }</samp></p>
 
-<pre><code>fruit = { bananas: &quot;yellow&quot; }
-extend fruit, { lime: &quot;green&quot;, oranges: &quot;orange&quot; }
-print fruit</code></pre>
+<p>Example:
+<samp>{ bananas: &lsquo;yellow&rsquo;,
+  lime: &lsquo;green&rsquo;,
+  oranges: &lsquo;orange&rsquo; }</samp></p>
 
-<h3 id='print'>print</h3>
+<pre><code>fruit = { bananas: "yellow" }
+extend fruit, { lime: "green", oranges: "orange" }
+print fruit
+</code></pre>
+
+<h3>print</h3>
 
 <ul>
-<li><code>print(value1, value2, ..., valueN)</code> — Present zero or more values in a visual fashion. How the values are presented is defined by the implementation. By default <em>print</em> will send the values to the runtime engine&#8217;s <em>console.log</em> if exists or do nothing.</li>
+<li><code>print(value1, value2, ..., valueN)</code> — Present zero or more values in a visual fashion. How the values are presented is defined by the implementation. By default <em>print</em> will send the values to the runtime engine&rsquo;s <em>console.log</em> if exists or do nothing.</li>
 </ul>
+
 
 <p>The <em>print</em> function is often overridden in user-specific implementations by simply assigning a custom function, e.g. <code>Move.print = ^{ ...my print logic... }</code>.</p>
 
-<h3 id='repeat'>repeat</h3>
+<h3>repeat</h3>
 
 <ul>
-<li>
-<p><code>repeat{times: number} → ^(^{...})</code>, <code>repeat(number) → ^(^{...})</code> — Returns an &#8220;executor&#8221; function which when called will call the passed function <em>number</em> times. If the passed function returns the <em>true</em> atom, repetition is canceled.</p>
-</li>
-
-<li>
-<p><code>repeat(number, ^{...})</code> — Repeatedly call the passed function <em>number</em> times or until the passed function returns the <em>true</em> atom.</p>
-</li>
-
-<li>
-<p><code>repeat(^{...})</code> — Repeatedly call the passed function until it returns a falsy value (or: repeatedly call the passed function while it returns a truthy value).</p>
-</li>
+<li><p><code>repeat{times: number} → ^(^{...})</code>, <code>repeat(number) → ^(^{...})</code> — Returns an &ldquo;executor&rdquo; function which when called will call the passed function <em>number</em> times. If the passed function returns the <em>true</em> atom, repetition is canceled.</p></li>
+<li><p><code>repeat(number, ^{...})</code> — Repeatedly call the passed function <em>number</em> times or until the passed function returns the <em>true</em> atom.</p></li>
+<li><p><code>repeat(^{...})</code> — Repeatedly call the passed function until it returns a falsy value (or: repeatedly call the passed function while it returns a truthy value).</p></li>
 </ul>
 
-<p>Example: <samp>Hello
+
+<p>Example:
+<samp>Hello
 Hello
 Hello</samp></p>
 
 <pre><code>repeat {times: 3} ^{
-  print &quot;Hello&quot;
-}</code></pre>
+  print "Hello"
+}
+</code></pre>
 
-<h3 id='after'>after</h3>
+<h3>after</h3>
 
 <ul>
-<li><code>after{delay: milliseconds} → ^(^{...})</code>, <code>after(milliseconds) → ^(^{...})</code> — Returns an &#8220;executor&#8221; function which when called will execute the passed function after <em>delay</em> number of milliseconds.</li>
+<li><code>after{delay: milliseconds} → ^(^{...})</code>, <code>after(milliseconds) → ^(^{...})</code> — Returns an &ldquo;executor&rdquo; function which when called will execute the passed function after <em>delay</em> number of milliseconds.</li>
 </ul>
 
-<p>Example: <samp>3 seconds later</samp></p>
 
-<pre><code>after {delay: 3000} ^{ print &quot;3 seconds later&quot; }</code></pre>
+<p>Example:
+<samp>3 seconds later</samp></p>
+
+<pre><code>after {delay: 3000} ^{ print "3 seconds later" }
+</code></pre>
+
   </wrapper>
 </section>
 

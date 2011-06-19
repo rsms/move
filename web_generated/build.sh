@@ -36,13 +36,14 @@ fi
 "$MOVE_BIN" ../browser/build.mv || exit $?
 
 # Build website
-jekyll --no-server "$DST_DIR" || exit $?
+jekyll --no-server --no-auto "$DST_DIR" || exit $?
 
 # Commit
 cd "$DST_DIR" || exit $?
 git add -A || exit $?
 git commit -m 'Generated website' -a || exit $?
-git push origin gh-pages || exit $?
+git remote -v
+#git push origin gh-pages || exit $?
 
 # Back home
 cd "$SRC_DIR" || exit $?
