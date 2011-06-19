@@ -45,8 +45,8 @@ jekyll --no-server --no-auto "$DST_DIR" || exit $?
 
 # Commit
 cd "$DST_DIR" || exit $?
-git add -A || exit $?
-git commit -m 'Generated website' -a || exit $?
+git add . || exit $?
+git commit -a -m 'Generated website' || exit $?
 git remote -v
 #git push origin gh-pages || exit $?
 
