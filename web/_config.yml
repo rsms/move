@@ -1,0 +1,22 @@
+auto: true
+server: true
+server_port: 3000
+pygments: false
+lsi: false
+
+#source: ./web
+destination: ./.build
+#plugins: ./web/_plugins
+
+url: http://movelang.org
+
+permalink: /:year/:month/:day/:title.html
+#paginate: 10
+
+markdown: rdiscount
+rdiscount:
+  extensions: [smart]
+
+#markdown: kramdown
+#kramdown:
+#  auto_ids: true
