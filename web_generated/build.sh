@@ -1,6 +1,11 @@
 #!/bin/bash
-SRC_DIR="$(perl -e "use Cwd; use Cwd 'realpath'; print realpath('$0');" | xargs dirname)"
-DST_DIR="${SRC_DIR}/../web_generated"
+SRC_DIR="$(perl -e "use Cwd; use Cwd 'realpath'; print realpath('${0}');" | xargs dirname)"
+DST_DIR="$(perl -e "use Cwd; use Cwd 'realpath'; print realpath('${SRC_DIR}');" | xargs dirname)"
+DST_DIR="${DST_DIR}/web_generated"
+
+echo "Source: ${SRC_DIR}"
+echo "Destination: ${DST_DIR}"
+
 MOVE_BIN="${SRC_DIR}/../bin/move"
 
 cd "$SRC_DIR" || exit $?
