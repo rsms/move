@@ -5,7 +5,7 @@ BUILD_DST_DIR="${SRC_DIR}/.build"
 DST_DIR="${DST_DIR}/web_generated"
 GIT_SRC_DIR="$(dirname "$SRC_DIR")"
 
-echo "Source: ${SRC_DIR}"
+echo "Building from ${SRC_DIR} -> ${DST_DIR}"
 
 MOVE_BIN="${SRC_DIR}/../bin/move"
 
@@ -38,8 +38,6 @@ if [ ! -d "$DST_DIR" ] || [ "$(git --git-dir="${DST_DIR}/.git" branch --no-color
 
   # Back home
   cd "$SRC_DIR" || exit $?
-else
-  echo "Destination: ${DST_DIR}"
 fi
 
 # Build move
@@ -64,3 +62,5 @@ git push origin gh-pages || exit $?
 
 # Back home
 cd "$SRC_DIR" || exit $?
+
+echo "Done. Deploy with: git push origin gh-pages"
