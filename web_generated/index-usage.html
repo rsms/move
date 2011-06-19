@@ -1,0 +1,78 @@
+<h2 id='usage'>Usage</h2>
+
+<p>Move can run in web browsers and &#8220;interpreters&#8221; like <a href='http://nodejs.org/'>Node.js</a>. Move has been designed so that your code can be run in web browsers and &#8220;interpreters&#8221; without any changes &#8211; your code is always running in an ES5 environment with a CommonJS module system.</p>
+
+<h3 id='using_move_in_web_browsers'>Using Move in web browsers</h3>
+
+<p>To run Move in a web browser, you simply include <a href='/move.js'>move.js</a>:</p>
+
+<pre><code>&lt;script src=&quot;/move.js&quot;&gt;&lt;/script&gt;</code></pre>
+
+<p>Move code can then be embedded, which will execute directly after the DOM has loaded:</p>
+
+<pre><code>&lt;script type=&quot;text/move&quot;&gt;
+print &#39;Hello worlds!&#39;
+&lt;/script&gt;</code></pre>
+
+<p>If you specify the <code>module</code> attribute, the code defines a module rather than execute the code:</p>
+
+<pre><code>&lt;script type=&quot;text/move&quot; module=&quot;foo&quot;&gt;
+export sayHello = ^{ print &#39;Hello worlds!&#39; }
+&lt;/script&gt;</code></pre>
+
+<p>It&#8217;s then possible to <code>import</code> that module from other code:</p>
+
+<pre><code>&lt;script type=&quot;text/move&quot;&gt;
+import foo
+foo.sayHello()
+&lt;/script&gt;</code></pre>
+
+<p>Modules can also be remotely imported:</p>
+
+<pre><code>&lt;script type=&quot;text/move&quot; src=&quot;foo.mv&quot;&gt;&lt;/script&gt;</code></pre>
+
+<p>You don&#8217;t have to care about the order in which you define your modules. The only thing you need to think about is where you execute embedded code.</p>
+
+<h4 id='complete_example'>Complete example</h4>
+
+<pre><code>&lt;script src=&quot;/move.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/move&quot; module=&quot;bar&quot;&gt;
+import foo, capitalize
+export sayHello = ^(name) {
+  print foo.makeHello capitalize name
+}
+&lt;/script&gt;
+&lt;script type=&quot;text/move&quot; src=&quot;capitalize.mv&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/move&quot; module=&quot;foo&quot;&gt;
+export makeHello = ^(name) { &#39;Hello &#39;+name+&#39;!&#39; }
+&lt;/script&gt;
+&lt;script type=&quot;text/move&quot;&gt;
+import bar
+bar.sayHello &#39;worlds&#39;
+&lt;/script&gt;</code></pre>
+
+<p>When the DOM loads, &#8220;Hello Worlds!&#8221; is printed to the console.</p>
+
+<p>The Move module itself is available as the global variable <code>move</code> (technically a property of <code>window</code>). This module provides access to preprocessors, the parser &amp; compiler and version info. It also houses the Move runtime library (<code>move.runtime</code>) which can be manipulated. An example of evaluating some Move code: <samp>"function () {
+  return print("Hello");
+}"</samp></p>
+
+<pre><code>move.eval &#39;^{ print &quot;Hello&quot; }&#39;</code></pre>
+
+<p>This is available in both Move-land <em>and JavaScript-land</em>:</p>
+
+<pre><code>move.eval(&#39;^{ print &quot;Hello&quot; }&#39;);</code></pre>
+
+<h3 id='using_move_in_nodejs'>Using Move in Node.js</h3>
+
+<p>First up; install Move through <a href='http://npmjs.org/'>NPM</a>:</p>
+
+<pre><code>npm install move</code></pre>
+
+<p>Then, <code>require(&#39;move&#39;);</code> and simply write any module you wish in Move and name the file with a &#8220;.mv&#8221; extension. From there everything behaves as normal in Node.js (e.g. defining a foo.mv module and later doing <code>var foo = require(&#39;foo&#39;);</code> works as expected).</p>
+
+<p>To run Move code directly from the command line, use the <code>move</code> program:</p>
+
+<pre><code>$ move hello.mv</code></pre>
+
+<p>Note that you can not load Move code directly through <code>node</code> since Node has no knowledge about how to compile Move code. The <code>move</code> program simply registers the Move compiler with Node&#8217;s module loading system and then loads your module.</p>
