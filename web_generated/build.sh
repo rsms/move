@@ -11,7 +11,7 @@ MOVE_BIN="${SRC_DIR}/../bin/move"
 cd "$SRC_DIR" || exit $?
 
 # Check if DST_DIR is ok
-if ! [ -d "$DST_DIR" ] || [ $(git --work-tree="${DST_DIR}" branch --no-color | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1/") != "gh-pages" ]; then
+if [ ! -d "$DST_DIR" ] || [ $(git --work-tree="${DST_DIR}" branch --no-color | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1/") != "gh-pages" ]; then
   # Backup if modified
   if [ -d "$DST_DIR" ]; then
     BACKUP_DIR="${DST_DIR}_backup_"$(date +%s)
