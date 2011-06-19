@@ -78,4 +78,4 @@ if (1) try {
 # Write output to /web/move.js
 fs.writeFileSync(__dirname + '/../web/move.js', output)
 
-print output.substr(0, 500)+'\n...\n\nOK!'
+#print output.substr(0, 500)+'\n...\n\nOK!'
