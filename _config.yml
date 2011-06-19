@@ -4,7 +4,8 @@ server_port: 3000
 pygments: false
 lsi: false
 
-source: web
+source: ./web
+destination: ./_site
 #plugins: ./web/_plugins
 
 url: http://movelang.org
