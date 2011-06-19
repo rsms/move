@@ -12,7 +12,7 @@ MOVE_BIN="${SRC_DIR}/../bin/move"
 cd "$SRC_DIR" || exit $?
 
 # Check if DST_DIR is ok
-if [ ! -d "$DST_DIR" ] || [ "$(git --work-tree="${DST_DIR}" branch --no-color | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1/")" != "gh-pages" ]; then
+if [ ! -d "$DST_DIR" ] || [ "$(git --git-dir="${DST_DIR}/.git" branch --no-color | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1/")" != "gh-pages" ]; then
   # Backup if modified
   if [ -d "$DST_DIR" ]; then
     BACKUP_DIR="${DST_DIR}_backup_"$(date +%s)
@@ -22,7 +22,9 @@ if [ ! -d "$DST_DIR" ] || [ "$(git --work-tree="${DST_DIR}" branch --no-color | 
   fi
 
   # Clone
-  git clone --local --shared --no-checkout -- "$GIT_SRC_DIR" "$DST_DIR" || exit $?
+  git clone --local --shared --no-checkout -- \
+    "$GIT_SRC_DIR" "$DST_DIR" || exit $?
+
   cd "$DST_DIR" || exit $?
 
   # Create or checkout gh-pages branch
@@ -48,18 +50,15 @@ rm -rf "$BUILD_DST_DIR"
 jekyll --no-server --no-auto "$BUILD_DST_DIR" || exit $?
 mv "$DST_DIR/.git" "$BUILD_DST_DIR/.git" || exit $?
 rm -rf "$DST_DIR"
-mv -f "$BUILD_DST_DIR" "$DST_DIR"
+mv -f "$BUILD_DST_DIR" "$DST_DIR" || exit $?
 
 # Commit
 cd "$DST_DIR" || exit $?
 git add . || exit $?
 git commit -a -m 'Generated website' || exit $?
-git remote set-url origin "$GIT_SRC_DIR"
+git remote set-url origin "$GIT_SRC_DIR" || exit $?
 git remote -v
 #git push origin gh-pages || exit $?
 
 # Back home
 cd "$SRC_DIR" || exit $?
-
-echo "$DST_DIR"
-
