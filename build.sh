@@ -52,13 +52,15 @@ mv "$DST_DIR/.git" "$BUILD_DST_DIR/.git" || exit $?
 rm -rf "$DST_DIR"
 mv -f "$BUILD_DST_DIR" "$DST_DIR" || exit $?
 
+# Create .nojekyll
+touch "$DST_DIR/.nojekyll"
+
 # Commit
 cd "$DST_DIR" || exit $?
 git add . || exit $?
 git commit -a -m 'Generated website' || exit $?
 git remote set-url origin "$GIT_SRC_DIR" || exit $?
-git remote -v
-#git push origin gh-pages || exit $?
+git push origin gh-pages || exit $?
 
 # Back home
 cd "$SRC_DIR" || exit $?
