@@ -58,7 +58,10 @@ cd "$DST_DIR" || exit $?
 git add . || exit $?
 git commit -a -m 'Generated website' || exit $?
 git remote set-url origin "$GIT_SRC_DIR" || exit $?
+<<<<<<< HEAD
 git pull origin gh-pages
+=======
+>>>>>>> 11b94ac666f566f42ada60223a20df1c4ba262e7
 git push origin gh-pages || exit $?
 
 # Back home
