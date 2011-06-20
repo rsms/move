@@ -56,16 +56,16 @@ touch "$DST_DIR/.nojekyll"
 # Commit
 cd "$DST_DIR" || exit $?
 git add . || exit $?
-git commit -a -m 'Generated website' || exit $?
-git remote set-url origin "$GIT_SRC_DIR" || exit $?
-if ! (git push origin gh-pages); then
-  git pull origin gh-pages || exit $?
-  git push origin gh-pages || exit $?
+if (git commit --no-status -a -m 'Generated website'); then
+  git remote set-url origin "$GIT_SRC_DIR" || exit $?
+  if ! (git push origin gh-pages); then
+    git pull origin gh-pages || exit $?
+    git push origin gh-pages || exit $?
+  fi
 fi
 
 # Back home
-cd "$SRC_DIR" || exit $?
+#cd "$SRC_DIR" || exit $?
 
-echo "---- Done ----"
-echo "Deploy with:"
+echo "---- Done ---- Deploy with:"
 echo "  git push origin gh-pages"
