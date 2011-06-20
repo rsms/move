@@ -1,5 +1,5 @@
 Release:
 
-V=vX.X.X; git ci $V && git tag -m $V $V && git tag -f $V stable
+V=vX.X.X; git ci $V ; git tag -m $V $V && git tag -f $V stable
 
 git pu --tags
