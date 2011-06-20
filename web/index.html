@@ -33,6 +33,16 @@ layout: page
 .right-column { float:right; }
 </style>
 
+<script type="text/move">
+if (document.location.pathname == "/index.html") {
+  if (history && history.pushState) {
+    history.replaceState null, null, '/'
+  } else {
+    document.location.pathname = '/'
+  }
+}
+</script>
+
 <div class="left-column">
   Here is a simple Move program which outputs “Hello John” three times:<p></p>
     <pre class="prettyprint lang-mv"><code class=" prettyprint lang-mv"><span class="pln">hello </span><span class="pun">=</span><span class="pln"> </span><span class="pun">^(</span><span class="pln">name</span><span class="pun">){</span><span class="pln"> </span><span class="str">"Hello "</span><span class="pun">+</span><span class="pln">name </span><span class="pun">}</span><span class="pln"><br>repeat </span><span class="pun">{</span><span class="pln">times</span><span class="pun">:</span><span class="pln"> </span><span class="lit">3</span><span class="pun">}</span><span class="pln"> </span><span class="pun">^{</span><span class="pln"><br>&nbsp; </span><span class="kwd">print</span><span class="pln"> hello </span><span class="pun">{</span><span class="pln">name</span><span class="pun">:</span><span class="pln"> </span><span class="str">"John"</span><span class="pun">}</span><span class="pln"><br></span><span class="pun">}</code></pre>

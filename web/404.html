@@ -7,8 +7,17 @@
     <script>
 window.onload = function() {
   var path = document.location.pathname;
-  document.getElementById('search_box').value =
-    path.replace(/[_\/-]/g, ' ').replace(/\.[^\.]+$/, '');
+  document.getElementById('search-q').value =
+    path.replace(/[_\/-]/g, ' ')
+        .replace(/\.[^\.]+$/, '')
+        .replace(/^\s+|\s+$/, '');
+  document.getElementById('search-box').onsubmit = function (ev) {
+    document.location.href = 'http://www.google.com/search?ie=UTF-8&q='+
+      encodeURIComponent('site:movelang.org '+
+        document.getElementById('search-q').value);
+    return false;
+  };
+  document.getElementById('search-q').focus();
 };
     </script>
     <style type="text/css" media="screen">
@@ -21,11 +30,10 @@ window.onload = function() {
     <h1>404 Not found</h1>
     <p>Ooops. Looks like you followed a dead link.</p>
     <p>Try searching this site for whatever you're looking for:</p>
-    <form action="http://www.google.com/cse" id="cse-search-box">
+    <form action="http://www.google.com/search" id="search-box">
       <div>
-        <input type="hidden" name="cx" value="006553118601910168903:-x3qflztwei" />
         <input type="hidden" name="ie" value="UTF-8" />
-        <input type="text" id="search_box" name="q" size="31" />
+        <input type="text" id="search-q" name="q" size="31" />
         <input type="submit" name="sa" value="Search" />
       </div>
     </form>
