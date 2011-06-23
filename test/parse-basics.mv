@@ -1,0 +1,7 @@
+import assert
+
+x = 4 / 5
+assert.equal x, 0.8
+
+x = x / 2.0
+assert.equal x, 0.4

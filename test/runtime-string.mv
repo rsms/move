@@ -22,12 +22,12 @@ assert.equal "foo bar".padRight(20, '.'), "foo bar............."
 assert.equal "kitten".editDistance("sitting"), 3
 
 # matchAll
-matches = text.matchAll /music|play/g
+matches = text.matchAll(/music|play/g)
 matches = matches.map ^(match) { [match[0], match.index] }
 assert.deepEqual matches, [['play',43], ['music',49], ['music',221]]
 
 # forEachMatch
 matches = []
-text.forEachMatch /music|play/g, ^(match) { matches.push match[0], match.index }
+text.forEachMatch(/music|play/g, ^(match) { matches.push match[0], match.index })
 assert.deepEqual matches, ['play',43, 'music',49, 'music',221]
 
