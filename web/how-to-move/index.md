@@ -134,7 +134,7 @@ we add two curly brackets at the end of `hello`. This will tell Move to
 Functions are a very powerful tool when writing programs.
 
 When creating a function, we can specify *function arguments*, which are
-surrounded by parentheses and put in between the "^" and the "{".
+surrounded by parentheses and put in between the `^` and the `{`.
 These "arguments" are just like *variables*, but which are only available inside
 our function.
 
