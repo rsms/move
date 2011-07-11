@@ -1,3 +1,4 @@
 .DS_Store
 web_generated*
 web/.build
+web/move.js
