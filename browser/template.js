@@ -5,7 +5,7 @@ if (typeof window.global === 'undefined')
   window.global = window;
 
 // Module system
-var modules = {};
+var module, modules = {};
 var _require = function _require(id) {
   if (++(_require.depth) > 20)
     throw new Error('Recursive module dependencies');
