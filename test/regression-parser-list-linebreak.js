@@ -55,6 +55,6 @@ assert.ok(r.code.indexOf('y[0][1].x') === -1, '"y[0][1].x" is incorrect');
 assert.ok(r.code.indexOf('y[0];') !== -1, '"y[0];" expected but not found');
 
 // Make sure we didn't break deep subscript access branches
-assert.ok(move.compile('y[0][1][2]\n[3]x',
+assert.ok(move.compile('y[0][1][2]\n[3].x',
   {raw:true}).indexOf( 'y[0][1][2];') !== -1);
 
