@@ -91,6 +91,7 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
           });
         } else {
           try {
+            // RIP OUT into public function
             var id = script.getAttribute('module');
             compileOptions.filename = '<'+(id || 'main')+'>';
             jscode = move.compile(script.innerHTML, compileOptions);

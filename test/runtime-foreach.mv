@@ -1,0 +1,19 @@
+import assert
+
+names = ['John', 'Linda', 'Zelda']
+ages = {'John':31, 'Linda':29, 'Zelda':312}
+
+# List
+output = ''
+names.forEach ^(name) { output += name + '\n' }
+assert.equal output, 'John\nLinda\nZelda\n'
+
+# Map
+output = {}
+ages.forEach ^(name, age) { output[':'+name] = Text age }
+assert.deepEqual output, {':John':'31', ':Linda':'29', ':Zelda':'312'}
+
+output = []
+ages.forEach ^(name) { output.push ':'+name }
+output.sort()  # Since maps aren't guaranteed to retain order
+assert.deepEqual output, [':John', ':Linda', ':Zelda']

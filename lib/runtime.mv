@@ -28,6 +28,7 @@ if (!IS_KNOWN_ES5_HOST) {
 # -----------------------------------------------------------------------------
 # Additions
 
+require './runtime_object'
 require './runtime_string'
 require './runtime_date'
 require './runtime_array'

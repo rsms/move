@@ -85,6 +85,7 @@ Built-in objects and functions
 
 - `isPrototypeOf(value) → true|false` — Returns a boolean indication whether the specified object is in the prototype chain of the object this method is called upon.
 
+- `forEach(^(key, value, sourceObj), thisObject:null)` — Calls a function for each key-value pair owned by the object. *Non-standard, Move-specific*.
 
 
 ## Array
@@ -108,7 +109,7 @@ Built-in objects and functions
 
 - `filter(^(value, index, o) → true|false, this:this) → list` — Creates a new array with all of the elements of this array for which the provided filtering function returns true.
 
-- `forEach(^(value, index, o), thisObject:null)` — Calls a function for each element in the array.
+- `forEach(^(value, index, sourceObj), thisObject:null)` — Calls a function for each element in the array.
 
 - `indexOf(value, startIndex:0) → number` — Returns the first (least) index of an element within the array equal to the specified value, or -1 if none is found.
 
