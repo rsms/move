@@ -34,10 +34,19 @@ browserTemplate = browserTemplate.replace(/%VERSION%/g, JSON move.version())
 # Source directory
 sourceDir = __dirname + '/../lib'
 
+# Source files to exclude from the browser library
+exclude = [
+  /^cli\//,
+]
+
 # Collect all sources into `output`
 enumerateDirectory { path: sourceDir,
                   pattern: /\.(js|move|mv)$/,
                     apply: ^(filename) {
+  for (i=0; i < exclude.length; ++i)
+    if (exclude[i].test filename)
+      return
+
   # Read text source
   source = read { path: sourceDir + '/' + filename }
 
