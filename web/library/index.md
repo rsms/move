@@ -412,6 +412,8 @@ The *print* function is often overridden in user-specific implementations by sim
 
 - `repeat(number, ^{...})` — Repeatedly call the passed function *number* times or until the passed function returns the *true* atom.
 
+- `repeat{every: number} → ^(^(timer){...}) → timer` — Returns an "executor" function which when called will call the passed function every *number* milliseconds. The returned `timer` object (also passed as the first argument to the block) can be cancelled by calling `timer.cancel()`, effectively stopping repetition. This is a Move-style implementation of `window.setInterval`.
+
 - `repeat(^{...})` — Repeatedly call the passed function until it returns a falsy value (or: repeatedly call the passed function while it returns a truthy value).
 
 Example:
@@ -422,6 +424,18 @@ Hello</samp>
     repeat {times: 3} ^{
       print "Hello"
     }
+
+Example 2:
+<samp>Hello in just a second
+Hello in just a second
+...</samp>
+
+    repeat {every: 1000} ^{
+      print "Hello in just a second"
+    }
+
+
+
 
 
 ### after
