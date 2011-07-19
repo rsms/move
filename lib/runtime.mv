@@ -136,7 +136,7 @@ if (typeof console != 'undefined' && console.log) {
 #
 # If called with shorthand single argument, `block` is repeated until it returns
 # a false value
-export repeat = ^(times, block) {
+export repeat = ^(times, every, block) {
   if (typeof times == 'function') {
     # short-hand call style
     while (true) if (!times()) break
@@ -144,14 +144,22 @@ export repeat = ^(times, block) {
   }
   if (typeof block == 'function') {
     if (times != undefined) {
-      for (i=0; i<times; ++i) if (block(i) == true) break
+      for (i=0; i < times; ++i) if (block(i) == true) break
+    } else if (every != undefined) {
+      timer = Object.create({}, {cancel:{value:^{ clearInterval @id }}})
+      timer.id = setInterval ^{ block timer }, every
+      return timer
     } else {
       while (true) if (!block()) break
     }
   } else {
     return ^(block){
       if (times != undefined) {
-        for (i=0; i<times; ++i) if (block(i) == true) break
+        for (i=0; i < times; ++i) if (block(i) == true) break
+      } else if (every != undefined) {
+        timer = Object.create({}, {cancel:{value:^{ clearInterval @id }}})
+        timer.id = setInterval ^{ block timer }, every
+        return timer
       } else {
         while (true) if (!block()) break
       }
