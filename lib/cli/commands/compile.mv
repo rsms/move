@@ -1,0 +1,128 @@
+import fs, Path = 'path', crypto
+
+export desc = 'Parse and compile Move code.'
+export options = [
+  'Usage: move compile [options] <filename> ..',
+  'Options:',
+
+  ['outputFilename',      'Output filename. By default output is done to stdout.',
+                          {type: 'int', 'short': 'o', 'long': 'output'}],
+
+  ['bundle',              'Bundle all input files together as modules into one web-browser compatible JavaScript file.',
+                          {type: 'bool', 'long':'bundle'}],
+
+  ['basedir',             'Base directory to exclude when calculating bundle id-s. Only effective in combination with --bundle.',
+                          {type: 'string', 'long':'basedir', 'short':'none'}],
+
+  ['raw',                 'Do not depend on the Move runtime.',
+                          {type: 'bool', 'short':'none'}],
+
+  ['noStrict',            'Do not generate ES5 "strict" code.',
+                          {type: 'bool', 'long':'no-strict', 'short':'none'}],
+
+  ['mangleNames',         'Mangle internal symbol names, minimizing output file size.',
+                          {type: 'bool', 'long':'mangle', 'short':'none'}],
+
+  ['outputAST',           'Produce AST (as JSON) instead of producing JavaScript.',
+                          {type: 'bool', 'long':'ast', 'short':'none'}],
+  
+  ['optimizationLevel',   'Optimization level. Defaults to 0 (basic).',
+                          {type: 'int', 'short': 'O', 'long': 'optimization-level',
+                           def: __move.defaultCompilationOptions.optimizationLevel}],
+]
+
+export main = ^{
+  #print '@parsedOptions ->', @parsedOptions
+  if (@argv.length == 0)
+    @program.exit 'No input'
+  
+  if (@parsedOptions.raw && @parsedOptions.bundle)
+    @program.exit 'Can not bundle raw code (the --raw and --bundle flags can not both be defined)'
+  
+  outputs = @parsedOptions.outputAST ? {} : []
+
+  moduleDefinitionPrefix = @argv.length > 1 ? 'DM' : '__move.require.define'
+  
+  @argv.forEach ^(filename) {
+    # Resolve filename
+    try {
+      source = fs.readFileSync filename, 'utf8'
+    } catch (e) {
+      if (e.errno != undefined) {
+        if (e.errno == 9)
+          e.message = e.message.replace 'EBADF, Bad file descriptor', 'File not found'
+        @program.exit e.message
+      }
+      throw e
+    }
+  
+    # Set compilation options
+    options = {
+      codegen: !@parsedOptions.outputAST,
+      optimizationLevel: @parsedOptions.optimizationLevel,
+      source: source,
+      raw: @parsedOptions.raw,
+      moduleStub: @parsedOptions.bundle,
+      mangleNames: @parsedOptions.mangleNames,
+      strict: !@parsedOptions.noStrict,
+    }
+    if (options.optimizationLevel > 0)
+      options.outputFormatting = false
+
+    # Compile
+    result = __move.compile options
+    
+    # Output
+    if (!options.codegen) {
+      # AST
+      outputs[filename] = result
+    } else {
+      # JavaScript
+      jscode = result
+      
+      # bundle
+      if (@parsedOptions.bundle) {
+        
+        # Confirm and strip basedir from filename
+        if (@parsedOptions.basedir) {
+          absfilename = fs.realpathSync filename
+          if (!@parsedOptions.basedir_)
+            @parsedOptions.basedir_ = fs.realpathSync @parsedOptions.basedir
+          if (absfilename.substr(0, @parsedOptions.basedir_.length+1) != @parsedOptions.basedir_+'/')
+            @program.exit 'Incompatible basedir: '+JSON(absfilename)+' is not based in '+JSON(@parsedOptions.basedir_)
+          filename = absfilename.substr @parsedOptions.basedir_.length+1
+        }
+        
+        id = filename.replace(/\.[^\.]+$/, '')
+        shasum = crypto.createHash 'sha1'
+        shasum.update source
+        uri = 'urn:mvsrc:' + filename + '@' + shasum.digest 'hex'
+        jscode = moduleDefinitionPrefix+'('+
+          JSON.stringify(id)+','+
+          JSON.stringify(uri)+','+
+          jscode + ');';
+      }
+      
+      outputs.push jscode
+    }
+
+  }, this
+  
+  # Output object -> string
+  if (@parsedOptions.outputAST) {
+    outputs = JSON outputs
+  } else {
+    outputs = outputs.join '\n'
+    
+    # Size optimization when bundling more than one module
+    if (@parsedOptions.bundle && @argv.length > 1)
+      outputs = '(function(){var DM=__move.require.define;' + outputs + '})();'
+  }
+  
+  # Write output
+  if (@parsedOptions.outputFilename) {
+    fs.writeFileSync @parsedOptions.outputFilename, outputs, 'utf8'
+  } else {
+    process.stdout.write outputs, 'utf8'
+  }
+}

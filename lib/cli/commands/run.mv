@@ -1,0 +1,37 @@
+import fs, move = '../../index'
+
+export desc = 'Run a Move program.'
+export options = [
+  'Usage: move run [options] <filename> [..]',
+  'Options:',
+  ['optimizationLevel',   'Optimization level. Defaults to 0 (basic).',
+                          {type: 'int', short: 'O', long: 'optimization-level',
+                           def: move.defaultCompilationOptions.optimizationLevel}],
+]
+
+export main = ^{
+  if (@argv.length < 1) @program.exit 'Missing input file'
+  filename = @argv[0]
+
+  # TODO: Support for reading from stdin
+  
+  # Resolve absolute path
+  try {
+    filename = fs.realpathSync filename
+  } catch (e) {
+    if (e.errno != undefined)
+      @program.exit e
+    throw e
+  }
+  
+  # Set compilation options
+  move.defaultCompilationOptions.optimizationLevel = @parsedOptions.optimizationLevel
+  if (@parsedOptions.optimizationLevel > 0)
+    move.defaultCompilationOptions.outputFormatting = false
+
+  process.argv = [process.argv[1]].concat @argv
+  # ['move', 'foo/filename.mv', ..]
+  #print 'process.argv ->', process.argv
+
+  require filename
+}

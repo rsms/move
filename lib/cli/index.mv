@@ -1,16 +1,51 @@
 # Move command line interface
-import fs, optparse = './optparse'
+import fs, cli = './cli'
 
-# The help banner that is printed when `move` is called without arguments.
-banner = "Usage: move [options] [<filename>]"
+export program = new cli.Program([
+  'Usage: move [global options] <command> [command arguments ..]\n'+
+  '       move [global options] <filename>',
+  'Global options:',
+	#['quiet',   'Suppress all messages except errors.'],
+	#['verbose', 'Print details.'],
+	#['debug',   'Print too much details.'],
+	['help',    'Show this help message.'],
+])
 
-# Options
-available_options = [
-  #['-c', '--compile',   "Compile to JavaScript"],
-  #['-e', '--eval [CODE]', "Compile and execute Move code from the command line"],
-  #[      '--ast',       "Parse (but don't compile) and output the AST"],
-  #[      '--version',   "Display version"],
-  ['-h', '--help',      "Display help"] ]
+
+program.on 'options', ^{
+  #print 'options:', @options
+}
+
+# Load commands
+fs.readdirSync(__dirname+'/commands').forEach ^(filename) {
+  commandName = filename.replace(/\.mv$/, '')
+  program.cmd[commandName] = require './commands/'+commandName }
+
+# Program entry
+export main = ^(argv) {
+  
+  # Detect filename for usage form:
+  #   move <filename> [options]
+  argv = Array.prototype.slice.call(argv || process.argv)
+  for (i=2; i < argv.length; ++i) {
+    v = argv[i]
+    if (v[0] == '-') continue
+    try {
+      st = fs.statSync v
+      if (st.isFile())
+        argv.splice i, 0, 'run'
+    } catch (e) { }
+    break
+  }
+  
+  program.main argv
+}
+
+
+/*
+
+return
+
 
 # stuff collected and parsed from the command line
 options = {}
@@ -64,3 +99,4 @@ parseOptions = ^{
   return sources = o.arguments
 }
 
+*/
