@@ -1,5 +1,5 @@
 // Move for web browers
-window.move = (function(){
+if (!window.move) window.move = (function(){
 
 if (typeof window.global === 'undefined')
   window.global = window;
@@ -40,10 +40,32 @@ move.require = Require();
 
 // Called when a Move script has been compiled (or failed to compile or load)
 // For a <script> tag source, `origin` is the HTMLElement instance
-move.compileScript = function compileScript(err, jscode, origin) {
+move.executeScript = function executeScript(err, jscode, origin) {
   if (err) throw err;
   Function(jscode)();
 };
+
+
+// Convenience function for compiling and defining modules based on move source
+move.compileModule = function compileModule(mvcode, id, uri, execute, compileOptions) {
+  var jscode;
+  if (typeof compileOptions === 'object') {
+    compileOptions = Object.create(compileOptions);
+  } else {
+    compileOptions = {};
+  }
+  compileOptions.filename = uri || ('<'+(id || 'main')+'>');
+  compileOptions.moduleStub = true;
+  jscode = move.compile(mvcode, compileOptions);
+  if (id) {
+    jscode = wrapAsModule(jscode, null, uri, id);
+  } else {
+    jscode = '(' + jscode + ')(__move.require, {exports:{}}, {});\n';
+  }
+  execute = execute || execute === undefined;
+  return execute ? move.executeScript(null, jscode, uri) : jscode;
+}
+
 
 // Compilation options used for <script> Move code
 move.scriptCompilationOptions = {preprocess:['ehtml']};
@@ -54,15 +76,13 @@ var wrapAsModule = function wrapAsModule(jscode, src, uri, id) {
   return '__move.require.define('+
     JSON.stringify(id)+','+
     JSON.stringify(uri || src)+','+
-    'function(require,module,exports) {'+
-      jscode +
-    '});\n';
+    jscode + ');\n';
 };
 
 // Internal (used to run all Move <script>s found)
 move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
   var script, i, L, scripts, jscode,
-      compileOptions = move.scriptCompilationOptions,
+      compileOptions = Object.create(move.scriptCompilationOptions),
       nextQIndex = 0, completeQ = [], pending = 0;
   var incr = function () { ++pending; };
   var decr = function () {
@@ -70,7 +90,7 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
       // all loaded -- exec in order
       var i = 0, L = completeQ.length;
       for (;i<L;++i)
-        move.compileScript.apply(move, completeQ[i]);
+        move.executeScript.apply(move, completeQ[i]);
       if (typeof callback === 'function')
         callback(null, completeQ);
     }
@@ -84,6 +104,7 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
         incr();
         if (script.src) {
           compileOptions.filename = script.src;
+          compileOptions.moduleStub = true;
           move.compileURL(script.src, compileOptions, function (err, jscode) {
             jscode = wrapAsModule(jscode, script.getAttribute('src'), script.src);
             completeQ[qIndex] = [err, jscode, script];
@@ -93,14 +114,7 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
           try {
             // RIP OUT into public function
             var id = script.getAttribute('module');
-            compileOptions.filename = '<'+(id || 'main')+'>';
-            jscode = move.compile(script.innerHTML, compileOptions);
-            if (id) {
-              jscode = wrapAsModule(jscode, null, null, id);
-            } else {
-              jscode = '(function(require,module,exports) {'+
-                  jscode + '})(__move.require, {exports:{}}, {});\n';
-            }
+            jscode = move.compileModule(script.innerHTML, id, null, false, compileOptions);
             completeQ[qIndex] = [null, jscode, script];
           } catch (e) {
             completeQ[qIndex] = [e, null, script];
@@ -115,9 +129,9 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
 };
 var _runScripts = function () { move.runBrowserScripts(); };
 if (window.addEventListener) {
-  addEventListener('DOMContentLoaded', _runScripts, false);
+  window.addEventListener('DOMContentLoaded', _runScripts, false);
 } else {
-  attachEvent('onload', _runScripts);
+  window.attachEvent('onload', _runScripts);
 }
 
 return move;
