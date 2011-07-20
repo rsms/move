@@ -1,0 +1,29 @@
+import assert, fs
+spawn = require('child_process').spawn
+
+# CD to basedir of ourselves
+process.chdir __dirname
+
+export assertExitStatus = ^(expectedStatus, args, callback) {
+  if (!Array.isArray args) args = [args]
+  ps = spawn '../bin/move', args
+  #if (stdinData)
+  #  ps.stdin.write stdinData
+  ps.stdin.end()
+  output = ['', '']
+  ps.stdout.on 'data', ^(data) { output[0] += data }
+  ps.stderr.on 'data', ^(data) { output[1] += data }
+  ps.on 'exit', ^(code) {
+    if (code != expectedStatus) {
+      console.error 'Child process exited with unexpected code ' + code
+      if (output[0].length) {
+        console.error 'stdout:', output[0]
+        console.error 'stderr:', output[1]
+      } else {
+        console.error output[1]
+      }
+      process.exit 1
+    }
+    callback && callback code, output[0], output[1]
+  }
+}

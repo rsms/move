@@ -1,0 +1,22 @@
+import assert, fs
+assertExitStatus = require('./_cli').assertExitStatus
+
+testOKExitStatus = [
+  # move <script-filename>
+  ['fixtures/arguments-program.mv', '--first-argument', 'second arg', '-t', '-fourth', 'fifth'],
+  # move run <script-filename>
+  ['run', 'fixtures/arguments-program.mv', '--first-argument', 'second arg', '-t', '-fourth', 'fifth'],
+]
+
+testOKExitStatusNext = ^(callback) {
+  if (args = testOKExitStatus.shift())
+    assertExitStatus 0, args, ^{ testOKExitStatusNext callback }
+  else
+    callback && callback()
+}
+testOKExitStatusNext ^{
+  assertExitStatus 1, ['run', 'fixtures/does-not-exist'], ^(status, stdout, stderr) {
+    # Error should be "file not found"
+    assert.ok (stderr.indexOf 'ENOENT' != -1)
+  }
+}

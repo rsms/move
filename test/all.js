@@ -9,7 +9,7 @@ var stopOnFailure = true; // set to true to abort on first failure
 var failcount = 0, runcount = 0;
 var stderrWrite = process.stderr ? process.stderr.write : process.binding('stdio').writeError;
 var files = fs.readdirSync('.').filter(function(fn){
-  return (fn !== selfFilename) ? fn.match(/^.+\.(?:mv|js)$/) : null;
+  return (fn !== selfFilename && fn[0] !== '_') ? fn.match(/^.+\.(?:mv|js)$/) : null;
 }).sort();
 var totalcount = files.length;
 

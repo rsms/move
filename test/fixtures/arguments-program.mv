@@ -1,0 +1,12 @@
+import assert, fs
+# used by test/cli-run.mv
+
+moveProgram = process.argv.shift()
+moveScript = process.argv.shift()
+
+assert.equal (typeof moveProgram, 'string')
+assert.equal (typeof moveScript, 'string')
+
+assert.equal fs.realpathSync(moveScript), __filename
+assert.ok moveProgram.match(/\/move$/)
+assert.deepEqual process.argv, ['--first-argument', 'second arg', '-t', '-fourth', 'fifth']
