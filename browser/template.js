@@ -102,11 +102,12 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
     if (script && script.type === 'text/move') {
       (function (qIndex, script) {
         incr();
+        var opts = Object.create(compileOptions);
         if (script.src) {
-          compileOptions.filename = script.src;
-          compileOptions.moduleStub = true;
-          move.compileURL(script.src, compileOptions, function (err, jscode) {
-            jscode = wrapAsModule(jscode, script.getAttribute('src'), script.src);
+          opts.filename = script.src;
+          opts.moduleStub = true;
+          move.compileURL(opts.filename, opts, function (err, jscode) {
+            jscode = wrapAsModule(jscode, script.getAttribute('src'), opts.filename);
             completeQ[qIndex] = [err, jscode, script];
             decr();
           });
@@ -114,7 +115,7 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
           try {
             // RIP OUT into public function
             var id = script.getAttribute('module');
-            jscode = move.compileModule(script.innerHTML, id, null, false, compileOptions);
+            jscode = move.compileModule(script.innerHTML, id, null, false, opts);
             completeQ[qIndex] = [null, jscode, script];
           } catch (e) {
             completeQ[qIndex] = [e, null, script];
