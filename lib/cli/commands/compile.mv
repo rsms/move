@@ -31,6 +31,100 @@ export options = [
                            def: __move.defaultCompilationOptions.optimizationLevel}],
 ]
 
+
+# Compiler
+compile = ^(options) {
+  # Compile
+  result = __move.compile options
+
+  # Output
+  if (!options.codegen) {
+    # AST
+    outputs[filename] = result
+  } else {
+    # JavaScript
+    jscode = result
+  
+    # bundle
+    if (@parsedOptions.bundle) {
+    
+      # Confirm and strip basedir from filename
+      if (@parsedOptions.basedir) {
+        absfilename = fs.realpathSync filename
+        if (!@parsedOptions.basedir_)
+          @parsedOptions.basedir_ = fs.realpathSync @parsedOptions.basedir
+        if (absfilename.substr(0, @parsedOptions.basedir_.length+1) != @parsedOptions.basedir_+'/')
+          @program.exit 'Incompatible basedir: '+JSON(absfilename)+' is not based in '+JSON(@parsedOptions.basedir_)
+        filename = absfilename.substr @parsedOptions.basedir_.length+1
+      }
+    
+      id = filename.replace(/\.[^\.]+$/, '')
+      shasum = crypto.createHash 'sha1'
+      shasum.update source
+      uri = 'urn:mvsrc:' + filename + '@' + shasum.digest 'hex'
+      jscode = moduleDefinitionPrefix+'('+
+        JSON.stringify(id)+','+
+        JSON.stringify(uri)+','+
+        jscode + ');';
+    }
+  
+    outputs.push jscode
+  }
+}
+
+
+readStdin = ^(callback, limit:1024*1000){
+  process.stdin.resume()
+  process.stdin.setEncoding 'utf8'
+  stdinbuf = ''
+  process.stdin.on 'data', ^(chunk) {
+    stdinbuf += chunk
+    if (stdinbuf.length > limit) {
+      process.stdin.close()
+      return callback && callback new Error('stdin exceeded maximum limit ('+limit+' bytes)')
+    }
+  }
+  process.stdin.on 'end', ^{
+    callback && callback null, stdinbuf
+  }
+}
+
+
+readInput = ^(inputPath, options, callback) {
+  if (filename == '-') {
+    # Read from stdin
+    readStdin ^(err, buf) {
+      if (err) callback.call this, err
+      else     callback.call this, null, buf
+    }
+  } else {
+    # Read from disk
+    fs.readFile inputPath, 'utf8', ^(err, buf) {
+      if (err) {
+        if (e.errno != undefined) {
+          if (err.errno == 9)
+            err = err.message.replace 'EBADF, Bad file descriptor', 'File not found'
+          else
+            err = err.message
+        }
+        callback.call this, err
+      } else {
+        callback.call this, null, buf, inputPath
+      }
+    }
+  }
+}
+
+
+readAndCompile = ^(inputPath, options, callback) {
+  readInput.call this, inputPath, options, ^(err, source, filename:"") {
+    if (err) return callback.call this, err
+    
+    # TODO: compile
+  }
+}
+
+
 export main = ^{
   #print '@parsedOptions ->', @parsedOptions
   if (@argv.length == 0)
@@ -43,70 +137,58 @@ export main = ^{
 
   moduleDefinitionPrefix = @argv.length > 1 ? 'DM' : '__move.require.define'
   
-  @argv.forEach ^(filename) {
-    # Resolve filename
-    try {
-      source = fs.readFileSync filename, 'utf8'
-    } catch (e) {
-      if (e.errno != undefined) {
-        if (e.errno == 9)
-          e.message = e.message.replace 'EBADF, Bad file descriptor', 'File not found'
-        @program.exit e.message
-      }
-      throw e
-    }
+  # stdin?
+  hasReadStdin = false
+  if (@argv.length == 0)
+    @argv = ['-']
   
-    # Set compilation options
-    options = {
-      codegen: !@parsedOptions.outputAST,
-      optimizationLevel: @parsedOptions.optimizationLevel,
-      source: source,
-      raw: @parsedOptions.raw,
-      moduleStub: @parsedOptions.bundle,
-      mangleNames: @parsedOptions.mangleNames,
-      strict: !@parsedOptions.noStrict,
-    }
-    if (options.optimizationLevel > 0)
-      options.outputFormatting = false
-
-    # Compile
-    result = __move.compile options
-    
-    # Output
-    if (!options.codegen) {
-      # AST
-      outputs[filename] = result
-    } else {
-      # JavaScript
-      jscode = result
-      
-      # bundle
-      if (@parsedOptions.bundle) {
-        
-        # Confirm and strip basedir from filename
-        if (@parsedOptions.basedir) {
-          absfilename = fs.realpathSync filename
-          if (!@parsedOptions.basedir_)
-            @parsedOptions.basedir_ = fs.realpathSync @parsedOptions.basedir
-          if (absfilename.substr(0, @parsedOptions.basedir_.length+1) != @parsedOptions.basedir_+'/')
-            @program.exit 'Incompatible basedir: '+JSON(absfilename)+' is not based in '+JSON(@parsedOptions.basedir_)
-          filename = absfilename.substr @parsedOptions.basedir_.length+1
-        }
-        
-        id = filename.replace(/\.[^\.]+$/, '')
-        shasum = crypto.createHash 'sha1'
-        shasum.update source
-        uri = 'urn:mvsrc:' + filename + '@' + shasum.digest 'hex'
-        jscode = moduleDefinitionPrefix+'('+
-          JSON.stringify(id)+','+
-          JSON.stringify(uri)+','+
-          jscode + ');';
+  # Set compilation options
+  options = {
+    codegen: !@parsedOptions.outputAST,
+    optimizationLevel: @parsedOptions.optimizationLevel,
+    source: null,
+    raw: @parsedOptions.raw,
+    moduleStub: @parsedOptions.bundle,
+    mangleNames: @parsedOptions.mangleNames,
+    strict: !@parsedOptions.noStrict,
+  }
+  if (options.optimizationLevel > 0)
+    options.outputFormatting = false
+  
+  # Compile all inputs in parallel
+  outputs = []
+  outputCount = 0
+  @argv.forEach ^(inputPath, inputIndex) {
+    readAndCompile.call this, inputPath, create(options), ^(err, result) {
+      if (err) {
+        # Abort immediately
+        console.error(err.stack || err)
+        return process.exit 1
       }
-      
-      outputs.push jscode
+      outputs[inputIndex] = result
+      if (++outputCount == @argv.length) {
+        # TODO: finalize
+      }
     }
-
   }, this
+  
+  # Finalizer called after all input has been successfully compiled
+  finalize = ^{
+    
+  }
+
+  
+  # Function which dequeues the next input
+  nextInputIndex = 0
+  handleNextInput = ^{
+    if (@argv.length <= nextInputIndex)
+      return finalize.call this
+    filename = @argv[nextInputIndex++]
+    
+
+  }
+  
+  
   
   # Output object -> string
   if (@parsedOptions.outputAST) {

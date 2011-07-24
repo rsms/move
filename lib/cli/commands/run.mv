@@ -1,4 +1,4 @@
-import fs, move = '../../index'
+import fs
 
 export desc = 'Run a Move program.'
 export options = [
@@ -6,32 +6,57 @@ export options = [
   'Options:',
   ['optimizationLevel',   'Optimization level. Defaults to 0 (basic).',
                           {type: 'int', short: 'O', long: 'optimization-level',
-                           def: move.defaultCompilationOptions.optimizationLevel}],
+                           def: __move.defaultCompilationOptions.optimizationLevel}],
 ]
 
+kStdinMaxBufferSize = 1024*1000
+
 export main = ^{
-  if (@argv.length < 1) @program.exit 'Missing input file'
-  filename = @argv[0]
-
-  # TODO: Support for reading from stdin
-  
-  # Resolve absolute path
-  try {
-    filename = fs.realpathSync filename
-  } catch (e) {
-    if (e.errno != undefined)
-      @program.exit e
-    throw e
-  }
-  
   # Set compilation options
-  move.defaultCompilationOptions.optimizationLevel = @parsedOptions.optimizationLevel
+  compileOptions = create __move.defaultCompilationOptions
+  compileOptions.optimizationLevel = @parsedOptions.optimizationLevel
   if (@parsedOptions.optimizationLevel > 0)
-    move.defaultCompilationOptions.outputFormatting = false
+    compileOptions.outputFormatting = false
+    
 
-  process.argv = [process.argv[1]].concat @argv
-  # ['move', 'foo/filename.mv', ..]
-  #print 'process.argv ->', process.argv
+  if (@argv.length < 1 || @argv[0] == '-') {
+    # stdin
+    process.stdin.resume()
+    process.stdin.setEncoding 'utf8'
+    stdinbuf = ''
+    process.stdin.on 'data', ^(chunk) {
+      stdinbuf += chunk
+      if (stdinbuf.length > kStdinMaxBufferSize) {
+        process.stdin.close()
+        console.error 'fatal: stdin exceeded maximum limit ('+kStdinMaxBufferSize+' bytes)'
+        process.exit 1
+      }
+    }
+    process.stdin.on 'end', ^{
+      compileOptions.filename = 'stdio:stdin'
+      compileOptions.source = stdinbuf
+      __move.eval compileOptions
+    }
+  } else {
+    # file on disk
+    filename = @argv[0]
 
-  require filename
+    # Resolve absolute path
+    try {
+      filename = fs.realpathSync filename
+    } catch (e) {
+      if (e.errno != undefined)
+        @program.exit e
+      throw e
+    }
+
+    process.argv = [process.argv[1]].concat @argv
+    # ['move', 'foo/filename.mv', ..]
+    #print 'process.argv ->', process.argv
+
+    process.nextTick ^{
+      __move.defaultCompilationOptions = compileOptions
+      require filename
+    }
+  }
 }
