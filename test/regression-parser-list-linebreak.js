@@ -43,12 +43,7 @@ y[0]
 
 */
 
-global.movedebug = true;
-
 var r = move.compile(source, {raw:true, detailedOutput:true});
-
-//console.log('code ->', r.code);
-//console.log('ast ->', require('util').inspect(r.ast, false, 10));
 
 // Testing for the bug
 assert.ok(r.code.indexOf('y[0][1].x') === -1, '"y[0][1].x" is incorrect');
@@ -58,3 +53,12 @@ assert.ok(r.code.indexOf('y[0];') !== -1, '"y[0];" expected but not found');
 assert.ok(move.compile('y[0][1][2]\n[3].x',
   {raw:true}).indexOf( 'y[0][1][2];') !== -1);
 
+
+global.movedebug = true
+
+/*
+This bug is about list definitions after linebreaks
+Solution: if nlb and start of list then terminate previous declaration
+*/
+r = move.compile('foo bar, baz\n[1,2,3].x', {raw:true, detailedOutput:true});
+assert.ok(r.code.indexOf('foo(bar, baz);') !== -1, '"foo(bar, baz);" expected but not found');
