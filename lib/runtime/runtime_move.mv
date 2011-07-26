@@ -65,9 +65,12 @@ String.prototype.toText = String.prototype.toString
 export extend = ^(object, body) {
   T = body == null ? 'undefined' : typeof body
   if (T == 'object')
-    Object.keys(body).forEach ^(key) { object[key] = body[key] }
+    Object.keys(body).forEach ^(key) {
+      if ((value = body[key]) != undefined && value != _MoveKWArgsT)
+        object[key] = value
+    }
   else if (T == 'function')
-    body.call(object)
+    body.call object
   else if (T != 'undefined')
     throw new TypeError(
       '"body" argument must be either an object or a function, not a '+T)
