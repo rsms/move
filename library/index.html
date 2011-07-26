@@ -268,6 +268,7 @@ programming computers.
 <li><p><code>valueOf() → object</code> — Returns the primitive value of the object.</p></li>
 <li><p><code>hasOwnProperty(name) → true|false</code> — Returns a boolean indicating whether an object contains the specified property as a direct property of that object and not inherited through the prototype chain.</p></li>
 <li><p><code>isPrototypeOf(value) → true|false</code> — Returns a boolean indication whether the specified object is in the prototype chain of the object this method is called upon.</p></li>
+<li><p><code>forEach(^(key, value, sourceObj), thisObject:null)</code> — Calls a function for each key-value pair owned by the object. <em>Non-standard, Move-specific</em>.</p></li>
 </ul>
 
 
@@ -288,7 +289,7 @@ programming computers.
 <li><p><code>concat(list2, list3, ..., listN) → list</code> — Returns a new array comprised of this array joined with other array(s) and/or value(s).</p></li>
 <li><p><code>every(^(value, index, o) → true|false, this:this) → true|false</code> — Returns true if every element in this array satisfies the provided testing function.</p></li>
 <li><p><code>filter(^(value, index, o) → true|false, this:this) → list</code> — Creates a new array with all of the elements of this array for which the provided filtering function returns true.</p></li>
-<li><p><code>forEach(^(value, index, o), thisObject:null)</code> — Calls a function for each element in the array.</p></li>
+<li><p><code>forEach(^(value, index, sourceObj), thisObject:null)</code> — Calls a function for each element in the array.</p></li>
 <li><p><code>indexOf(value, startIndex:0) → number</code> — Returns the first (least) index of an element within the array equal to the specified value, or -1 if none is found.</p></li>
 <li><p><code>lastIndexOf(value, startIndex:@length-1) → number</code> — Returns the last (greatest) index of an element within the array equal to the specified value, or -1 if none is found.</p></li>
 <li><p><code>join(glueText:"") → text</code> — Joins all elements of an array into text.</p></li>
@@ -567,6 +568,7 @@ print fruit
 <ul>
 <li><p><code>repeat{times: number} → ^(^{...})</code>, <code>repeat(number) → ^(^{...})</code> — Returns an &ldquo;executor&rdquo; function which when called will call the passed function <em>number</em> times. If the passed function returns the <em>true</em> atom, repetition is canceled.</p></li>
 <li><p><code>repeat(number, ^{...})</code> — Repeatedly call the passed function <em>number</em> times or until the passed function returns the <em>true</em> atom.</p></li>
+<li><p><code>repeat{every: number} → ^(^(timer){...}) → timer</code> — Returns an &ldquo;executor&rdquo; function which when called will call the passed function every <em>number</em> milliseconds. The returned <code>timer</code> object (also passed as the first argument to the block) can be cancelled by calling <code>timer.cancel()</code>, effectively stopping repetition. This is a Move-style implementation of <code>window.setInterval</code>.</p></li>
 <li><p><code>repeat(^{...})</code> — Repeatedly call the passed function until it returns a falsy value (or: repeatedly call the passed function while it returns a truthy value).</p></li>
 </ul>
 
@@ -578,6 +580,16 @@ Hello</samp></p>
 
 <pre><code>repeat {times: 3} ^{
   print "Hello"
+}
+</code></pre>
+
+<p>Example 2:
+<samp>Hello in just a second
+Hello in just a second
+&hellip;</samp></p>
+
+<pre><code>repeat {every: 1000} ^{
+  print "Hello in just a second"
 }
 </code></pre>
 
