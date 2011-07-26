@@ -3,4 +3,5 @@ web_generated*
 web/.build
 web/move.js
 web/move-rt.js
+web/move-debug.js
 test/test-web-rt/index.js

@@ -157,6 +157,7 @@ export main = ^{
       mangleNames: @parsedOptions.optimizationLevel > 1,
       outputFormatting: @parsedOptions.optimizationLevel > 0 ? false : true,
     }
+    outputDebug = output
     output = optimizeJS uglifyjs, output, options
     outputRTOnly = optimizeJS uglifyjs, outputRTOnly, options
   }
@@ -166,6 +167,8 @@ export main = ^{
   fs.writeFileSync outputDir + '/move.js', output
   print 'writing', JSON(outputDir + '/move-rt.js'), '...'
   fs.writeFileSync outputDir + '/move-rt.js', outputRTOnly
+  print 'writing', JSON(outputDir + '/move-debug.js'), '...'
+  fs.writeFileSync outputDir + '/move-debug.js', outputDebug
 
   #print output.substr(0, 500)+'\n...\n\nOK!'
 }
