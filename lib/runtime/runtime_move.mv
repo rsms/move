@@ -202,12 +202,10 @@ export after = ^(delay, date) {
 # JSON.parse string -> value
 JSON = global.JSON
 _JSON = ^(build, parse) {
-  if (build != undefined)
+  if (build != undefined || parse == undefined)
     JSON.stringify(build)
-  else if (parse != undefined)
-    JSON.parse(parse)
   else
-    throw new TypeError('Expected either "parse" or "build" argument')
+    JSON.parse(parse)
 }
 # To retain compatibility with the standard JSON object interface
 _JSON.parse = JSON.parse
