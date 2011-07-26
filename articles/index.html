@@ -1,0 +1,288 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+  <head>
+    <meta charset="utf-8">
+    <title>Move</title>
+    <meta name="viewport" content="width=900">
+    <link rel="shortcut icon" href="/res/favicon.png">
+    <link rel="apple-touch-icon-precomposed" href="/res/apple-touch-icon.png">
+
+    <script src="/move.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <link rel="stylesheet" href="/res/screen.css" type="text/css" media="all">
+    <link rel="alternate" type="application/json" title="package.json" href="http://movelang.org/package.json">
+    <script type="text/move">
+visibleMenus = {}
+overlay = null
+enabled = true
+
+hideMenu = ^(menu_el){
+  menu_el.style.webkitTransition = 'opacity 200ms ease-out'
+  menu_el.style.opacity = '0'
+  clearTimeout menu_el.hideTimer
+  if (enabled) {
+    menu_el.hideTimer = after {delay:200} ^{ menu_el.style.display = 'none' }
+  } else {
+    menu_el.style.display = 'none'
+  }
+  overlay.style.display = 'none'
+}
+
+hideAllMenus = ^(ev) {
+  cancelEvent ev;
+  (Object.keys visibleMenus).forEach ^(k) {
+    hideMenu visibleMenus[k]
+  }
+}
+
+disableContextMenus = ^(ev) {
+  enabled = false
+  hideAllMenus ev
+}
+
+cancelEvent = ^(ev) {
+  if (ev) {
+    ev.preventDefault()
+    ev.stopPropagation()
+  }
+}
+
+mkhandler = ^(menu_id) { ^(ev) {
+  if (!enabled)
+    return
+
+  ev.preventDefault()
+
+  menu_el = document.getElementById menu_id
+  clearTimeout menu_el.hideTimer
+
+  menu_el.style.left = ev.pageX + 'px'
+  menu_el.style.top = ev.pageY + 'px'
+  menu_el.style.webkitTransition = 'none'
+  menu_el.style.opacity = '1'
+  menu_el.style.display = 'block'
+  menu_el.addEventListener 'mousedown', hideAllMenus, false
+
+  v = menu_el.getElementsByTagName 'a'
+  for (i=0,L=v.length; i < L; ++i) {
+    a = v[i]
+    a.addEventListener 'click', cancelEvent, false
+    if ((a.href.indexOf '#disable-context-menu') != -1) {
+      a.addEventListener 'mouseup', disableContextMenus, false
+    } else {
+      a.addEventListener 'mouseup', ^(ev) {
+        window.open @href, @getAttribute 'target'
+        hideMenu menu_el
+        cancelEvent ev
+      }, false
+    }
+  }
+
+  visibleMenus[menu_id] = menu_el
+
+  if (!overlay) {
+    overlay = document.createElement 'context-menu-overlay'
+    overlay.addEventListener 'mousedown', hideAllMenus, false
+    overlay.addEventListener 'touchstart', hideAllMenus, false
+    document.body.appendChild overlay
+  }
+  overlay.style.display = 'block'
+}}
+
+# Attach menu handlers
+v = document.getElementsByTagName 'a'
+for (i=0,L=v.length; i < L; ++i) {
+  el = v[i]
+  if (menu_id = el.getAttribute 'context-menu') {
+    el.addEventListener 'contextmenu', (mkhandler menu_id), false
+  }
+}
+</script>
+    <script type="text/move"># Sticky menu
+
+$menu = $ '#menu'
+$filler = $ '#menu-filler'
+$menu.find('a[href="#"]').last().click ^{ window.scrollTo 0, 0 }
+
+$menu.$wrapper = $menu.find('> wrapper').first()
+$window = $ window
+initialOrigin = $menu.offset()
+menuTop = initialOrigin.top
+menuIsFloating = false
+isPanningDevice = navigator.userAgent.indexOf('Safari/') != -1 &&
+                  navigator.userAgent.indexOf('Mobile/') != -1
+
+updateMenuOrigin = ^{
+  y = menuTop - $window.scrollTop()
+  if (y >= 0) {
+    if (menuIsFloating) {
+      menuIsFloating = false
+      $menu.css {
+        position: 'static',
+        width: 'auto'
+      }
+      $menu.removeClass 'floating'
+      $filler.removeClass 'enabled'
+    }
+  } else {
+    if (!menuIsFloating) {
+      $filler.css {height: $menu.height() + 'px'}
+      $filler.addClass 'enabled'
+      $menu.addClass 'floating'
+      menuIsFloating = true
+    }
+    $menu.css {
+      position: isPanningDevice ? 'absolute' : 'fixed',
+      top:      (isPanningDevice ? $window.scrollTop()
+                                 : Math.max(0, menuTop - $window.scrollTop())) +
+                'px',
+      left:     '-7px',
+      width:    window.innerWidth + 'px'
+    }
+  }
+}
+
+window.updateMenuOrigin = updateMenuOrigin
+updateMenuOrigin()
+$(window).bind 'scroll', updateMenuOrigin
+$(window).bind 'resize', updateMenuOrigin
+
+if (isPanningDevice) {
+  $(window).bind 'load', ^{ after {delay: 500} updateMenuOrigin }
+  setInterval updateMenuOrigin, 1000
+}
+
+
+$menu.find('a').each ^{
+  if ((@getAttribute 'href') == document.location.pathname) {
+    @className += ' current'
+  }
+}
+</script>
+
+    <!-- Open Graph -->
+    <meta property="fb:admins" content="728642302">
+    <meta property="fb:app_id" content="158328320889704">
+    <meta property="og:url" content="http://movelang.org/articles/index.html">
+    <meta property="og:site_name" content="Move">
+    
+    <meta property="og:image" content="http://movelang.org/res/logo.png">
+    <meta name="description" content="Move — a modern programming language that runs everywhere">
+    
+  </head>
+
+
+  <body>
+    <div id="fb-root"></div>
+
+    <header>
+      <wrapper>
+        <h1><a href="/" context-menu="logo-context-menu"><img src="/res/logo.png" width="343" height="122" alt="Move logo"></a></h1><p class="description">
+Move is a modern and simple <em>programming language</em> which can run on virtually
+any computer. Move is primarily aimed towards people not previously familiar with
+programming computers.
+        </p>
+        <context-menu id="logo-context-menu">
+          <a href="/res/logo.png" target="logo">logo.png</a>
+          <a href="/res/logo.pdf" target="logo">logo.pdf (for high-resolution work)</a>
+          <hr>
+          <a href="#disable-context-menu">Disable this fancy context menu</a>
+        </context-menu>
+      </wrapper>
+    </header>
+
+    <section id="menu">
+      <wrapper>
+        <menu-items>
+          <a href="/" context-menu="logo-context-menu" class="small-logo"><img src="/res/menu-logo.png" width="65" height="36" alt="Small Move logo"></a><a
+             href="/how-to-move/" title="An introduction to programming">How to Move</a>
+          <a href="/library/" title="Built-in objects and functions">Library</a>
+          <a href="/language/" title="Language reference">Language</a>
+          <!--a href="/articles/" title="Articles with tutorials etc">Articles</a-->
+          <a href="https://github.com/rsms/move/issues" title="Report and browse bugs">Bugs</a>
+          <a href="/try/" title="Try Move in an interactive console">Try it</a>
+          <a href="#" title="Jump to the top of the scroll">&uarr;</a>
+        </menu-items>
+      </wrapper>
+    </section>
+    <section id="menu-filler"></section>
+
+
+    <!--h1>Articles</h1-->
+
+<div class="posts">
+
+</div>
+
+
+
+    <footer>
+      <wrapper>
+Move is free software and <a href="https://github.com/rsms/move">open source</a>
+under a permissive license, created by <a href="http://rsms.me/">Rasmus Andersson</a>.
+      </wrapper>
+    </footer>
+
+    <script type="text/move">// curry pre < code to be able to get prettified
+v = document.getElementsByTagName('pre')
+for (i=0,L=v.length; i < L; ++i) {
+  n = v.item i
+  a = n.getAttribute('class') || ''
+  n.setAttribute 'title', 'Move code'
+  if (n.firstChild && n.firstChild.nodeName == 'CODE') {
+    if (a.indexOf('prettyprint') === -1 &&
+        (n.firstChild.getAttribute('class') || '').indexOf('prettyprint') === -1) {
+      n.setAttribute 'class', a+' prettyprint lang-mv'
+    }
+  }
+}
+
+v = document.getElementsByTagName('code');
+for (i=0,L=v.length; i < L; ++i) {
+  n = v.item i
+  a = (n.getAttribute 'class') || '';
+  if ((a.indexOf 'prettyprint') === -1)
+    n.setAttribute 'class', a+' prettyprint lang-mv'
+}
+$('section.body samp').attr 'title', 'Output'
+script = document.createElement 'script'
+script.async = true
+script.src = "/res/prettify.js"
+document.getElementsByTagName('head')[0].appendChild script
+</script>
+    <script type="text/move">if (!/AppleWebKit/.test(navigator.userAgent) || !/iP[oa]d|iPhone/.test(navigator.userAgent)) {
+
+  link = document.createElement 'link'
+  link.type = "text/css"
+  link.rel = "stylesheet"
+  link.href = "https://fonts.googleapis.com/css?family=Droid+Serif:regular,italic,bold|Droid+Sans+Mono"
+  document.documentElement.getElementsByTagName('head')[0].appendChild link
+
+  checkLoaded = ^{
+    for (i = 0; i < document.styleSheets.length; i++) {
+      if (document.styleSheets[i].href &&
+          document.styleSheets[i].href.indexOf('://fonts.googleapis.com/css') != -1) {
+        document.body.className += ' custom-fonts-loaded';
+        if (window.updateMenuOrigin)
+          window.updateMenuOrigin()
+        return
+      }
+    }
+    after {delay:100} checkLoaded
+  }
+  checkLoaded()
+}</script>
+    <script src="https://connect.facebook.net/en_US/all.js#appId=158328320889704&amp;xfbml=1"></script>
+    <script>var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-9078556-5']);
+_gaq.push(['_trackPageview']);
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+</script>
+  </body>
+</html>

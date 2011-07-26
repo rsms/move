@@ -1,0 +1,469 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+  <head>
+    <meta charset="utf-8">
+    <title>How to Move &mdash; Move</title>
+    <meta name="viewport" content="width=900">
+    <link rel="shortcut icon" href="/res/favicon.png">
+    <link rel="apple-touch-icon-precomposed" href="/res/apple-touch-icon.png">
+
+    <script src="/move.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <link rel="stylesheet" href="/res/screen.css" type="text/css" media="all">
+    <link rel="alternate" type="application/json" title="package.json" href="http://movelang.org/package.json">
+    <script type="text/move">
+visibleMenus = {}
+overlay = null
+enabled = true
+
+hideMenu = ^(menu_el){
+  menu_el.style.webkitTransition = 'opacity 200ms ease-out'
+  menu_el.style.opacity = '0'
+  clearTimeout menu_el.hideTimer
+  if (enabled) {
+    menu_el.hideTimer = after {delay:200} ^{ menu_el.style.display = 'none' }
+  } else {
+    menu_el.style.display = 'none'
+  }
+  overlay.style.display = 'none'
+}
+
+hideAllMenus = ^(ev) {
+  cancelEvent ev;
+  (Object.keys visibleMenus).forEach ^(k) {
+    hideMenu visibleMenus[k]
+  }
+}
+
+disableContextMenus = ^(ev) {
+  enabled = false
+  hideAllMenus ev
+}
+
+cancelEvent = ^(ev) {
+  if (ev) {
+    ev.preventDefault()
+    ev.stopPropagation()
+  }
+}
+
+mkhandler = ^(menu_id) { ^(ev) {
+  if (!enabled)
+    return
+
+  ev.preventDefault()
+
+  menu_el = document.getElementById menu_id
+  clearTimeout menu_el.hideTimer
+
+  menu_el.style.left = ev.pageX + 'px'
+  menu_el.style.top = ev.pageY + 'px'
+  menu_el.style.webkitTransition = 'none'
+  menu_el.style.opacity = '1'
+  menu_el.style.display = 'block'
+  menu_el.addEventListener 'mousedown', hideAllMenus, false
+
+  v = menu_el.getElementsByTagName 'a'
+  for (i=0,L=v.length; i < L; ++i) {
+    a = v[i]
+    a.addEventListener 'click', cancelEvent, false
+    if ((a.href.indexOf '#disable-context-menu') != -1) {
+      a.addEventListener 'mouseup', disableContextMenus, false
+    } else {
+      a.addEventListener 'mouseup', ^(ev) {
+        window.open @href, @getAttribute 'target'
+        hideMenu menu_el
+        cancelEvent ev
+      }, false
+    }
+  }
+
+  visibleMenus[menu_id] = menu_el
+
+  if (!overlay) {
+    overlay = document.createElement 'context-menu-overlay'
+    overlay.addEventListener 'mousedown', hideAllMenus, false
+    overlay.addEventListener 'touchstart', hideAllMenus, false
+    document.body.appendChild overlay
+  }
+  overlay.style.display = 'block'
+}}
+
+# Attach menu handlers
+v = document.getElementsByTagName 'a'
+for (i=0,L=v.length; i < L; ++i) {
+  el = v[i]
+  if (menu_id = el.getAttribute 'context-menu') {
+    el.addEventListener 'contextmenu', (mkhandler menu_id), false
+  }
+}
+</script>
+    <script type="text/move"># Sticky menu
+
+$menu = $ '#menu'
+$filler = $ '#menu-filler'
+$menu.find('a[href="#"]').last().click ^{ window.scrollTo 0, 0 }
+
+$menu.$wrapper = $menu.find('> wrapper').first()
+$window = $ window
+initialOrigin = $menu.offset()
+menuTop = initialOrigin.top
+menuIsFloating = false
+isPanningDevice = navigator.userAgent.indexOf('Safari/') != -1 &&
+                  navigator.userAgent.indexOf('Mobile/') != -1
+
+updateMenuOrigin = ^{
+  y = menuTop - $window.scrollTop()
+  if (y >= 0) {
+    if (menuIsFloating) {
+      menuIsFloating = false
+      $menu.css {
+        position: 'static',
+        width: 'auto'
+      }
+      $menu.removeClass 'floating'
+      $filler.removeClass 'enabled'
+    }
+  } else {
+    if (!menuIsFloating) {
+      $filler.css {height: $menu.height() + 'px'}
+      $filler.addClass 'enabled'
+      $menu.addClass 'floating'
+      menuIsFloating = true
+    }
+    $menu.css {
+      position: isPanningDevice ? 'absolute' : 'fixed',
+      top:      (isPanningDevice ? $window.scrollTop()
+                                 : Math.max(0, menuTop - $window.scrollTop())) +
+                'px',
+      left:     '-7px',
+      width:    window.innerWidth + 'px'
+    }
+  }
+}
+
+window.updateMenuOrigin = updateMenuOrigin
+updateMenuOrigin()
+$(window).bind 'scroll', updateMenuOrigin
+$(window).bind 'resize', updateMenuOrigin
+
+if (isPanningDevice) {
+  $(window).bind 'load', ^{ after {delay: 500} updateMenuOrigin }
+  setInterval updateMenuOrigin, 1000
+}
+
+
+$menu.find('a').each ^{
+  if ((@getAttribute 'href') == document.location.pathname) {
+    @className += ' current'
+  }
+}
+</script>
+
+    <!-- Open Graph -->
+    <meta property="fb:admins" content="728642302">
+    <meta property="fb:app_id" content="158328320889704">
+    <meta property="og:url" content="http://movelang.org/how-to-move/index.html">
+    <meta property="og:site_name" content="Move">
+    
+    <meta property="og:title" content="How to Move">
+    
+  </head>
+
+
+  <body>
+    <div id="fb-root"></div>
+
+    <header>
+      <wrapper>
+        <h1><a href="/" context-menu="logo-context-menu"><img src="/res/logo.png" width="343" height="122" alt="Move logo"></a></h1><p class="description">
+Move is a modern and simple <em>programming language</em> which can run on virtually
+any computer. Move is primarily aimed towards people not previously familiar with
+programming computers.
+        </p>
+        <context-menu id="logo-context-menu">
+          <a href="/res/logo.png" target="logo">logo.png</a>
+          <a href="/res/logo.pdf" target="logo">logo.pdf (for high-resolution work)</a>
+          <hr>
+          <a href="#disable-context-menu">Disable this fancy context menu</a>
+        </context-menu>
+      </wrapper>
+    </header>
+
+    <section id="menu">
+      <wrapper>
+        <menu-items>
+          <a href="/" context-menu="logo-context-menu" class="small-logo"><img src="/res/menu-logo.png" width="65" height="36" alt="Small Move logo"></a><a
+             href="/how-to-move/" title="An introduction to programming">How to Move</a>
+          <a href="/library/" title="Built-in objects and functions">Library</a>
+          <a href="/language/" title="Language reference">Language</a>
+          <!--a href="/articles/" title="Articles with tutorials etc">Articles</a-->
+          <a href="https://github.com/rsms/move/issues" title="Report and browse bugs">Bugs</a>
+          <a href="/try/" title="Try Move in an interactive console">Try it</a>
+          <a href="#" title="Jump to the top of the scroll">&uarr;</a>
+        </menu-items>
+      </wrapper>
+    </section>
+    <section id="menu-filler"></section>
+
+
+    <section class="body">
+  <wrapper>
+    <h1>How to Move</h1>
+
+<p>Move takes a mix of concepts proven successful in other programming languages,
+simplifies these concepts in the context of non-computer scientists while
+avoiding some of the more obscure constructions.</p>
+
+<p>By learning to program with Move you will learn what programming is. A common
+misconception about programming is that you learn a language. That&rsquo;s not entirely
+false, but what takes time and effort is learning how to <em>design</em> programs. So by
+learning a simple but yet fully featured language like Move, you minimize the
+initial effort required to get up to speed and can dive into the adventure of
+software design much earlier, not having to spend too much time thinking about
+the language itself.</p>
+
+<h2>Why?</h2>
+
+<p>The first thing we must discuss is <em>&ldquo;Why should I learn to program computers?&rdquo;</em>.
+It&rsquo;s a very good question without a single and universally good explanation, so
+let&rsquo;s simplify the answer: <strong>To create things</strong>.</p>
+
+<p>Programming is usually a good fit for one or both of the following things:</p>
+
+<ol>
+<li><p>Realizing ideas, like creating a website or a game. Or having the computer
+draw you some graphics based on some data.</p></li>
+<li><p>Simplifying and speeding up otherwise tedious, repetitive work. For instance,
+having the computer walk through thousands of files to find certain sentences.</p></li>
+</ol>
+
+
+<p>The tricky part is that programming is by definition abstract and our brains
+work best with concrete stuff, like &ldquo;here&rsquo;s a stone, move it over there&rdquo;.
+Just like writing a novel or painting a fictional picture, programming works on
+a level above the actual result.</p>
+
+<p>Say we want to make a web site which changes
+the color of its background according to the time of day
+(for instance dark colors during the night and bright colors during the day), we
+need to <em>visualize the results</em> before we start working. Just as the painter
+visualizes her motif before drawing it. When we have a good enough picture in
+our head of what we want to create it&rsquo;s time to start programming. So, in a way
+we work our way from an abstract idea to a concrete result.</p>
+
+<p>And it&rsquo;s fun.</p>
+
+<p>Now, let&rsquo;s get Moving!</p>
+
+<h2>Values and data</h2>
+
+<p>A <em>value</em> is a piece of information. Something that <em>does not do anything</em> but
+is rather used by and passed around a program. You can think of a <em>value</em> as the
+coffee in your coffee cup. There are only five different types in Move.</p>
+
+<p>The first two types of values are <em>simple values</em>:</p>
+
+<ul>
+<li><code>5.31</code> — A number</li>
+<li><code>"John"</code> — A piece of text</li>
+</ul>
+
+
+<p>The other two value types are so called <em>compound values</em> — values which
+<em>hold other values</em>:</p>
+
+<ul>
+<li><code>[1, 2, 3]</code> — A list (with three number values)</li>
+<li><code>{a:1, b:2}</code> — An object (with two number members)</li>
+</ul>
+
+
+<p><em>Compound types</em> can contain any other value, including other <em>compound types</em>
+which makes these little buggers a very powerful tool.</p>
+
+<p>The fifth kind of value is a special kind of object called <em>function</em>:</p>
+
+<ul>
+<li><code>^(a, b){ a + b }</code> — A function which produces the sum of two numbers</li>
+</ul>
+
+
+<h2>Organizing values</h2>
+
+<p>When you want to keep a value around there&rsquo;s something called a <em>variable</em>.
+To put a value into a variable, we make up a name for the variable, then use
+the <em>equal sign</em> (<code>=</code>) and finally write our value.</p>
+
+<p>Here we store the value <code>"Julia"</code> into a variable called <code>name</code>:</p>
+
+<pre><code>name = "Julia"
+</code></pre>
+
+<p>Later in our program we can refer to <code>name</code> and get the value <code>"Julia"</code> back.
+For instance, we might output the value of <code>name</code> to the screen:
+<samp>Julia</samp></p>
+
+<pre><code>print name
+</code></pre>
+
+<p>As the name suggests, a <em>variable</em> can <em>vary</em>, meaning we can assign any value
+to a variable at any time.</p>
+
+<p>For example, if we want our program above to output another name, we
+simply assign another value to our <code>name</code> variable:</p>
+
+<pre><code>name = "John"
+</code></pre>
+
+<p>When we print <code>name</code>, &ldquo;John&rdquo; is displayed rather than &ldquo;Julia&rdquo;. Pretty neat, huh?!</p>
+
+<h2>Reusable programs with <em>functions</em></h2>
+
+<p>A <em>function</em> is a block of code which can be called (or &ldquo;performed&rdquo; if you will)
+many times. We can put commonly used code inside functions to avoid re-writing
+the same thing several times.</p>
+
+<p><em>Functions</em> are actually just <em>objects</em> (one of the five kinds of values we
+looked at earlier) with the addition of some code attached to it. Here is a simple
+function which glues together the text &ldquo;Hello &rdquo; with our <code>name</code> variable:</p>
+
+<pre><code>hello = ^{ "Hello "+name }
+</code></pre>
+
+<p>Earlier we used something called <code>print</code> to output values to the screen. <code>print</code>
+is not magic, but just a simple <em>function</em> which knows how to display
+values on the screen.</p>
+
+<p>Let&rsquo;s see what happens when we print our <code>hello</code> function:
+<samp>[Function: hello]</samp></p>
+
+<pre><code>print hello
+</code></pre>
+
+<p>But&hellip; What?! Well, we only printed the <em>function</em> but we never <em>called</em> it, so
+our code that glues together text was never run. Let&rsquo;s try it again, but this time
+we add two curly brackets at the end of <code>hello</code>. This will tell Move to
+<em>call the function</em>:
+<samp>Hello John</samp></p>
+
+<pre><code>print hello{}
+</code></pre>
+
+<p>Functions are a very powerful tool when writing programs.</p>
+
+<p>When creating a function, we can specify <em>function arguments</em>, which are
+surrounded by parentheses and put in between the <code>^</code> and the <code>{</code>.
+These &ldquo;arguments&rdquo; are just like <em>variables</em>, but which are only available inside
+our function.</p>
+
+<p>Let&rsquo;s add a &ldquo;title&rdquo; argument to our <code>hello</code> function:</p>
+
+<pre><code>hello = ^(title: "Mr."){ "Hello "+title+" "+name }
+</code></pre>
+
+<p>When calling a function you can pass it arguments:
+<samp>Hello Ms. John</samp></p>
+
+<pre><code>print hello {title: "Ms."}
+</code></pre>
+
+<p>Notice how we wrote <code>title: "Mr."</code> when we created our <code>hello</code> function.
+This is the <em>default value</em> of the &ldquo;title&rdquo; argument.</p>
+
+<p>Let&rsquo;s call our function again, but this time we don&rsquo;t specify the &ldquo;title&rdquo; argument:
+<samp>Hello Mr. John</samp></p>
+
+<pre><code>print hello{}
+</code></pre>
+
+<p>See. <code>title</code> represents its <em>default value</em> (&ldquo;Mr.&rdquo;).</p>
+
+<p>For simple functions like our <code>hello</code> it might become &ldquo;clutterish&rdquo; or generally
+cumbersome to write <code>{title: "Ms."}</code> every time. In these cases, there&rsquo;s an
+alternate way of calling functions: the <em>shorthand call-style</em> which gives a
+function&rsquo;s arguments <em>in the order they where defined when creating the function</em>:
+<samp>Hello Ms. John</samp></p>
+
+<pre><code>print hello "Ms."
+</code></pre>
+
+<p>&hellip;</p>
+
+<p><em>This guide is currently work in progress and will evolve over time</em></p>
+
+  </wrapper>
+</section>
+
+
+
+    <footer>
+      <wrapper>
+Move is free software and <a href="https://github.com/rsms/move">open source</a>
+under a permissive license, created by <a href="http://rsms.me/">Rasmus Andersson</a>.
+      </wrapper>
+    </footer>
+
+    <script type="text/move">// curry pre < code to be able to get prettified
+v = document.getElementsByTagName('pre')
+for (i=0,L=v.length; i < L; ++i) {
+  n = v.item i
+  a = n.getAttribute('class') || ''
+  n.setAttribute 'title', 'Move code'
+  if (n.firstChild && n.firstChild.nodeName == 'CODE') {
+    if (a.indexOf('prettyprint') === -1 &&
+        (n.firstChild.getAttribute('class') || '').indexOf('prettyprint') === -1) {
+      n.setAttribute 'class', a+' prettyprint lang-mv'
+    }
+  }
+}
+
+v = document.getElementsByTagName('code');
+for (i=0,L=v.length; i < L; ++i) {
+  n = v.item i
+  a = (n.getAttribute 'class') || '';
+  if ((a.indexOf 'prettyprint') === -1)
+    n.setAttribute 'class', a+' prettyprint lang-mv'
+}
+$('section.body samp').attr 'title', 'Output'
+script = document.createElement 'script'
+script.async = true
+script.src = "/res/prettify.js"
+document.getElementsByTagName('head')[0].appendChild script
+</script>
+    <script type="text/move">if (!/AppleWebKit/.test(navigator.userAgent) || !/iP[oa]d|iPhone/.test(navigator.userAgent)) {
+
+  link = document.createElement 'link'
+  link.type = "text/css"
+  link.rel = "stylesheet"
+  link.href = "https://fonts.googleapis.com/css?family=Droid+Serif:regular,italic,bold|Droid+Sans+Mono"
+  document.documentElement.getElementsByTagName('head')[0].appendChild link
+
+  checkLoaded = ^{
+    for (i = 0; i < document.styleSheets.length; i++) {
+      if (document.styleSheets[i].href &&
+          document.styleSheets[i].href.indexOf('://fonts.googleapis.com/css') != -1) {
+        document.body.className += ' custom-fonts-loaded';
+        if (window.updateMenuOrigin)
+          window.updateMenuOrigin()
+        return
+      }
+    }
+    after {delay:100} checkLoaded
+  }
+  checkLoaded()
+}</script>
+    <script src="https://connect.facebook.net/en_US/all.js#appId=158328320889704&amp;xfbml=1"></script>
+    <script>var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-9078556-5']);
+_gaq.push(['_trackPageview']);
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+</script>
+  </body>
+</html>
