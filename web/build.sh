@@ -41,7 +41,7 @@ if [ ! -d "$DST_DIR" ] || [ "$(git --git-dir="${DST_DIR}/.git" branch --no-color
 fi
 
 # Build move
-"$MOVE_BIN" ../browser/build.mv || exit $?
+"$MOVE_BIN" build-weblib -O 2 || exit $?
 
 # Build website
 rm -rf "$BUILD_DST_DIR"
@@ -58,7 +58,7 @@ cd "$DST_DIR" || exit $?
 git add . || exit $?
 if (git commit --no-status -a -m 'Generated website'); then
   git remote set-url origin "$GIT_SRC_DIR" || exit $?
-  if ! (git push origin gh-pages); then
+  if ! (git push origin gh-pages 2>/dev/null); then
     git pull origin gh-pages || exit $?
     git push origin gh-pages || exit $?
   fi

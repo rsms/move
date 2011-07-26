@@ -1,5 +1,15 @@
 Release:
 
-V=vX.X.X; git ci $V ; git tag -m $V $V && git tag -f $V stable
+Make sure package.json is up to date
 
+1. Build web:
+
+web/build.sh
+
+
+2. Tag version
+
+V=$(echo 'console.log(JSON.parse(require("fs").readFileSync("package.json", "utf8")).version)' | node)
+# optionally commit: git ci $V
+git tag -m v$V v$V
 git pu --tags
