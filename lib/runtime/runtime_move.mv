@@ -2,6 +2,7 @@
 
 # A few things that need to be defined in order for this very module to compile
 _MoveKWArgsT = global.__move.runtime._MoveKWArgsT
+global.__move.runtime = exports
 
 # -----------------------------------------------------------------------------
 # ES5 compatibility
@@ -120,8 +121,9 @@ if (typeof console != 'undefined' && console.log) {
     # no code executed can directly reference native objects, thus we wrap
     # console.log in a lambda
     exports.print = ^{
-      console.log.apply(console, Array.prototype.slice.call(arguments))
+      print.consoleFun.apply(console, Array.prototype.slice.call(arguments))
     }
+    exports.print.consoleFun = console.log
   } else {
     exports.print = console.log
   }
@@ -197,9 +199,9 @@ export after = ^(delay, date) {
 # JSON.parse string -> value
 JSON = global.JSON
 _JSON = ^(build, parse) {
-  if (build)
+  if (build != undefined)
     JSON.stringify(build)
-  else if (parse)
+  else if (parse != undefined)
     JSON.parse(parse)
   else
     throw new TypeError('Expected either "parse" or "build" argument')

@@ -4,37 +4,24 @@ if (!window.move) window.move = (function(){
 if (typeof window.global === 'undefined')
   window.global = window;
 
+/*#include require.js*/
+
 // Module system
 var module, modules = {};
-var _require = function _require(id) {
-  if (++(_require.depth) > 20)
-    throw new Error('Recursive module dependencies');
-  id = id.replace(/^[\/.]+/g, '');
-  var module = modules[id];
-  if (!module)
-    throw new Error('No module with id "'+id+'"');
-  if (module.block) {
-    var block = module.block;
-    module.block = null;
-    block(module.exports, _require, module);
-  }
-  _require.depth--;
-  return module.exports;
-};
-_require.depth = 0;
+var _require = Require();
 
 // %CONTENT%
 
-var move = _require('index');
-move.runtime._require = _require;
+_require('%REQUIRE_ENTRY%');
+var move = global.__move;
 
 // --------------------------------------------------------------
 move.version = function () { return %VERSION%; };
 
 // --------------------------------------------------------------
-/*#include require.js*/
 move.require = Require();
 
+%IF HAS_COMPILER%
 // --------------------------------------------------------------
 // Loading and executing <script>s
 
@@ -134,6 +121,7 @@ if (window.addEventListener) {
 } else {
   window.attachEvent('onload', _runScripts);
 }
+%ENDIF HAS_COMPILER%
 
 return move;
 })();

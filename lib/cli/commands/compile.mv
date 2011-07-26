@@ -1,4 +1,7 @@
 import fs, Path = 'path', crypto
+filenameToModuleId = require('../index').filenameToModuleId
+
+try { import uglifyjs = 'uglify-js' } catch (e) { }
 
 export desc = 'Parse and compile Move code.'
 export options = [
@@ -6,13 +9,22 @@ export options = [
   'Options:',
 
   ['outputFilename',      'Output filename. By default output is done to stdout.',
-                          {type: 'int', 'short': 'o', 'long': 'output'}],
+                          {type: 'string', 'short': 'o', 'long': 'output'}],
 
   ['bundle',              'Bundle all input files together as modules into one web-browser compatible JavaScript file.',
-                          {type: 'bool', 'long':'bundle'}],
+                          {type: 'bool', 'long':'bundle', 'short':'none'}],
+
+  ['entryPoints',         'When creating a bundle, specifies one or more module ids which will be imported on DOM ready (like the main() function in a C program). Defaults to the empty string (equivalent to an index.{mv,js} file in the root directory).',
+                          {type: 'string', 'short':'p', 'long':'entry-points', def:''}],
+
+  ['bundleWithCore',      'Same as --bundle but also embeds the Move runtime library',
+                          {type: 'bool', 'long':'bundle-standalone', 'short':'b'}],
+
+  ['bundleWithFull',      'Same as --bundle-standalone but also embeds the Move compiler',
+                          {type: 'bool', 'long':'bundle-standalone-full', 'short':'B'}],
 
   ['basedir',             'Base directory to exclude when calculating bundle id-s. Only effective in combination with --bundle.',
-                          {type: 'string', 'long':'basedir', 'short':'none'}],
+                          {type: 'string', 'long':'basedir', 'short':'C'}],
 
   ['raw',                 'Do not depend on the Move runtime.',
                           {type: 'bool', 'short':'none'}],
@@ -25,7 +37,7 @@ export options = [
 
   ['outputAST',           'Produce AST (as JSON) instead of producing JavaScript.',
                           {type: 'bool', 'long':'ast', 'short':'none'}],
-  
+
   ['optimizationLevel',   'Optimization level. Defaults to 0 (basic).',
                           {type: 'int', 'short': 'O', 'long': 'optimization-level',
                            def: __move.defaultCompilationOptions.optimizationLevel}],
@@ -33,43 +45,69 @@ export options = [
 
 
 # Compiler
-compile = ^(options) {
+compileMove = ^(inputPath, options) {
   # Compile
   result = __move.compile options
 
   # Output
   if (!options.codegen) {
     # AST
-    outputs[filename] = result
-  } else {
-    # JavaScript
-    jscode = result
-  
-    # bundle
-    if (@parsedOptions.bundle) {
-    
-      # Confirm and strip basedir from filename
-      if (@parsedOptions.basedir) {
-        absfilename = fs.realpathSync filename
-        if (!@parsedOptions.basedir_)
-          @parsedOptions.basedir_ = fs.realpathSync @parsedOptions.basedir
-        if (absfilename.substr(0, @parsedOptions.basedir_.length+1) != @parsedOptions.basedir_+'/')
-          @program.exit 'Incompatible basedir: '+JSON(absfilename)+' is not based in '+JSON(@parsedOptions.basedir_)
-        filename = absfilename.substr @parsedOptions.basedir_.length+1
-      }
-    
-      id = filename.replace(/\.[^\.]+$/, '')
-      shasum = crypto.createHash 'sha1'
-      shasum.update source
-      uri = 'urn:mvsrc:' + filename + '@' + shasum.digest 'hex'
-      jscode = moduleDefinitionPrefix+'('+
-        JSON.stringify(id)+','+
-        JSON.stringify(uri)+','+
-        jscode + ');';
-    }
-  
-    outputs.push jscode
+    return result
   }
+
+  # JavaScript
+  jscode = result
+
+  # bundle
+  if (@parsedOptions.bundle) {
+
+    # Confirm and strip basedir from inputPath
+    if (@parsedOptions.basedir) {
+      absfilename = fs.realpathSync inputPath
+      if (!@parsedOptions.basedir_)
+        @parsedOptions.basedir_ = fs.realpathSync @parsedOptions.basedir
+      if (absfilename.substr(0, @parsedOptions.basedir_.length+1) != @parsedOptions.basedir_+'/')
+        @program.exit 'Incompatible basedir: '+JSON(absfilename)+' is not based in '+JSON(@parsedOptions.basedir_)
+      inputPath = absfilename.substr @parsedOptions.basedir_.length+1
+    }
+
+    if (options.moduleStub) {
+      #shasum = crypto.createHash 'sha1'
+      #shasum.update options.source
+      #uri = 'urn:mvsrc:' + inputPath + '@' + shasum.digest 'hex'
+      uri = inputPath
+      
+      id = filenameToModuleId inputPath
+      
+      options.moduleId = id
+      options.moduleURI = uri
+      jscode = options.moduleDefinitionPrefix+'('+JSON(id)+','+JSON(uri)+','+jscode + ');';
+    }
+  }
+
+  jscode
+}
+
+
+compileJS = ^(inputPath, options) {
+  if (uglifyjs) {
+    ast = uglifyjs.parser.parse options.source
+    if (options.mangleNames)
+      ast = uglifyjs.uglify.ast_mangle ast
+    if (options.optimizationLevel > 0)
+      ast = uglifyjs.uglify.ast_squeeze ast
+
+    if (!options.codegen) {
+      result = ast
+    } else {
+      result = uglifyjs.uglify.gen_code ast, options.outputFormatting
+    }
+  } else if (!options.codegen) {
+    throw Error 'unable to parse JavaScript '+JSON(inputPath)+' into AST since the uglify-js module is not installed'
+  } else {
+    result = options.source
+  }
+  result
 }
 
 
@@ -81,7 +119,7 @@ readStdin = ^(callback, limit:1024*1000){
     stdinbuf += chunk
     if (stdinbuf.length > limit) {
       process.stdin.close()
-      return callback && callback new Error('stdin exceeded maximum limit ('+limit+' bytes)')
+      return callback && callback Error 'stdin exceeded maximum limit ('+limit+' bytes)'
     }
   }
   process.stdin.on 'end', ^{
@@ -91,25 +129,26 @@ readStdin = ^(callback, limit:1024*1000){
 
 
 readInput = ^(inputPath, options, callback) {
-  if (filename == '-') {
+  self = this
+  if (inputPath == '-') {
     # Read from stdin
     readStdin ^(err, buf) {
-      if (err) callback.call this, err
-      else     callback.call this, null, buf
+      if (err) callback.call self, err
+      else     callback.call self, null, buf
     }
   } else {
     # Read from disk
     fs.readFile inputPath, 'utf8', ^(err, buf) {
       if (err) {
-        if (e.errno != undefined) {
+        if (err.errno != undefined) {
           if (err.errno == 9)
             err = err.message.replace 'EBADF, Bad file descriptor', 'File not found'
           else
             err = err.message
         }
-        callback.call this, err
+        callback.call self, err
       } else {
-        callback.call this, null, buf, inputPath
+        callback.call self, null, buf, inputPath
       }
     }
   }
@@ -117,10 +156,22 @@ readInput = ^(inputPath, options, callback) {
 
 
 readAndCompile = ^(inputPath, options, callback) {
-  readInput.call this, inputPath, options, ^(err, source, filename:"") {
+  readInput.call this, inputPath, options, ^(err, source, inputPath:"") {
     if (err) return callback.call this, err
-    
-    # TODO: compile
+
+    options.source = source
+
+    err = null
+    try {
+      if (/\.js$/.test inputPath)
+        result = compileJS.call this, inputPath, options
+      else
+        result = compileMove.call this, inputPath, options
+    } catch (e) {
+      err = e
+    }
+
+    callback.call this, err, {result:result, inputPath:inputPath, options:options}
   }
 }
 
@@ -129,35 +180,103 @@ export main = ^{
   #print '@parsedOptions ->', @parsedOptions
   if (@argv.length == 0)
     @program.exit 'No input'
-  
+
   if (@parsedOptions.raw && @parsedOptions.bundle)
     @program.exit 'Can not bundle raw code (the --raw and --bundle flags can not both be defined)'
-  
-  outputs = @parsedOptions.outputAST ? {} : []
 
-  moduleDefinitionPrefix = @argv.length > 1 ? 'DM' : '__move.require.define'
-  
+  if (@parsedOptions.bundleWithCore || @parsedOptions.bundleWithFull) {
+    @parsedOptions.bundle = true
+    
+    # Create web libraries unless they exist
+    webLibDir = fs.realpathSync __dirname+'/../../../web'
+    needToBuildWebLibs = true
+    try {
+      stat = fs.statSync webLibDir+'/move.js'
+      if (stat.isFile()) {
+        needToBuildWebLibs = false
+        # TODO: Verify version
+      }
+    } catch (e) {}
+    if (needToBuildWebLibs) {
+      print 'Building web browser library...'
+      @program.runCommand 'build-weblib', []
+    }
+  }
+
   # stdin?
   hasReadStdin = false
   if (@argv.length == 0)
     @argv = ['-']
-  
+
+  # Add Move runtime?
+  if (@parsedOptions.bundleWithCoreFull)
+    @argv.unshift webLibDir+'/move.js'
+  else if (@parsedOptions.bundleWithCore)
+    @argv.unshift webLibDir+'/move-rt.js'
+
   # Set compilation options
-  options = {
+  options = create __move.defaultCompilationOptions, {
     codegen: !@parsedOptions.outputAST,
     optimizationLevel: @parsedOptions.optimizationLevel,
     source: null,
     raw: @parsedOptions.raw,
     moduleStub: @parsedOptions.bundle,
-    mangleNames: @parsedOptions.mangleNames,
+    mangleNames: @parsedOptions.mangleNames || @parsedOptions.optimizationLevel > 2,
     strict: !@parsedOptions.noStrict,
+    preprocess: ['ehtml'],
+    moduleDefinitionPrefix: '__move.require.define',
   }
   if (options.optimizationLevel > 0)
     options.outputFormatting = false
-  
-  # Compile all inputs in parallel
+
   outputs = []
   outputCount = 0
+
+  # Finalizer called after all input has been successfully compiled
+  finalize = ^{
+    if (@parsedOptions.outputAST) {
+      # AST
+      output = {}
+      outputs.forEach ^(result) { output[result.inputPath] = result.result }
+      output = JSON output
+    } else {
+      # JavaScript code
+      moduleIds = []
+      output = outputs.map(^(result) {
+        if (result.options && result.options.moduleId != undefined)
+          moduleIds.push result.options.moduleId
+        result.result
+      }).join '\n'
+      
+      # Any entry points specified?
+      if (@parsedOptions.bundle) {
+        entryPoints = @parsedOptions.entryPoints.split(',').map ^(moduleId) { moduleId.trim() }
+        
+        # Special case: If only one entry point is requested (""), ignore silently unless existing
+        if (entryPoints.length == 1 && entryPoints[0] == '' && moduleIds.indexOf('') == -1) {
+          entryPoints = []
+        }
+        
+        # Append to output
+        entryPoints.forEach ^(moduleId) {
+          # Confirm all the entry points exist
+          if (moduleIds.indexOf(moduleId) == -1)
+            throw Error 'Unknown entry point "'+moduleId+'"'
+          # Append to output
+          output += '__move.require('+JSON(moduleId)+');'
+        }
+      }
+    }
+
+    # Write output
+    if (@parsedOptions.outputFilename) {
+      fs.writeFileSync @parsedOptions.outputFilename, output, 'utf8'
+    } else {
+      process.stdout.write output, 'utf8'
+    }
+  }
+
+  # Compile all inputs in parallel
   @argv.forEach ^(inputPath, inputIndex) {
     readAndCompile.call this, inputPath, create(options), ^(err, result) {
       if (err) {
@@ -167,44 +286,9 @@ export main = ^{
       }
       outputs[inputIndex] = result
       if (++outputCount == @argv.length) {
-        # TODO: finalize
+        finalize.call this
       }
     }
   }, this
-  
-  # Finalizer called after all input has been successfully compiled
-  finalize = ^{
-    
-  }
 
-  
-  # Function which dequeues the next input
-  nextInputIndex = 0
-  handleNextInput = ^{
-    if (@argv.length <= nextInputIndex)
-      return finalize.call this
-    filename = @argv[nextInputIndex++]
-    
-
-  }
-  
-  
-  
-  # Output object -> string
-  if (@parsedOptions.outputAST) {
-    outputs = JSON outputs
-  } else {
-    outputs = outputs.join '\n'
-    
-    # Size optimization when bundling more than one module
-    if (@parsedOptions.bundle && @argv.length > 1)
-      outputs = '(function(){var DM=__move.require.define;' + outputs + '})();'
-  }
-  
-  # Write output
-  if (@parsedOptions.outputFilename) {
-    fs.writeFileSync @parsedOptions.outputFilename, outputs, 'utf8'
-  } else {
-    process.stdout.write outputs, 'utf8'
-  }
 }

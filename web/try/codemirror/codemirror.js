@@ -35,7 +35,7 @@ var CodeMirror = (function(){
     stylesheet: [],
     path: "",
     parserfile: [],
-    basefiles: ["util.js", "stringstream.js", "select.js", "undo.js", "editor.js", "tokenize.js"],
+    basefiles: ["parser_utils.js", "stringstream.js", "select.js", "undo.js", "editor.js", "tokenize.js"],
     iframeClass: null,
     passDelay: 200,
     passTime: 50,

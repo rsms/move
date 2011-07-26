@@ -1,6 +1,9 @@
 # Move command line interface
 import fs, cli = './cli'
 
+# Redirect print
+__move.runtime.print = console.error
+
 export program = new cli.Program([
   'Usage: move [global options] <command> [command arguments ..]\n'+
   '       move [global options] <filename>',
@@ -15,11 +18,6 @@ export program = new cli.Program([
 program.on 'options', ^{
   #print 'options:', @options
 }
-
-# Load commands
-fs.readdirSync(__dirname+'/commands').forEach ^(filename) {
-  commandName = filename.replace(/\.mv$/, '')
-  program.cmd[commandName] = require './commands/'+commandName }
 
 # Program entry
 export main = ^(argv) {
@@ -41,62 +39,14 @@ export main = ^(argv) {
   program.main argv
 }
 
-
-/*
-
-return
-
-
-# stuff collected and parsed from the command line
-options = {}
-sources = []
-
-# Output printers
-usage = ^(die) {
-  console.error((new optparse.OptionParser(available_options, banner)).help())
-  if (die != undefined) process.exit(die)
+# Convert a filename to a module id
+export filenameToModuleId = ^(filename) {
+  /^(.+)\.[^\.]+$/.exec(filename)[1].replace(/\/index$|^index$/, '')
 }
 
-# Program entry-point
-export main = ^{
-  parseOptions()
-  if (options.help) return usage()
-  #console.log(options, sources)
 
-  # Run passed file(s)
-  if (options.run) {
-    # Check that we have some input
-    if (!sources.length) {
-      console.error "At least one file must be specified"
-      usage(1)
-    }
-    
-    sources.forEach(^(filename) {
-      # Resolve absolute path
-      try {
-        filename = fs.realpathSync filename
-      } catch (e) {
-        if (e.errno != undefined) {
-          console.error e.message
-          process.exit 1
-        }
-        throw e
-      }
-      # Execute file
-      #console.log 'run '+filename
-      require(filename)
-    })
-  }
-}
+# Load commands
+fs.readdirSync(__dirname+'/commands').forEach ^(filename) {
+  commandName = filename.replace(/\.mv$/, '')
+  program.cmd[commandName] = require './commands/'+commandName }
 
-# Use the `optparse` to extract all options from `process.argv` that are
-# specified in `available_options`.
-parseOptions = ^{
-  op  = new optparse.OptionParser(available_options, banner)
-  options = o = op.parse(process.argv.slice(2))
-  # Normalize and set pseudo-options
-  o.run = !(o.compile || o.ast)
-  return sources = o.arguments
-}
-
-*/

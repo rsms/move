@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>test web rt bundle</title>
+    <script src="index.js"></script>
+  </head>
+  <body>
+    Expects *.mv to be built as a stand-alone bundle, test-rt.js:<br>
+    <pre>
+$ bin/move compile -C test/test-web-rt --bundle-standalone \
+    test/test-web-rt/*.mv > test/test-web-rt/index.js
+</pre>
+  </body>
+</html>

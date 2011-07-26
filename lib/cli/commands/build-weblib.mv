@@ -1,0 +1,171 @@
+import fs
+filenameToModuleId = require('../').filenameToModuleId
+move = __move
+
+baseDir = fs.realpathSync __dirname+'/../../..'
+defaultOutputDir = baseDir+'/web'
+
+export desc = 'Build the Move library for web browsers'
+export options = [
+  'Usage: move build-weblib [options]',
+  'Options:',
+
+  ['outputDir',          'Output directory. By default output is done to "'+defaultOutputDir+'".',
+                          {type: 'string', 'short': 'none', 'long': 'output',
+                           def: defaultOutputDir}],
+
+  ['optimizationLevel',   'Optimization level [0-2]. Defaults to 2 (aggressive).',
+                          {type: 'int', 'short': 'O', 'long': 'optimization-level',
+                           def: 2}],
+]
+
+
+# Function which produces the text content of a file
+read = ^(path, encoding: "utf8") { fs.readFileSync(path, encoding) }
+
+# Function which enumerate all files in `dir` matching a pattern
+enumerateDirectory = ^(path, deep:true, pattern: /.*/, apply, parentPath:''){
+  fs.readdirSync(path).forEach(^(name) {
+    entryPath = path+'/'+name
+    if (deep && (fs.statSync entryPath).isDirectory()) {
+      enumerateDirectory { path:entryPath, deep:true, pattern:pattern,
+                           apply:apply, parentPath: parentPath + name + '/' }
+    } else if (pattern.test name) {
+      apply parentPath + name
+    }
+  })
+}
+
+
+optimizeJS = ^(uglifyjs, source, options) {
+  ast = uglifyjs.parser.parse source
+  if (options.mangleNames)
+    ast = uglifyjs.uglify.ast_mangle ast
+  ast = uglifyjs.uglify.ast_squeeze ast
+  return uglifyjs.uglify.gen_code ast
+}
+
+
+ppIf = ^(string, constant, value) {
+  i = 0
+  startstr = '%IF '+constant+'%'
+  endstr = '%ENDIF '+constant+'%'
+  parts = []
+  while (true) {
+    if ((a = string.indexOf startstr, i) == -1)
+      break;
+    if ((b = string.indexOf endstr, a) == -1)
+      break;
+    parts.push string.substring i, a
+    if (value)
+      parts.push string.substring a+startstr.length, b
+    # else strip
+    i = b + endstr.length
+  }
+  if (parts.length) {
+    if (i < string.length)
+      parts.push string.substr i
+    return parts.join ''
+  }
+  string
+}
+
+
+export main = ^{
+
+  outputDir = fs.realpathSync @parsedOptions.outputDir
+  
+  # Variables holding the final output and the browser template
+  output = ''
+  outputRTOnly = ''
+  browserTemplate = read { path: baseDir+'/browser/template.js' }
+
+  # Static includes
+  browserTemplate.forEachMatch(/\/\*#include\s+(.+)\*\//gm, ^(m) {
+    content = read { path:  baseDir+'/browser/' + m[1] }
+    browserTemplate = browserTemplate.substr(0, m.index) +
+                      content +
+                      browserTemplate.substr(m.index + m[0].length)
+  })
+
+  # %VERSION% -> "x.x.x"
+  browserTemplate = browserTemplate.replace(/%VERSION%/g, JSON move.version())
+  
+  # %VERSION% -> "runtime"|"index"
+  browserTemplateRT = browserTemplate.replace(/%REQUIRE_ENTRY%/g, 'runtime')
+  browserTemplate = browserTemplate.replace(/%REQUIRE_ENTRY%/g, '')
+  
+  # Strip non-essential parts from the RT-only library
+  browserTemplateRT = ppIf { string: browserTemplateRT, constant: 'HAS_COMPILER', value:false }
+  browserTemplate = ppIf { string: browserTemplate, constant: 'HAS_COMPILER', value:true }
+
+  # Source directory
+  sourceDir = baseDir+'/lib'
+
+  # Source files to exclude from the browser library
+  exclude = [
+    /^cli\//,
+  ]
+
+  excludeRTRegExp = /^(?:compiler\/|index\.)/
+
+  # Collect all sources into `output`
+  enumerateDirectory { path: sourceDir,
+                    pattern: /\.(js|move|mv)$/,
+                      apply: ^(filename) {
+    for (i=0; i < exclude.length; ++i)
+      if (exclude[i].test filename)
+        return
+
+    # Read text source
+    source = read { path: sourceDir + '/' + filename }
+
+    # Pass Move sources through the Move compiler
+    if (filename.match(/\.(?:mv|move)$/))
+      source = move.compile { source: source, filename: filename }
+
+    # Derive module id from filename
+    id = filenameToModuleId filename
+    uri = filename
+
+    # Wrap in module declaration
+    source = '_require.define('+JSON.stringify(id)+','+JSON.stringify(uri)+','+
+            'function(require, module, exports, __filename, __dirname){' + source + '});\n'
+
+    # Append source to output
+    output += source
+    
+    # Append source to runtime-only library if appropriate
+    if (!excludeRTRegExp.test filename) {
+      outputRTOnly += source
+      print '+', JSON(sourceDir+'/'+filename) ,'-> COMPLETE and RT'
+    } else {
+      print '+', JSON(sourceDir+'/'+filename) ,'-> COMPLETE'
+    }
+  }}
+
+  # Wrap the combined sources in the browser.js template
+  output = browserTemplate.replace(/\/\/\s*%CONTENT%.*/, output)
+  outputRTOnly = browserTemplateRT.replace(/\/\/\s*%CONTENT%.*/, outputRTOnly)
+
+  # Optimize generated code
+  try { import uglifyjs = 'uglify-js' } catch (e) {}
+  if (uglifyjs && @parsedOptions.optimizationLevel > 0) {
+    print 'optimizing...'
+    options = create __move.defaultCompilationOptions, {
+      optimizationLevel: @parsedOptions.optimizationLevel,
+      mangleNames: @parsedOptions.optimizationLevel > 1,
+      outputFormatting: @parsedOptions.optimizationLevel > 0 ? false : true,
+    }
+    output = optimizeJS uglifyjs, output, options
+    outputRTOnly = optimizeJS uglifyjs, outputRTOnly, options
+  }
+
+  # Write output to /web/move{,-rt}.js
+  print 'writing', JSON(outputDir + '/move.js'), '...'
+  fs.writeFileSync outputDir + '/move.js', output
+  print 'writing', JSON(outputDir + '/move-rt.js'), '...'
+  fs.writeFileSync outputDir + '/move-rt.js', outputRTOnly
+
+  #print output.substr(0, 500)+'\n...\n\nOK!'
+}

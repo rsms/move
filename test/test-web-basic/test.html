@@ -1,0 +1,17 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Move web browser test</title>
+    <script src="../../web/move.js"></script>
+    <script type="text/move" src="test.mv"></script>
+    <script type="text/move">
+    import test
+    print 'test ->', test
+    print 'test.foo() ->', test.foo()
+    </script>
+  </head>
+  <body>
+    See console log
+  </body>
+</html>

@@ -1,0 +1,4 @@
+import foo
+print 'foo ->', foo
+print 'foo.bar() ->', foo.bar()
+print 'foo.bar "Rob" ->', foo.bar 'Rob'

@@ -1,5 +1,5 @@
 { "name":        "move",
-  "version":     "0.3.2",
+  "version":     "0.4.0",
   "description": "A programming language",
   "homepage":    "http://movelang.org/",
   "author":      "Rasmus Andersson (http://rsms.me/)",
@@ -7,6 +7,6 @@
   "main":        "lib/index.js",
   "bin":         {"move": "./bin/move"},
   "keywords":    ["language", "compiler", "javascript", "move"],
-  "engines":     {"node": ">=0.3.0"},
+  "engines":     {"node": ">=0.4.0"},
   "repository":  {"type": "git", "url": "http://github.com/rsms/move.git"}
 }
