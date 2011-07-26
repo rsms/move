@@ -1,4 +1,4 @@
-import fs
+import fs, buffer
 filenameToModuleId = require('../').filenameToModuleId
 move = __move
 
@@ -17,6 +17,8 @@ export options = [
   ['optimizationLevel',   'Optimization level [0-2]. Defaults to 2 (aggressive).',
                           {type: 'int', 'short': 'O', 'long': 'optimization-level',
                            def: 2}],
+
+  ['verbose',             'Print details to stderr.', {type:'bool', 'short':'none'}],
 ]
 
 
@@ -73,8 +75,9 @@ ppIf = ^(string, constant, value) {
 
 export main = ^{
 
-  outputDir = fs.realpathSync @parsedOptions.outputDir
-  
+  parsedOptions = @parsedOptions
+  outputDir = fs.realpathSync parsedOptions.outputDir
+
   # Variables holding the final output and the browser template
   output = ''
   outputRTOnly = ''
@@ -90,11 +93,11 @@ export main = ^{
 
   # %VERSION% -> "x.x.x"
   browserTemplate = browserTemplate.replace(/%VERSION%/g, JSON move.version())
-  
+
   # %VERSION% -> "runtime"|"index"
   browserTemplateRT = browserTemplate.replace(/%REQUIRE_ENTRY%/g, 'runtime')
   browserTemplate = browserTemplate.replace(/%REQUIRE_ENTRY%/g, '')
-  
+
   # Strip non-essential parts from the RT-only library
   browserTemplateRT = ppIf { string: browserTemplateRT, constant: 'HAS_COMPILER', value:false }
   browserTemplate = ppIf { string: browserTemplate, constant: 'HAS_COMPILER', value:true }
@@ -108,6 +111,8 @@ export main = ^{
   ]
 
   excludeRTRegExp = /^(?:compiler\/|index\.)/
+  filesLoaded = 0
+  moveSourceFilesCompiled = 0
 
   # Collect all sources into `output`
   enumerateDirectory { path: sourceDir,
@@ -119,10 +124,13 @@ export main = ^{
 
     # Read text source
     source = read { path: sourceDir + '/' + filename }
+    ++filesLoaded
 
     # Pass Move sources through the Move compiler
-    if (filename.match(/\.(?:mv|move)$/))
+    if (filename.match(/\.(?:mv|move)$/)) {
       source = move.compile { source: source, filename: filename }
+      ++moveSourceFilesCompiled
+    }
 
     # Derive module id from filename
     id = filenameToModuleId filename
@@ -134,15 +142,18 @@ export main = ^{
 
     # Append source to output
     output += source
-    
+
     # Append source to runtime-only library if appropriate
     if (!excludeRTRegExp.test filename) {
       outputRTOnly += source
-      print '+', JSON(sourceDir+'/'+filename) ,'-> COMPLETE and RT'
-    } else {
+      if (parsedOptions.verbose)
+        print '+', JSON(sourceDir+'/'+filename) ,'-> COMPLETE and RT'
+    } else if (parsedOptions.verbose) {
       print '+', JSON(sourceDir+'/'+filename) ,'-> COMPLETE'
     }
   }}
+
+  print 'Loaded', filesLoaded, 'source files, compiled', moveSourceFilesCompiled, 'Move scripts'
 
   # Wrap the combined sources in the browser.js template
   output = browserTemplate.replace(/\/\/\s*%CONTENT%.*/, output)
@@ -151,7 +162,7 @@ export main = ^{
   # Optimize generated code
   try { import uglifyjs = 'uglify-js' } catch (e) {}
   if (uglifyjs && @parsedOptions.optimizationLevel > 0) {
-    print 'optimizing...'
+    print 'Optimizing...'
     options = create __move.defaultCompilationOptions, {
       optimizationLevel: @parsedOptions.optimizationLevel,
       mangleNames: @parsedOptions.optimizationLevel > 1,
@@ -163,12 +174,14 @@ export main = ^{
   }
 
   # Write output to /web/move{,-rt}.js
-  print 'writing', JSON(outputDir + '/move.js'), '...'
-  fs.writeFileSync outputDir + '/move.js', output
-  print 'writing', JSON(outputDir + '/move-rt.js'), '...'
-  fs.writeFileSync outputDir + '/move-rt.js', outputRTOnly
-  print 'writing', JSON(outputDir + '/move-debug.js'), '...'
-  fs.writeFileSync outputDir + '/move-debug.js', outputDebug
+  write = ^(data, filename) {
+    filename = outputDir+'/'+filename
+    data = new buffer.Buffer(data, 'utf8')
+    print 'writing', Text(data.length).padLeft(7), 'bytes to', JSON(filename)+'...'
+    fs.writeFileSync filename, data
+  }
 
-  #print output.substr(0, 500)+'\n...\n\nOK!'
+  write output,       'move.js'
+  write outputRTOnly, 'move-rt.js'
+  write outputDebug,  'move-debug.js'
 }
