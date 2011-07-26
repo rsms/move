@@ -41,7 +41,7 @@ if [ ! -d "$DST_DIR" ] || [ "$(git --git-dir="${DST_DIR}/.git" branch --no-color
 fi
 
 # Build move
-"$MOVE_BIN" build-weblib -O 2 || exit $?
+"$MOVE_BIN" build-weblib || exit $?
 
 # Build website
 rm -rf "$BUILD_DST_DIR"
