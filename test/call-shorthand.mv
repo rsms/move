@@ -15,20 +15,40 @@ assert.equal foo {arg1:"Hello"}, "Hello"
 assert.equal foo (^{ "Hello" })(), "Hello"
 
 # Multiple arguments
-foo2 = ^(a, b, c){ return ''+a+b+c }
+foo3 = ^(a, b, c){ return ''+a+b+c }
 
-# Should translate into: value = foo2("A", "B", "C")
-value = foo2 "A", "B", "C"
+# Should translate into: value = foo3("A", "B", "C")
+value = foo3 "A", "B", "C"
 assert.equal value, "ABC"
 
-# Should translate into: value = foo2("A", foo2("B", "C"))
-value = foo2 "A", foo2 "B", "C"
+# Should translate into: value = foo3("A", foo3("B", "C"))
+value = foo3 "A", foo3 "B", "C"
 assert.equal value, "ABCundefinedundefined"
 
-# Linebreak terminates argument list
+# Inside object expressions. Terminated by end of object expression
+# or start of new object key (e.g. "b:")
 obj = {
   a: foo "hello1",
   b: foo "hello2",
 }
 assert.equal obj.a, "hello1"
 assert.equal obj.b, "hello2"
+
+# Inside object expressions. Terminated by end of object expression
+# or start of new object key (e.g. "b:")
+obj = {a: foo "hello1", b: foo "hello2", }
+assert.equal obj.a, "hello1"
+assert.equal obj.b, "hello2"
+
+# Inside object expressions with line wrapping (kind of crazy).
+hellouno = 'hellouno'
+HELLOTWO = 'HELLOTWO'
+obj = {
+  a: foo3 "hello1",
+         "HELLOONE",
+hellouno,
+  b: foo3 "hello2", HELLOTWO,
+'helloduo'
+}
+assert.equal obj.a, "hello1HELLOONEhellouno"
+assert.equal obj.b, "hello2HELLOTWOhelloduo"
