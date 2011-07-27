@@ -73,3 +73,9 @@ EQ x{c:'1,2,3'}, "c=1,2,3"
 x = ^(a) { ""+a }
 EQ x(null), "null"
 
+# Test using "constructor" as a keyword argument ("constructor" is a special key)
+foo = ^(constructor) { ''+constructor }
+EQ foo{constructor:'Hello'}, 'Hello'
+EQ foo(), 'undefined'
+EQ foo('Hell-oh'), 'Hell-oh'
+
