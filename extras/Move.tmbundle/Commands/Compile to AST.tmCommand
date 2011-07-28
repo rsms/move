@@ -9,16 +9,34 @@
 
 if [ "$TM_NODE" = "" ]; then TM_NODE=node; fi
 
-echo "&lt;html&gt;&lt;head&gt;&lt;title&gt;${TM_FILEPATH} &amp;rarr; AST&lt;/title&gt;&lt;/head&gt;"
-echo '&lt;body style="margin:0;padding:0;"&gt;'
-echo '&lt;textarea id="text" style="position:absolute;left:0;top:0;right:0;bottom:0;font-family:mplus-1m-light, Menlo, monospace; background:#224; color:#fff;outline:none;border:none;padding:1em;margin:0;" editable="false"&gt;'
+TEMPFILE=$(mktemp -t "$(basename "${TM_FILEPATH}")")
+$TM_NODE --stack_trace_limit=50 --eval 'var err,code;
+try{
+  code=require("util").inspect(require("move").compileFileSync(
+    "'"${TM_FILEPATH}"'",{optimizationLevel:0,detailedOutput:true}).ast, false, 100);
+} catch(e) {
+  code=String(e.stack || e).replace(/&amp;/g, "&amp;amp;").replace(/&lt;/g, "&amp;lt;").replace(/&gt;/g, "&amp;gt;");err=e;
+}
+require("fs").writeFileSync("'"${TEMPFILE}"'",code);
+process.exit(err ? 1 : 0);'
 
-$TM_NODE --stack_trace_limit=50 -e \
-  'require("util").inspect(require("move").compileFileSync("'"${TM_FILEPATH}"'",{optimizationLevel:0, detailedOutput:1}).ast, 0, 100)' \
-  | sed 's/&lt;/\&amp;lt;/g' | sed 's/&gt;/\&amp;gt;/g'
+STATUS=$?
 
-echo "&lt;/textarea&gt;"
-echo '&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;'
+if [ "$STATUS" = "0" ]; then
+  mv -f "${TEMPFILE}" "${TEMPFILE}.json"
+  mate "${TEMPFILE}.json"
+else
+  log=$(cat "${TEMPFILE}")
+  rm -f "${TEMPFILE}"
+
+  MSG="&lt;html&gt;&lt;head&gt;&lt;title&gt;${TM_FILEPATH}&lt;/title&gt;&lt;/head&gt;"
+  MSG=$MSG'&lt;body style="margin:0;padding:0;"&gt;'
+  MSG=$MSG'&lt;textarea id="text" style="position:absolute;left:0;top:0;right:0;bottom:0;font-family:mplus-1m-light, Menlo, monospace; background:#632; color:#fff;outline:none;border:none;padding:1em;margin:0;" editable="false"&gt;'
+  MSG=$MSG$log
+  MSG=$MSG'&lt;/textarea&gt;&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;'
+
+  exit_show_html "$MSG"
+fi
 </string>
 	<key>input</key>
 	<string>selection</string>
@@ -27,7 +45,7 @@ echo '&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;'
 	<key>name</key>
 	<string>Compile to AST</string>
 	<key>output</key>
-	<string>showAsHTML</string>
+	<string>discard</string>
 	<key>scope</key>
 	<string>source.move</string>
 	<key>uuid</key>
