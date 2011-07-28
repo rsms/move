@@ -1,0 +1,69 @@
+kObjectConstructor = Object.prototype.constructor
+kProtoKey = (typeof Object.prototype.__proto__ == 'object') ? '__proto__' : 'prototype'
+
+# class(function cls, function parent, object prototype)
+# class(function cls, function parent)
+# class(function cls, object prototype)
+# class(function cls)
+export __class = ^{
+  # Parse arguments
+  T = arguments[0]
+  if (arguments.length == 3) {
+    # class(function parent, object prototype)
+    parent = arguments[1]
+    prototype = arguments[2]
+    if ((t = typeof prototype) != 'object' && t != 'function')
+      throw TypeError 'unexpected type '+t+' of second argument (expected object)'
+  } else if (arguments.length == 2) {
+    # class(object prototype)
+    prototype = arguments[1]
+    if ((t = typeof prototype) == 'function') {
+      # class(function parent)
+      parent = prototype
+      prototype = undefined
+    } else if (t != 'object') {
+      throw TypeError 'unexpected type '+t+' of first argument (expected object or function)'
+    }
+  }
+
+  # Make sure there's no keyword arguments signal in the prototype
+  if (prototype && prototype.__kw == _MoveKWArgsT)
+    delete prototype.__kw
+  
+  # Make prototype chain
+  if (parent) {
+    p = Object.create(parent.prototype || null)
+    # Transfer values to the new prototype
+    if (prototype) {
+      Object.keys(prototype).forEach ^(key) {
+        if ((value = prototype[key]) != undefined)
+          p[key] = value
+      }
+    }
+    prototype = p
+  }
+  
+  # Configure T.prototype
+  T.prototype = prototype || null
+  T.constructor = undefined
+  
+  T
+}
+
+# Find the closest constructor and call it
+__class.callConstructor = ^(object, prototype, args) {
+  if (Object.prototype.hasOwnProperty.call(prototype, 'constructor') &&
+      (C = prototype.constructor) && C != Object.prototype.constructor) {
+    C.apply object, args
+  } else if ((parentPrototype = prototype[kProtoKey]) && parentPrototype != Object.prototype) {
+    __class.callConstructor object, parentPrototype, args
+  }
+}
+
+__class.create = ^{
+  T = arguments[0]
+  obj = Object.create T.prototype
+  if (T.prototype)
+    __class.callConstructor obj, T.prototype, arguments[1]
+  obj
+}

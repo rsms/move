@@ -1,0 +1,99 @@
+import assert
+
+
+Animal = class {
+  constructor: ^(type) {
+    @type = type
+  },
+  toString: ^{ "I'm a "+@type }
+}
+fish = Animal "fish"
+fish.name = "Blip"
+
+assert.strictEqual fish.type, 'fish'
+assert.strictEqual fish.name, 'Blip'
+assert.ok Animal.prototype.isPrototypeOf fish
+assert.ok fish.hasOwnProperty 'name'
+assert.ok(!fish.hasOwnProperty 'toString')
+assert.strictEqual fish.toString(), "I'm a fish"
+
+
+Cat = class Animal, {
+  furry: true,
+  numberOfLegs: 4,
+  toString: ^{
+    s = Animal.prototype.toString.call this
+    s + ' on '+@numberOfLegs+' legs'
+  }
+}
+zelda = Cat 'furry little thing'
+
+assert.strictEqual zelda.name, undefined
+assert.strictEqual zelda.furry, true
+assert.strictEqual zelda.numberOfLegs, 4
+assert.ok Cat.prototype.isPrototypeOf zelda
+assert.ok Animal.prototype.isPrototypeOf zelda
+assert.strictEqual zelda.toString(), "I'm a furry little thing on 4 legs"
+
+# Feature: If no constructor has been specified on the direct prototype, the closest
+# parent's constructor will be called, if any. In this case Animal.prototype.constructor
+# should have been called when we created "zelda", thus the type property should match:
+assert.strictEqual zelda.type, 'furry little thing'
+
+
+Snake = class Animal, {
+  furry: false
+}
+puff = Snake 'slippery snake'
+
+print 'puff:', puff
+print 'puff.toString() ->', puff.toString()
+assert.strictEqual puff.name, undefined
+assert.strictEqual puff.furry, false
+assert.strictEqual puff.numberOfLegs, undefined
+assert.ok(!Cat.prototype.isPrototypeOf puff)
+assert.ok Snake.prototype.isPrototypeOf puff
+assert.ok Animal.prototype.isPrototypeOf puff
+assert.strictEqual puff.toString(), "I'm a slippery snake"
+
+# Replace the constructor
+Snake.prototype.constructor = ^{ @type = 'happy little fella' }
+piff = Snake 'slippery snake'
+assert.strictEqual piff.toString(), "I'm a happy little fella"
+
+# Remove the constructor, causing Animal.prototype.constructor to be used
+Snake.prototype.constructor = null
+piff = Snake 'slippery snake'
+assert.strictEqual piff.toString(), "I'm a slippery snake"
+
+# Modify the prototype
+Snake.prototype.age = ^{ 123 }
+assert.strictEqual puff.age(), 123
+assert.strictEqual piff.age(), 123
+
+# Providing own-object property (not using prototype)
+puff.age = ^{ 89 }
+assert.strictEqual puff.age(), 89
+assert.strictEqual piff.age(), 123
+
+# Replacing the prototype
+Snake.prototype = {
+  age: 90
+}
+
+# Previously created objects should not be affected
+assert.strictEqual puff.furry, false
+assert.ok(!Cat.prototype.isPrototypeOf puff)
+assert.ok Animal.prototype.isPrototypeOf puff
+assert.strictEqual puff.toString(), "I'm a slippery snake"
+
+# Snake.prototype has changed since "puff" was created
+assert.ok(!Snake.prototype.isPrototypeOf puff)
+
+# A new Snake object, this time without any parent class (since we assigned
+# a new prototype)
+miff = Snake 'weirdo'
+assert.strictEqual miff.name, undefined
+assert.strictEqual miff.furry, undefined
+assert.strictEqual miff.numberOfLegs, undefined
+assert.ok Snake.prototype.isPrototypeOf miff

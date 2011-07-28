@@ -238,3 +238,6 @@ if (events && events.EventEmitter) {
 # process has a custom implementation
 if (typeof process != 'undefined' && typeof process.on == 'function')
   wrapEventEmitter(process, 'on')
+
+# class
+exports.__class = require('./runtime_class').__class
