@@ -46,8 +46,6 @@ Snake = class Animal, {
 }
 puff = Snake 'slippery snake'
 
-print 'puff:', puff
-print 'puff.toString() ->', puff.toString()
 assert.strictEqual puff.name, undefined
 assert.strictEqual puff.furry, false
 assert.strictEqual puff.numberOfLegs, undefined
