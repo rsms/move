@@ -7,6 +7,8 @@
 		<string>mv</string>
 		<string>move</string>
 	</array>
+	<key>firstLineMatch</key>
+	<string>^#!/.*\bmove</string>
 	<key>foldingStartMarker</key>
 	<string>/\*\*|\{\s*$</string>
 	<key>foldingStopMarker</key>
