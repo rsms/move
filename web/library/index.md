@@ -447,5 +447,46 @@ Example:
 
     after {delay: 3000} ^{ print "3 seconds later" }
 
+*`after` was introduced in Move 0.3.1*
 
 
+### class
+
+- `class parentFactory, prototypeObject → factory`
+- `class parentFactory → factory`
+- `class prototypeObject → factory`
+- `class → factory`
+
+Creates a "factory" function which creates new objects based on *prototypeObject*, optionally inheriting from *parentFactory*.
+
+A Constructor/initializer function can be defined by specifying a "constructor" property on the prototype:
+
+    Foo = class {
+      constructor: ^{ @dateCreated = Date.now() }
+    }
+
+If no constructor has been specified for a prototype at the time of factorization, the closest parent constructor (if any) will be invoked:
+
+    Foo = class {
+      constructor: ^{ @dateCreated = Date.now() }
+    }
+    Bar = class Foo, {}
+    b = Bar()
+    # b.dateCreated == a Date object
+
+There is very little magic going on here -- the resulting prototype is just an object and the constructor is just a value property of the prototype, thus you can change and manipulate those as usual. To call a "parent class's" constructor, simply:
+
+    ...
+    Bar = class Foo, {
+      constructor: ^(name){
+        Foo.prototype.constructor.apply this, arguments
+        @name = name
+      }
+    }
+    b = Bar("Bardot")
+    # b.dateCreated == a Date object
+    # b.name == "Bardot"
+
+This feature relies on compile-time extensions and can be disabled by setting the compiler option `runtimeClassCreation` to false. It is enabled by default.
+
+*`class` was introduced in Move 0.4.1*
