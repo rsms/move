@@ -606,6 +606,55 @@ Hello in just a second
 <pre><code>after {delay: 3000} ^{ print "3 seconds later" }
 </code></pre>
 
+<p><em><code>after</code> was introduced in Move 0.3.1</em></p>
+
+<h3>class</h3>
+
+<ul>
+<li><code>class parentFactory, prototypeObject → factory</code></li>
+<li><code>class parentFactory → factory</code></li>
+<li><code>class prototypeObject → factory</code></li>
+<li><code>class → factory</code></li>
+</ul>
+
+
+<p>Creates a &ldquo;factory&rdquo; function which creates new objects based on <em>prototypeObject</em>, optionally inheriting from <em>parentFactory</em>.</p>
+
+<p>A Constructor/initializer function can be defined by specifying a &ldquo;constructor&rdquo; property on the prototype:</p>
+
+<pre><code>Foo = class {
+  constructor: ^{ @dateCreated = Date.now() }
+}
+</code></pre>
+
+<p>If no constructor has been specified for a prototype at the time of factorization, the closest parent constructor (if any) will be invoked:</p>
+
+<pre><code>Foo = class {
+  constructor: ^{ @dateCreated = Date.now() }
+}
+Bar = class Foo, {}
+b = Bar()
+# b.dateCreated == a Date object
+</code></pre>
+
+<p>There is very little magic going on here &mdash; the resulting prototype is just an object and the constructor is just a value property of the prototype, thus you can change and manipulate those as usual. To call a &ldquo;parent class&rsquo;s&rdquo; constructor, simply:</p>
+
+<pre><code>...
+Bar = class Foo, {
+  constructor: ^(name){
+    Foo.prototype.constructor.apply this, arguments
+    @name = name
+  }
+}
+b = Bar("Bardot")
+# b.dateCreated == a Date object
+# b.name == "Bardot"
+</code></pre>
+
+<p>This feature relies on compile-time extensions and can be disabled by setting the compiler option <code>runtimeClassCreation</code> to false. It is enabled by default.</p>
+
+<p><em><code>class</code> was introduced in Move 0.4.1</em></p>
+
   </wrapper>
 </section>
 

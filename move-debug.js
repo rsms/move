@@ -134,7 +134,7 @@ exports.add_implicit_returns = function add_implicit_returns(ast) {
   var w = processor.ast_walker(),
       MAP = processor.MAP,
       wrapStatement;
-  
+
   wrapStatement = function wrapStatement(statement) {
     if (!statement) return statement;
     var type = statement[0], i;
@@ -155,7 +155,7 @@ exports.add_implicit_returns = function add_implicit_returns(ast) {
     } //else console.log('last stmt', statement);
     return statement;
   };
-  
+
   var _lambda = function _lambda(name, args, body, kwargs) {
     if (body.length) {
       // here, body[body.length-1] == ['if', [...]]
@@ -187,30 +187,30 @@ exports.first_time_var_delc = function first_time_var_delc(ast, globals) {
     current_scope = new Scope(current_scope);
     current_scope.vars = [];
     var ret = current_scope.body = cont();
-    
+
     // declare variables at top of function
     if (current_scope.vars.length) {
       var subs = (ret[0] === 'toplevel') ? ret[1] : ret;
       var vars = ['var', MAP(current_scope.vars, function (v) { return [v] })];
       subs.splice(0, 0, vars);
     }
-    
+
     //ret.scope = current_scope;
     current_scope = current_scope.parent;
     return ret;
   }
-  
+
   function define(name) {
     return current_scope.define(name);
   }
-  
+
   function _lambda(name, args, body, kwargs) {
     return [ this[0], define(name), args, with_new_scope(function(){
       MAP(args, define);
       return MAP(body, w.walk);
     }), kwargs];
   }
-  
+
   return with_new_scope(function(){
     var ret = w.with_walkers({
       "defun": _lambda,
@@ -227,7 +227,7 @@ exports.first_time_var_delc = function first_time_var_delc(ast, globals) {
         })
         return subs.length > 2 ? ['stat', subs] : null;
       },*/
-      
+
       "var": function(defs) {
         return [ this[0], MAP(defs, function(def){
           define(def[0]);
@@ -288,6 +288,27 @@ exports.first_time_var_delc = function first_time_var_delc(ast, globals) {
 var DOT_NAME_RE = /^[_\$a-z][_\$\w\d]*$/i;
 
 
+var nameOfAssignmentValue = function nameOfAssignmentValue(value) {
+  var name;
+  if (value[0] === 'name') {
+    name = value[1];
+  } else if (value[0] === 'dot') {
+    name = value[value.length-1];
+  } else if (value[0] === 'sub') {
+    value = value[value.length-1];
+    if (value[0] === 'string') {
+      name = value[1];
+      if (parser.KEYWORDS[name] || parser.RESERVED_WORDS[name] || !DOT_NAME_RE.test(name)) {
+        name = undefined;
+      }
+    } else {
+      name = value;  // a symbol -- up to the caller to decide to use or not
+    }
+  }
+  return name;
+}
+
+
 // AST modifier which give a anonymous function expression name from assignment
 exports.named_lambda_assignments = function named_lambda_assignments(ast) {
   var w = processor.ast_walker(), MAP = processor.MAP;
@@ -308,20 +329,9 @@ exports.named_lambda_assignments = function named_lambda_assignments(ast) {
       //if (rvalue[0] === 'function' && rvalue[1])
         //console.log('rvalue', rvalue)
       if (Array.isArray(rvalue) && rvalue[0] === 'function' && !rvalue[1]) {
-        if (lvalue[0] === 'name') {
-          rvalue[1] = lvalue[1];
-        } else if (lvalue[0] === 'dot') {
-          rvalue[1] = lvalue[lvalue.length-1];
-        } else if (lvalue[0] === 'sub' && lvalue[2][0] === 'string') {
-          var name = lvalue[2][1];
-          if (!parser.KEYWORDS[name] && !parser.RESERVED_WORDS[name] &&
-              DOT_NAME_RE.test(name)) {
-            rvalue[1] = name;
-          }
-        }/* else {
-          console.log('lvalue', lvalue);
-          console.log('rvalue', rvalue);
-        }*/
+        var name = nameOfAssignmentValue(lvalue);
+        if (typeof name === 'string')
+          rvalue[1] = name;
       }
       return [ this[0], op, w.walk(lvalue), w.walk(rvalue) ];
     }
@@ -401,12 +411,12 @@ exports.enable_keyword_arguments =
         for (i=args.length; --i !== -1;) {
           argName = args[i];
           defaultValue = kwargs && kwargs[argName];
-          
+
           // (arg3 = arg1.arg3, ...
           kwAssign.push(['assign', true,
               ['name', argName],
               ['dot', ['name', firstArgName], argName]]);
-          
+
           if (defaultValue) {
             // if (arg3 === undefined) arg3 = default3, ...
             statements.push(['if',
@@ -415,7 +425,7 @@ exports.enable_keyword_arguments =
               ]);
           }
         }
-        
+
         // <kwHeaderTestStmt> && (arg3 = arg1.arg3, arg2 = arg1.arg2, arg1 = arg1.arg1)
         statements[0] = ['stat', ['binary', '&&', kwHeaderTestStmt, kwAssign]];
         //console.log(require('util').inspect(statements, 0, 10));
@@ -424,7 +434,7 @@ exports.enable_keyword_arguments =
       // Walk function body...
       return [this[0], name, args, MAP(body, w.walk), kwargs];
     },
-    
+
     "call": function (expr, args) {
       if (args.length === 1 && args[0][0] === 'object') {
         var kwarg, kwargs = args[0][1], kwargsIndexes = [];
@@ -441,6 +451,70 @@ exports.enable_keyword_arguments =
             delete kwargs[kwargsIndexes.pop()];
           kwargs[kwargsIndexes.pop()] = ['__kw', ['name', kwTestRValue]];
         }
+      }
+      return [ this[0], w.walk(expr), MAP(args, w.walk) ];
+    }
+
+  }, function(){ return w.walk(ast); });
+}
+
+
+var disarmKeywordArguments = function disarmKeywordArguments(objExpr, options) {
+  var pairs, pair, i;
+  if (objExpr && objExpr[0] === 'object') {
+    pairs = objExpr[1];
+    for (i=0; i<pairs.length; i++) {
+      pair = pairs[i];
+      if (pair[0] === '__kw' && pair[1][0] === 'name' &&
+            ( (options.raw && pair[1][1] === 'true') ||
+              (!options.raw && pair[1][1] === '_MoveKWArgsT') )  ) {
+        pairs.splice(i, 1);
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+
+// Enabled the use of "class" -> "Move.runtime.__class"
+exports.enable_class_rt_function = function enable_class_rt_function(ast, options) {
+  var w = processor.ast_walker(), MAP = processor.MAP;
+  var lastAssignmentName;
+
+  return w.with_walkers({
+    "name": function(name) {
+      if (name === 'class')
+        name = '__class';
+      return [ this[0], name ];
+    },
+
+    "assign": function(op, lvalue, rvalue) {
+      var name = nameOfAssignmentValue(lvalue);
+      // Save a reference to the closest (but not further) assignment target
+      lastAssignmentName = (typeof name === 'string') ? name : undefined;
+      r = [ this[0], op, w.walk(lvalue), w.walk(rvalue) ];
+      lastAssignmentName = undefined;
+      return r;
+    },
+
+    "call": function(expr, args) {
+      var name, arg, i, keyValuePairs, pair;
+      if (expr[0] === 'name' && expr[1] === 'class' && lastAssignmentName) {
+        name = lastAssignmentName || '__UntitledClass'
+        // Prepend arguments with "T = ^{ __class.create T, arguments }"
+        args.unshift([ 'assign',
+              true,
+              [ 'name', name ],
+              [ 'function', name,
+                [],
+                [ [ 'return',
+                    [ 'call',
+                      [ 'dot', [ 'name', '__class' ], 'create' ],
+                      [ [ 'name', name ], [ 'name', 'arguments' ] ] ] ] ]
+              ] ]);
+        // disarm keyword arguments (only if first argument is an object)
+        disarmKeywordArguments(args[1], options);
       }
       return [ this[0], w.walk(expr), MAP(args, w.walk) ];
     }
@@ -474,6 +548,7 @@ exports.defaultCompilationOptions = {
   keywordArguments: true,
   mangleNames: false,
   optimizationLevel: 0,
+  runtimeClassCreation: true,  // enables use of the "class" function
 
   // Code generation
   moduleStub: false,
@@ -629,6 +704,8 @@ exports.compile = function compile(source, options) {
     ast = astMutators.enforce_strict_eq_ops(ast, op);
   if (op.keywordArguments)
     ast = astMutators.enable_keyword_arguments(ast, op);
+  if (op.runtimeClassCreation)
+    ast = astMutators.enable_class_rt_function(ast, op);
   if (op.mangleNames)
     ast = processor.ast_mangle(ast);
 
@@ -1487,6 +1564,36 @@ function NodeWithToken(str, start, end) {
 
 NodeWithToken.prototype.toString = function() { return this.name; };
 
+/*var TokenInputBuffer = function (tokenizerOrText, tokenizerOptions) {
+  if (typeof tokenizerOrText === "string")
+    tokenizerOrText = tokenizer(tokenizerOrText, tokenizerOptions);
+  var tib = function TokenInputBuffer_(forceRegExp) { return tib.pop(forceRegExp); };
+  tokenStream = tokenizerOrText;
+  buffer = []; // beginning = next to pop ("pop left")
+  tib.pop = function (forceRegExp) {
+    if (buffer.length === 0) {
+      return tokenStream(forceRegExp);
+    } else {
+      return buffer.shift();
+    }
+  };
+  tib.push = function (token) {
+    buffer.push(token);
+  };
+  tib.peek = function (futureOffset) {
+    if (futureOffset === undefined) futureOffset = 1;
+    var i, n = futureOffset;
+    if (buffer.length < futureOffset) {
+      i = futureOffset - buffer.length;
+      while (i--) {
+        buffer.push(tokenStream());
+      }
+    }
+    return buffer[futureOffset-1];
+  }
+  return tib;
+};*/
+
 function parse($TEXT, strict_mode, embed_tokens) {
   var options = {};
   if (typeof strict_mode === 'object') {
@@ -1496,6 +1603,7 @@ function parse($TEXT, strict_mode, embed_tokens) {
   }
 
   var S = {
+    //input   : TokenInputBuffer($TEXT, options),
     input   : typeof $TEXT == "string" ? tokenizer($TEXT, options) : $TEXT,
     token   : null,
     prev  : null,
@@ -1512,12 +1620,22 @@ function parse($TEXT, strict_mode, embed_tokens) {
   };
 
   function peek() { return S.peeked || (S.peeked = S.input()); };
+  function peek2() {
+    if (S.peeked2) return S.peeked2;
+    peek();
+    return (S.peeked2 = S.input());
+  };
 
   function next() {
     S.prev = S.token;
     if (S.peeked) {
       S.token = S.peeked;
-      S.peeked = null;
+      if (S.peeked2) {
+        S.peeked = S.peeked2;
+        S.peeked2 = null;
+      } else {
+        S.peeked = null;
+      }
     } else {
       S.token = S.input();
     }
@@ -1601,8 +1719,13 @@ function parse($TEXT, strict_mode, embed_tokens) {
 
   function $statement() {
     if (is("operator", "/")) {
+      if (S.peeked2) {
+        S.token = S.peeked2;
+        S.peeked2 = null;
+      } else {
+        S.token = S.input(true); // force regexp
+      }
       S.peeked = null;
-      S.token = S.input(true); // force regexp
     }
     //console.log('S.token ->', S.token)
 
@@ -2056,6 +2179,8 @@ function parse($TEXT, strict_mode, embed_tokens) {
       if (is("punc", ":") /*|| is("operator", "=")*/) {
         next();
         values[name] = expression(false);
+      } else {
+        values[name] = undefined;
       }
     }
     next();
@@ -2157,6 +2282,13 @@ function parse($TEXT, strict_mode, embed_tokens) {
       }
     }
     if (allow_calls && is("punc", "(")) {
+      if (S.token.nlb) {
+        // Fixes this case:
+        //    foo bar
+        //    (x) && x()
+        // Which otherwise parse as "foo(bar(x) && x())"
+        return expr;
+      }
       /*
        [ 'call',
          [ 'name', 'foo' ],
@@ -2166,10 +2298,17 @@ function parse($TEXT, strict_mode, embed_tokens) {
       return subscripts(as("call", expr, expr_list(")")), allow_calls, no_objects);
     }
     if (allow_calls && !no_objects && options.keywordArguments && is("punc", "{")) {
+      if (S.token.nlb) {
+        // Fixes this case:
+        //    foo bar
+        //    {x:1} && x()
+        // Which otherwise parse as "foo(bar(x) && x())"
+        return expr;
+      }
       next();
       var kwargs;
 
-      // "foo {*kwargs}" call style for passing keyword args
+      // "foo {&kwargs}" call style for passing keyword args
       if (is("operator", "&")) {
         next();
         kwargs = expression(false, allow_calls, no_objects);
@@ -2199,15 +2338,30 @@ function parse($TEXT, strict_mode, embed_tokens) {
       return subscripts(as("call", expr, subexprs), true);
     }*/
     if (allow_calls && is("operator") && HOP(UNARY_POSTFIX, S.token.value)) {
+      if (S.token.nlb) {
+        // Fixes this case:
+        //   foo = bar<LF>
+        //   ++x
+        // Which otherwise parse as "foo = bar++x" and causes a parse error
+        return expr;
+      }
       return prog1(curry(make_unary, "unary-postfix", S.token.value, expr),
            next);
     }
     // shorthand "foo arg" style function invocation
-    if (allow_calls && !S.token.nlb && !is("eof") && !is("punc") && !is("operator")
+    if (allow_calls && !is("eof") && !is("punc") && !is("operator")
         && (S.token.type !== "keyword" || S.token.value === "function")
        ) {
       // Use this line to allow only single argument
       //var subexprs = [expression(false)];
+
+      if (S.token.nlb) {
+        // Fixes this case:
+        //    foo bar
+        //    {x:1} && x()
+        // Which otherwise parse as "foo(bar(x) && x())"
+        return expr;
+      }
 
       // Use the following try-clause to allow multiple arguments. However, be
       // aware that by allowing arbitrary long arguments in short-hand form,
@@ -2219,12 +2373,35 @@ function parse($TEXT, strict_mode, embed_tokens) {
       //    assert.equal(foo(foo(foo("Hello"))), "Hello")
       // which is the case when only consuming a single argument.
       //
-      var subexprs = [], first = true, aborted;
+      var subexprs = [], first = true, aborted, p1, p2;
       //try {
       while (!is("punc", ';')) {
         if (first) {
           first = false;
-        } else if (is("punc", ",") && !peek().nlb) {
+        } else if (is("punc", ",")) {
+
+          p1 = peek();
+          if (p1.type === 'name' &&
+              (!(p2 = peek2()) || (p2.type === 'punc' && p2.value === ':'))) {
+            // Special case:
+            // { foo: 'arg1', 'arg2',
+            //   <terminate foo args>
+            //   bar: 2,
+            // }
+            aborted = true;
+            break;
+          }
+
+          if (p1.type === 'punc' && p1.value === '}') {
+            // Special case:
+            // { foo: 1,
+            //   bar: 2,
+            // }
+            // ^
+            aborted = true;
+            break;
+          }
+
           next();
         } else {
           aborted = true;
@@ -2392,8 +2569,8 @@ exports.is_alphanumeric_char = is_alphanumeric_char;
 exports.is_identifier_char = is_identifier_char;
 });
 _require.define("compiler/preprocessors/ehtml","compiler/preprocessors/ehtml.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
-  var Move, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, EHTML, process;
-  Move = __move.runtime, _MoveKWArgsT = Move._MoveKWArgsT, Text = Move.Text, extend = Move.extend, create = Move.create, print = Move.print, repeat = Move.repeat, after = Move.after, JSON = Move.JSON;
+  var Move, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class, EHTML, process;
+  Move = __move.runtime, _MoveKWArgsT = Move._MoveKWArgsT, Text = Move.Text, extend = Move.extend, create = Move.create, print = Move.print, repeat = Move.repeat, after = Move.after, JSON = Move.JSON, __class = Move.__class;
   __move.EHTML = EHTML = function EHTML(html) {
     html !== null && typeof html === "object" && html.__kw === _MoveKWArgsT && (arguments.keywords = html, html = html.html);
     var el;
@@ -5016,9 +5193,63 @@ if (typeof Array.prototype._move_setSlice != 'function') {
   };
 }
 });
+_require.define("runtime/runtime_class","runtime/runtime_class.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
+  var Move, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class, kObjectConstructor, kProtoKey, __class;
+  Move = __move.runtime, _MoveKWArgsT = Move._MoveKWArgsT, Text = Move.Text, extend = Move.extend, create = Move.create, print = Move.print, repeat = Move.repeat, after = Move.after, JSON = Move.JSON, __class = Move.__class;
+  kObjectConstructor = Object.prototype.constructor;
+  kProtoKey = typeof Object.prototype.__proto__ === "object" ? "__proto__" : "prototype";
+  exports.__class = __class = function __class() {
+    var T, parent, prototype, t, p;
+    T = arguments[0];
+    if (arguments.length === 3) {
+      parent = arguments[1];
+      prototype = arguments[2];
+      if ((t = typeof prototype) !== "object" && t !== "function") throw TypeError("unexpected type " + t + " of second argument (expected object)");
+    } else if (arguments.length === 2) {
+      prototype = arguments[1];
+      if ((t = typeof prototype) === "function") {
+        parent = prototype;
+        prototype = undefined;
+      } else if (t !== "object") {
+        throw TypeError("unexpected type " + t + " of first argument (expected object or function)");
+      }
+    }
+    if (prototype && prototype.__kw === _MoveKWArgsT) delete prototype.__kw;
+    if (parent) {
+      p = Object.create(parent.prototype || null);
+      if (prototype) {
+        Object.keys(prototype).forEach(function (key) {
+          key !== null && typeof key === "object" && key.__kw === _MoveKWArgsT && (arguments.keywords = key, key = key.key);
+          var value;
+          if ((value = prototype[key]) !== undefined) return p[key] = value;
+        });
+      }
+      prototype = p;
+    }
+    T.prototype = prototype || null;
+    T.constructor = undefined;
+    return T;
+  };
+  __class.callConstructor = function callConstructor(object, prototype, args) {
+    object !== null && typeof object === "object" && object.__kw === _MoveKWArgsT && (arguments.keywords = object, args = object.args, prototype = object.prototype, object = object.object);
+    var C, parentPrototype;
+    if (Object.prototype.hasOwnProperty.call(prototype, "constructor") && (C = prototype.constructor) && C !== Object.prototype.constructor) {
+      return C.apply(object, args);
+    } else if ((parentPrototype = prototype[kProtoKey]) && parentPrototype !== Object.prototype) {
+      return __class.callConstructor(object, parentPrototype, args);
+    }
+  };
+  return __class.create = function create() {
+    var T, obj;
+    T = arguments[0];
+    obj = Object.create(T.prototype);
+    if (T.prototype) __class.callConstructor(obj, T.prototype, arguments[1]);
+    return obj;
+  };
+})();});
 _require.define("runtime/runtime_date","runtime/runtime_date.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
-  var Move, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON;
-  Move = __move.runtime, _MoveKWArgsT = Move._MoveKWArgsT, Text = Move.Text, extend = Move.extend, create = Move.create, print = Move.print, repeat = Move.repeat, after = Move.after, JSON = Move.JSON;
+  var Move, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class;
+  Move = __move.runtime, _MoveKWArgsT = Move._MoveKWArgsT, Text = Move.Text, extend = Move.extend, create = Move.create, print = Move.print, repeat = Move.repeat, after = Move.after, JSON = Move.JSON, __class = Move.__class;
   if (Date.distantFuture === undefined) Date.distantFuture = new Date(359753450957352);
   if (Date.distantPast === undefined) Date.distantPast = new Date(-621356868e5);
   if (!Date.nowUTC) Date.nowUTC = function nowUTC() {
@@ -5309,8 +5540,8 @@ function isDate(d) {
 }
 });
 _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
-  var Move, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, IS_KNOWN_ES5_HOST, defineConstant, extend, create, repeat, after, _JSON, wrapEventEmitter, events;
-  Move = __move.runtime, _MoveKWArgsT = Move._MoveKWArgsT, Text = Move.Text, extend = Move.extend, create = Move.create, print = Move.print, repeat = Move.repeat, after = Move.after, JSON = Move.JSON;
+  var Move, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class, IS_KNOWN_ES5_HOST, defineConstant, extend, create, repeat, after, _JSON, wrapEventEmitter, events;
+  Move = __move.runtime, _MoveKWArgsT = Move._MoveKWArgsT, Text = Move.Text, extend = Move.extend, create = Move.create, print = Move.print, repeat = Move.repeat, after = Move.after, JSON = Move.JSON, __class = Move.__class;
   _MoveKWArgsT = global.__move.runtime._MoveKWArgsT;
   global.__move.runtime = exports;
   IS_KNOWN_ES5_HOST = !!(typeof process !== "undefined" && (typeof process.versions === "object" && process.versions.node || process.pid));
@@ -5349,7 +5580,8 @@ _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(requir
     T = body === null ? "undefined" : typeof body;
     if (T === "object") Object.keys(body).forEach(function (key) {
       key !== null && typeof key === "object" && key.__kw === _MoveKWArgsT && (arguments.keywords = key, key = key.key);
-      return object[key] = body[key];
+      var value;
+      if ((value = body[key]) !== undefined && value !== _MoveKWArgsT) return object[key] = value;
     }); else if (T === "function") body.call(object); else if (T !== "undefined") throw new TypeError('"body" argument must be either an object or a function, not a ' + T);
     return object;
   };
@@ -5446,7 +5678,7 @@ _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(requir
   JSON = global.JSON;
   _JSON = function _JSON(build, parse) {
     build !== null && typeof build === "object" && build.__kw === _MoveKWArgsT && (arguments.keywords = build, parse = build.parse, build = build.build);
-    if (build !== undefined) return JSON.stringify(build); else if (parse !== undefined) return JSON.parse(parse); else throw new TypeError('Expected either "parse" or "build" argument');
+    if (build !== undefined || parse === undefined) return JSON.stringify(build); else return JSON.parse(parse);
   };
   _JSON.parse = JSON.parse;
   _JSON.stringify = JSON.stringify;
@@ -5477,7 +5709,8 @@ _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(requir
     wrapEventEmitter(events.EventEmitter.prototype, "addListener");
     events.EventEmitter.prototype.on = events.EventEmitter.prototype.addListener;
   }
-  if (typeof process !== "undefined" && typeof process.on === "function") return wrapEventEmitter(process, "on");
+  if (typeof process !== "undefined" && typeof process.on === "function") wrapEventEmitter(process, "on");
+  return exports.__class = require("./runtime_class").__class;
 })();});
 _require.define("runtime/runtime_object","runtime/runtime_object.js",function(require, module, exports, __filename, __dirname){if (!Object.prototype.forEach) {
   var forEach = function forEach(block, ctx) {
@@ -5574,7 +5807,7 @@ _require('');
 var move = global.__move;
 
 // --------------------------------------------------------------
-move.version = function () { return "0.4.0"; };
+move.version = function () { return "0.4.1"; };
 
 // --------------------------------------------------------------
 move.require = Require();
