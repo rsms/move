@@ -1,0 +1,51 @@
+import assert
+move = __move
+
+assertContainsText = ^(source, text) {
+  index = source.indexOf text
+  assert.ok(index !== -1, JSON.stringify(text)+' expected (but not found)')
+  index
+}
+
+# Test preprocessor plugin API
+
+fooProcessor = ^(source, options) {
+  source + ';\nfooProcessorWasHere = true'
+}
+
+BarProcessor = {
+  message: 'BarProcessorWasHere',
+  process: ^(source, options) {
+    source + ';\n'+@message+' = true'
+  }
+}
+
+# Test passing a process function directly to compile
+jscode = move.compile 'x = 5', {preprocess:[fooProcessor]}
+assertContainsText jscode, "fooProcessorWasHere = true"
+
+# Test passing a process object directly to compile
+jscode = move.compile 'x = 5', {preprocess:[BarProcessor]}
+assertContainsText jscode, "BarProcessorWasHere = true"
+
+# Register a 'foo' preprocessor
+move.preprocessors['foo'] = fooProcessor
+jscode = move.compile 'x = 5', {preprocess:['foo']}
+assertContainsText jscode, "fooProcessorWasHere = true"
+
+# Register a 'bar' preprocessor
+move.preprocessors['bar'] = BarProcessor
+jscode = move.compile 'x = 5', {preprocess:['bar']}
+assertContainsText jscode, "BarProcessorWasHere = true"
+
+# Test preceedence bar before foo
+jscode = move.compile 'x = 5', {preprocess:['bar', 'foo']}
+index1 = assertContainsText jscode, "BarProcessorWasHere = true"
+index2 = assertContainsText jscode, "fooProcessorWasHere = true"
+assert.ok index1 < index2, '"bar" processor did not apply before "foo"'
+
+# Test preceedence foo before bar
+jscode = move.compile 'x = 5', {preprocess:['foo', 'bar']}
+index1 = assertContainsText jscode, "fooProcessorWasHere = true"
+index2 = assertContainsText jscode, "BarProcessorWasHere = true"
+assert.ok index1 < index2, '"bar" processor did not apply before "foo"'
