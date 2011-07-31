@@ -48,8 +48,21 @@ export filenameToModuleId = ^(filename) {
 }
 
 
+# Disable experimental commands unless running from source directory
+disabledCommands = ['build']
+try {
+  stat = fs.statSync __dirname+'/../../.git'
+  if (stat.isDirectory()) {
+    # Do not disable any commands
+    disabledCommands = []
+  }
+} catch (e) {}
+
+
 # Load commands
-fs.readdirSync(__dirname+'/commands').forEach ^(filename) {
+fs.readdirSync(__dirname+'/commands').sort().forEach ^(filename) {
   commandName = filename.replace(/\.mv$/, '')
-  program.cmd[commandName] = require './commands/'+commandName }
+  if (disabledCommands.indexOf(commandName) == -1)
+    program.cmd[commandName] = require './commands/'+commandName
+}
 

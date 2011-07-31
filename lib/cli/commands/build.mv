@@ -1,0 +1,417 @@
+import fs, Path = 'path', crypto
+import Compile = './compile'
+import uglifyjs = 'uglify-js'
+filenameToModuleId = require('../index').filenameToModuleId
+enumerateDirectory = require('../cmdutil').enumerateDirectory
+
+
+export desc = 'Build a Move web app.'
+export options = [
+  'Usage: move build [options] <directory>',
+  'Options:',
+
+  #['optimizationLevel',   'Optimization level. Defaults to 0 (basic).',
+  #                        {type: 'int', 'short': 'O', 'long': 'optimization-level',
+  #                         def: __move.defaultCompilationOptions.optimizationLevel}],
+
+  # Following are options for the "compile" command
+  # ...
+].concat Compile.options.slice 2
+
+# Options for the "compile" command that we hard-code and which can't be set from CLI
+hardCodedCompilationOptions = {
+  bundle: true,
+  bundleWithCore: true,
+  bundleWithFull: false,
+  outputFilename: null,
+  basedir: null,
+  raw: false,
+  outputAST: false,
+}
+
+# Remove some "compile" command options
+i = options.length - (Compile.options.length - 2)
+L = (Compile.options.length - 2)
+for (; i < L; ++i) {
+  optionName = options[i]
+  if (Array.isArray(optionName) && (optionName = optionName[0]) &&
+      optionName in hardCodedCompilationOptions) {
+    options.splice i--, 1
+  }
+}
+
+#print 'options', options
+# -------------------------------------------------------------------------------------------
+
+sourceFileHandlers = {
+}
+
+SourceHandler = class {
+  constructor: ^(builder, filename) {
+    @builder = builder
+    @filename = filename
+    @path = @builder.sourceDir+'/'+@filename
+    # @bundleBaseDir:
+    if ((p = @filename.indexOf '/') != -1) {
+      dirname0 = @filename.substr 0, p
+      if (conf = @builder.sourceBundleBaseDirectories[dirname0]) {
+        @bundleBaseDir = @builder.sourceDir + '/' + dirname0
+        @bundleBaseDirConfig = conf
+      }
+    }
+  },
+  process: ^(callback) { throw Error 'not implemented' },
+}
+
+
+SourceCodeHandler = class SourceHandler, {
+  process: ^(callback) {
+    if (@builder.verbose) print 'Compiling', @filename
+    Compile.readFile.call this, @path, ^(err, source, inputPath:"") {
+      if (err) return callback.call this, err
+      
+      # Only compile files in dedicated source directories
+      if (@bundleBaseDir) {
+        # Setup compiler options
+        if (typeof @compilerOptions == 'object') {
+          @compilerOptions = create @compilerOptions, {
+            source: source,
+            filename: @filename,
+          }
+          if (@compilerOptions.optimizationLevel) {
+            @compilerOptions.mangleNames = (@compilerOptions.optimizationLevel > 2)
+            @compilerOptions.outputFormatting = (@compilerOptions.optimizationLevel < 1)
+          }
+        }
+      
+        @compile source, ^(err, code) {
+          if (err) return callback.call this, err
+          @postprocess code, callback
+        }
+      } else {
+        # Not in a dedicated source dir -- pass through
+        callback.call this, null, source
+      }
+    }
+  },
+
+  compile: ^(source, callback) { throw Error 'not implemented' },
+  
+  postprocess: ^(code, callback) {
+    try {
+      code = Compile.wrapBundledModule code, @bundleBaseDir, @compilerOptions
+      callback.call this, null, code
+    } catch (err) {
+      callback.call this, err
+    }
+  }
+}
+
+
+MoveSourceHandler = class SourceCodeHandler, {
+  compilerOptions: {
+    moduleStub: true,  # since we are creating a bundle
+    moduleDefinitionPrefix: '__move.require.define',
+    optimizationLevel: 0,
+    preprocess: ['ehtml'],  # Since we are building for a DOM environment
+  },
+  
+  compile: ^(source, callback) {
+    try {
+      code = Compile.compileMove @compilerOptions
+      callback.call this, null, code
+    } catch (e) {
+      callback.call this, e
+    }
+  },
+  
+  postprocess: ^(code, callback) {
+    # Since JS isn't wrapped in a module stub...
+    SourceCodeHandler.prototype.postprocess.call this, code, callback
+  }
+}
+
+sourceFileHandlers['mv'] = MoveSourceHandler
+
+
+JavaScriptSourceHandler = class SourceCodeHandler, {
+  compilerOptions: {
+    moduleStub: true,  # since we are creating a bundle
+    moduleDefinitionPrefix: '__move.require.define',
+    optimizationLevel: 0,
+  },
+  
+  compile: ^(source, callback) {
+    try {
+      code = Compile.compileJS @compilerOptions
+      callback.call this, null, code
+    } catch (e) {
+      callback.call this, e
+    }
+  }
+}
+
+sourceFileHandlers['js'] = JavaScriptSourceHandler
+
+# -------------------------------------------------------------------------------------------
+
+Builder = class {
+  # Directories under sourceDir which we consider "base dirs", used for module id inference
+  sourceBundleBaseDirectories: {
+    'src': {},
+    'lib': {}
+  },
+  verbose: true,
+
+  findSourceFiles: ^(dir) {
+    files = []
+    enumerateDirectory { thisObject:this, path:dir, apply:^(filename, isDir, basename) {
+      if (basename[0] == '.' || (isDir && basename[0] == '_'))
+        return false
+      
+      # Don't look into our output directory
+      if (dir+'/'+filename == @outputDir)
+        return false
+      
+      extname = Path.extname(filename).toLowerCase()[1:]
+      if (!isDir && (handler = sourceFileHandlers[extname])) {
+        files.push({ filename:filename, extname:extname, handler:handler this, filename })
+      }
+    }}
+    files.sort ^(a, b) { a && b && a.filename > b.filename }
+    files
+  },
+  
+  runSourceHandlers: ^(sourceFiles, callback) {
+    refcount = 1
+    errors = null
+    builder = this
+    decr = ^{ if (--refcount == 0) process.nextTick ^{ callback.call builder, errors } }
+    sourceFiles.forEach ^(sourceFile) {
+      ++refcount
+      try {
+        # Run the handler
+        sourceFile.handler.process ^(err, result) {
+          if (err) {
+            # Error
+            sourceFile.error = err
+            if (!errors) errors = {}
+            errors[sourceFile.filename] = err
+          } else {
+            # Success
+            sourceFile.result = result
+            if (!(sourceFile.extname in builder.outputByType))
+              builder.outputByType[sourceFile.extname] = [sourceFile]
+            else
+              builder.outputByType[sourceFile.extname].push sourceFile
+          }
+          decr()
+        }
+      } catch (err) {
+        if (!errors) errors = {}
+        errors[sourceFile.filename] = err
+        decr err
+      }
+    }
+    decr()
+  },
+  
+  
+  buildJSBlobs: ^{
+    sources = []
+    
+    # Collect JS sources
+    ['js', 'mv'].forEach ^(extname) {
+      if (Array.isArray(v = @outputByType[extname]))
+        sources = sources.concat v
+    }, this
+    
+    # Calculate total size so we know how to break things up
+    totalSize = sources.reduce ^(v, source) { v + source.result.length }, 0
+    @jsBlobsTotalSize = totalSize
+    #print 'totalSize', totalSize
+    numberOfBlobs = 2  # TODO: make configurable through CLI argument
+    
+    if (numberOfBlobs >= sources.length) {
+      blobs = sources
+    } else {
+      # Divide sources into evenly divided sets
+      blobs = []; for x=0; x < numberOfBlobs; ++x blobs[x] = {length:0, sources:[]}
+      targetBlobSize = Math.ceil totalSize / blobs.length
+      sources.sort ^(a, b) { b.result.length - a.result.length }  # large to small
+      leftI = 0
+      rightI = 0
+      sources.forEach ^(source, i) {
+        blobs.sort ^(a, b) { a.length - b.length }
+        blobIndex = 0
+        for (x = 0; x < blobs.length; ++x) {
+          if (blobs[x].length + source.result.length <= targetBlobSize) {
+            blobIndex = x
+            break
+          }
+        }
+        blobs[blobIndex].sources.push source
+        blobs[blobIndex].length += source.result.length
+        #print source.filename + ' ('+source.result.length+' B) goes into slot '+blobIndex
+      }
+    }
+    
+    @jsBlobs = blobs
+  },
+  
+  
+  writeOutputFileSync: ^(filename, buf) {
+    path = @outputDir+'/'+filename
+    dirname = Path.dirname path
+    try {
+      stat = fs.statSync dirname
+      if (!stat.isDirectory()) {
+        fs.unlinkSync dirname
+        @mkdir dirname
+      }
+    } catch (e) {
+      try { fs.unlinkSync dirname } catch (IGN) {}
+      @mkdir dirname
+    }
+    fs.writeFileSync path, buf
+  },
+  
+  
+  writeJSBlobs: ^{
+    @jsBlobs.forEach ^(blob, i) {
+      if (Array.isArray blob.sources) {
+        blob.filename = 'band'+i+'.js'
+        buf = blob.sources.reduce ^(buf, source) { buf + source.result }, ''
+      } else {
+        buf = blob.result
+      }
+      @writeOutputFileSync blob.filename, buf
+    }, this
+  },
+  
+  
+  mkdir: ^(path) {
+    try {
+      fs.mkdirSync path, 0755
+    } catch (e) {
+      if (e.errno != 17)  # not "EEXIST"
+        throw e
+    }
+  },
+  
+  
+  setupOutputDirectory: ^{
+    @mkdir @outputDir
+  },
+  
+  
+  loadResource: ^(filename) {
+    fs.readFileSync __dirname +'/build/'+filename, 'utf8'
+  },
+  
+  
+  htmlInsertBeforeTag: ^(htmlTemplate, tagname, htmlToInsert) {
+    # Find </head>
+    re = new RegExp('^(\\s*)<'+tagname.replace(/\//g, '\\/')+'>', 'mi')
+    if (!(m = re.exec htmlTemplate))
+      throw Error 'no <'+tagname+'> tag in HTML template'
+    
+    if (!Array.isArray htmlToInsert)
+      htmlToInsert = Text(htmlToInsert).replace(/\n+$/, '').split '\n'
+    
+    # Match indentation
+    if (m[1] && m[1].length) {
+      indent = m[1].length * 2
+      htmlToInsert = htmlToInsert.map(^(line) { line.padLeft line.length+indent }).join('\n')+'\n'
+    } else {
+      htmlToInsert = htmlToInsert.join ''
+    }
+    
+    # Add our html to the template
+    htmlTemplate[:m.index] + htmlToInsert + htmlTemplate[m.index:]
+  },
+
+
+  buildHTMLMain: ^{
+    html = @loadResource 'index.html'
+    
+    # First, insert all javascripts
+    headHtml = @jsBlobs.map ^(blob) {
+      '<script src="'+blob.filename+'"></script>'
+    }
+    
+    # This last piece "boots" the app by importing src/index.{mv,js}
+    headHtml.push '<script>__move.require("");</script>'
+    
+    html = @htmlInsertBeforeTag html, '/head', headHtml
+    
+    html
+  },
+  
+  
+  writeHTMLMain: ^(html) {
+    @writeOutputFileSync 'index.html', html
+  },
+  
+  
+  copyMoveWebLib: ^{
+    webLibDir = Compile.createMoveWebLibsIfNeeded {verbose:@verbose}
+    srcPath = webLibDir+'/move-rt.js'
+    dstPath = @outputDir+'/move.js'
+    try { fs.unlinkSync dstPath } catch (IGN) {}
+    fs.linkSync srcPath, dstPath
+  },
+  
+  
+  buildOutputSync: ^{
+    @buildJSBlobs()
+    @setupOutputDirectory()
+    @writeJSBlobs()
+    
+    @writeHTMLMain @buildHTMLMain()
+    
+    @copyMoveWebLib()
+    
+  },
+  
+  
+  start: ^{
+    @sourceDir = fs.realpathSync @sourceDir
+    sourceFiles = @findSourceFiles @sourceDir
+    @outputByType = {}
+    
+    #print 'sourceFiles ->', sourceFiles
+    @runSourceHandlers sourceFiles, ^(errors) {
+      # Handle errors
+      if (errors) {
+        errors.forEach ^(filename, error) {
+          console.error filename+': '+error }
+        throw Error 'Source errors caused process to abort'
+      }
+      
+      @buildOutputSync()
+    }
+    
+  },
+}
+
+# -------------------------------------------------------------------------------------------
+
+export main = ^{
+  builder = Builder { argv: @argv, program: @program }
+  
+  # check source directory
+  if (@argv.length == 0) {
+    # use current directory as source
+    builder.sourceDir = '.'
+  } else {
+    builder.sourceDir = @argv[0]
+  }
+  builder.sourceDir = fs.realpathSync builder.sourceDir
+  
+  # Destination directory
+  # TODO: make configurable
+  builder.outputDir = builder.sourceDir+'/build'
+
+  builder.start()
+}

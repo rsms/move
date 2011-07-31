@@ -1,0 +1,18 @@
+import fs
+
+# Function which enumerate all files in `dir` matching a pattern
+export enumerateDirectory = ^(path, deep:true, thisObject, pattern:/.*/, apply, parentPath:'') {
+  if (!thisObject) thisObject = {}
+  fs.readdirSync(path).forEach(^(name) {
+    entryPath = path+'/'+name
+    if (deep && (fs.statSync entryPath).isDirectory()) {
+      dig = apply.call thisObject, parentPath + name, true, name
+      if (dig != false) {
+        enumerateDirectory { path:entryPath, deep:true, thisObject:thisObject, pattern:pattern,
+                             apply:apply, parentPath: parentPath + name + '/' }
+      }
+    } else if (!pattern || pattern.test name) {
+      apply.call thisObject, parentPath + name, false, name
+    }
+  })
+}
