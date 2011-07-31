@@ -13,3 +13,9 @@ V=$(echo 'console.log(JSON.parse(require("fs").readFileSync("package.json", "utf
 # optionally commit: git ci $V
 git tag -m v$V v$V
 git pu --tags
+
+
+3. Publish website
+
+git push origin gh-pages
+
