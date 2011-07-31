@@ -263,7 +263,7 @@ if (document.location.pathname == "/index.html") {
   <div class="general-info">
     <script type="text/move">
 pkg = { "name":        "move",
-  "version":     "0.4.1",
+  "version":     "0.4.2",
   "description": "A programming language",
   "homepage":    "http://movelang.org/",
   "author":      "Rasmus Andersson (http://rsms.me/)",
@@ -272,6 +272,7 @@ pkg = { "name":        "move",
   "bin":         {"move": "./bin/move"},
   "keywords":    ["language", "compiler", "javascript", "move"],
   "engines":     {"node": ">=0.4.0"},
+  "dependencies":{"uglify-js": ">=1.0.0"},
   "repository":  {"type": "git", "url": "http://github.com/rsms/move.git"}
 }
 

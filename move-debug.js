@@ -539,6 +539,7 @@ exports.defaultCompilationOptions = {
   filename: '?',
   globals: [],
   ignorePragmas: false,
+  // preprocess: ['ehtml', 'my-preprocessor', ..],
 
   // AST transformations
   implicitReturns: true,
@@ -661,9 +662,29 @@ exports.compile = function compile(source, options) {
   if (op.preprocess) {
     if (!Array.isArray(op.preprocess))
       throw Error('"preprocess" option must have an array value');
-    op.preprocess.forEach(function (preprocessorName) {
-      preprocessor = require('./preprocessors/'+preprocessorName);
-      source = preprocessor.process(source, op);
+    op.preprocess.forEach(function (preprocessorNameOrFunction) {
+      var preprocessor, processFun;
+
+      // 1. preprocessor = preprocessorNameOrFunction
+      // 2. preprocessor = exports.preprocessors[preprocessorNameOrFunction]
+      // 3. preprocessor = require('./preprocessors/'+preprocessorNameOrFunction)
+      if (typeof preprocessorNameOrFunction === 'function' ||
+          typeof preprocessorNameOrFunction === 'object') {
+        preprocessor = preprocessorNameOrFunction;
+      } else if (!(preprocessor = exports.preprocessors[preprocessorNameOrFunction])) {
+        preprocessor = require('./preprocessors/'+preprocessorNameOrFunction);
+      }
+
+      if (!preprocessor)
+        throw Error('preprocessor '+preprocessorNameOrFunction+' not found');
+
+      if (typeof preprocessor.process === 'function') {
+        processFun = preprocessor.process;
+      } else {
+        processFun = preprocessor;
+      }
+
+      source = processFun.call(preprocessor, source, op);
     });
   }
 
@@ -776,14 +797,44 @@ exports.eval = function (source, options) {
     options.source = source;
   }
   var jsSource = exports.compile(options);
-  return (function () {
-    var move = exports;
-    return evalFunc(jsSource.code !== undefined ? jsSource.code : jsSource,
-                    String(options.filename || '<input>'));
-  })();
+  return evalFunc(jsSource, options);
 }
-var evalFunc; try { evalFunc = require('vm').runInThisContext; } catch (e) {
-                    evalFunc = eval; }
+
+// Eval function
+var evalFunc, ritc;
+try {
+  ritc = require('vm').runInThisContext;
+  evalFunc = function _eval(jsSource, options) {
+      // since the Node.js vm.runInThisContext only gives access to the global,
+      // temporarily export the required variables:
+      var global_ = {require:global.require};
+      global.require = require;
+
+      var r = ritc(
+          jsSource.code !== undefined ? jsSource.code : jsSource,
+          String((options && options.filename) || '<input>'));
+
+      // reset global
+      Object.keys(global_).forEach(function (k) {
+        var v = global_[k];
+        if (v !== undefined) global[k] = v;
+        else delete global[k];
+      });
+
+      return r;
+  }
+} catch (e) {
+  evalFunc = function _eval(jsSource, options) {
+    var gr = global.require;
+    global.require = __move.require;
+    var r = global.eval(
+        jsSource.code !== undefined ? jsSource.code : jsSource,
+        String((options && options.filename) || '<input>'));
+    if (gr !== undefined) global.require = gr;
+    else delete global.require;
+    return r;
+  };
+}
 
 // Compile Move source at `url` into JavaScript code
 // compileURL { url: string, [options: object], [callback: ^(err, jscode)] }
@@ -5230,21 +5281,17 @@ _require.define("runtime/runtime_class","runtime/runtime_class.mv",function(requ
     T.constructor = undefined;
     return T;
   };
-  __class.callConstructor = function callConstructor(object, prototype, args) {
-    object !== null && typeof object === "object" && object.__kw === _MoveKWArgsT && (arguments.keywords = object, args = object.args, prototype = object.prototype, object = object.object);
-    var C, parentPrototype;
-    if (Object.prototype.hasOwnProperty.call(prototype, "constructor") && (C = prototype.constructor) && C !== Object.prototype.constructor) {
-      return C.apply(object, args);
-    } else if ((parentPrototype = prototype[kProtoKey]) && parentPrototype !== Object.prototype) {
-      return __class.callConstructor(object, parentPrototype, args);
-    }
-  };
   return __class.create = function create() {
-    var T, obj;
+    var T, args, object, ctor;
     T = arguments[0];
-    obj = Object.create(T.prototype);
-    if (T.prototype) __class.callConstructor(obj, T.prototype, arguments[1]);
-    return obj;
+    args = arguments[1];
+    object = Object.create(T.prototype);
+    if ((ctor = object.constructor) && ctor !== kObjectConstructor && typeof ctor === "function") {
+      ctor.apply(object, args);
+    } else if (typeof args[0] === "object") {
+      extend(object, args[0]);
+    }
+    return object;
   };
 })();});
 _require.define("runtime/runtime_date","runtime/runtime_date.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
@@ -5807,7 +5854,7 @@ _require('');
 var move = global.__move;
 
 // --------------------------------------------------------------
-move.version = function () { return "0.4.1"; };
+move.version = function () { return "0.4.2"; };
 
 // --------------------------------------------------------------
 move.require = Require();
