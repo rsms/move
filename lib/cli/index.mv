@@ -1,5 +1,5 @@
 # Move command line interface
-import fs, cli = './cli'
+import fs, cli = './cli', Path = 'path'
 
 # Redirect print
 __move.runtime.print = console.error
@@ -41,7 +41,10 @@ export main = ^(argv) {
 
 # Convert a filename to a module id
 export filenameToModuleId = ^(filename) {
-  /^(.+)\.[^\.]+$/.exec(filename)[1].replace(/\/index$|^index$/, '')
+  filename = filename ? Text filename : ''
+  if (extname = Path.extname filename)
+    filename = filename[:-extname.length]
+  filename.replace(/\/index$|^index$|^\/+|\/+$/g, '')
 }
 
 

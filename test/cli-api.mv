@@ -1,0 +1,15 @@
+import assert, cli = '../lib/cli'
+
+# test cli.filenameToModuleId
+assert.strictEqual cli.filenameToModuleId('/foo/bar.mv'),   'foo/bar'
+assert.strictEqual cli.filenameToModuleId('/foo/bar.mv/'),  'foo/bar'
+assert.strictEqual cli.filenameToModuleId('/foo/bar/'),     'foo/bar'
+assert.strictEqual cli.filenameToModuleId('///foo/bar///'), 'foo/bar'
+assert.strictEqual cli.filenameToModuleId('foo/bar/index'), 'foo/bar'
+assert.strictEqual cli.filenameToModuleId('foo/bar.mv'),    'foo/bar'
+assert.strictEqual cli.filenameToModuleId('foo/bar.js'),    'foo/bar'
+assert.strictEqual cli.filenameToModuleId('foo/bar.mv.js'), 'foo/bar.mv'
+assert.strictEqual cli.filenameToModuleId('bar.mv.js'),     'bar.mv'
+assert.strictEqual cli.filenameToModuleId('bar.mv'),        'bar'
+assert.strictEqual cli.filenameToModuleId('bar'),           'bar'
+assert.strictEqual cli.filenameToModuleId(''),              ''
