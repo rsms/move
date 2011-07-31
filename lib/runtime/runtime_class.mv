@@ -50,20 +50,15 @@ export __class = ^{
   T
 }
 
-# Find the closest constructor and call it
-__class.callConstructor = ^(object, prototype, args) {
-  if (Object.prototype.hasOwnProperty.call(prototype, 'constructor') &&
-      (C = prototype.constructor) && C != Object.prototype.constructor) {
-    C.apply object, args
-  } else if ((parentPrototype = prototype[kProtoKey]) && parentPrototype != Object.prototype) {
-    __class.callConstructor object, parentPrototype, args
-  }
-}
-
 __class.create = ^{
   T = arguments[0]
-  obj = Object.create T.prototype
-  if (T.prototype)
-    __class.callConstructor obj, T.prototype, arguments[1]
-  obj
+  args = arguments[1]
+  object = Object.create T.prototype
+  if ((ctor = object.constructor) && ctor != kObjectConstructor && typeof ctor == 'function') {
+    ctor.apply object, args
+  } else if (typeof args[0] == 'object') {
+    # Default constructor takes all keyword arguments/object and creates instance values
+    extend object, args[0]
+  }
+  object
 }

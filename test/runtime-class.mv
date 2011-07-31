@@ -17,6 +17,15 @@ assert.ok fish.hasOwnProperty 'name'
 assert.ok(!fish.hasOwnProperty 'toString')
 assert.strictEqual fish.toString(), "I'm a fish"
 
+# Default (top-level) constructor sets properties
+Foo = class {}
+foo = Foo { bar:"Beer", age:12 }
+assert.ok Foo.prototype.isPrototypeOf foo
+assert.strictEqual foo.bar, 'Beer'
+assert.strictEqual foo.age, 12
+assert.ok foo.hasOwnProperty 'bar'
+assert.ok foo.hasOwnProperty 'age'
+
 
 Cat = class Animal, {
   furry: true,
@@ -47,6 +56,7 @@ Snake = class Animal, {
 puff = Snake 'slippery snake'
 
 assert.strictEqual puff.name, undefined
+assert.strictEqual puff.type, 'slippery snake'
 assert.strictEqual puff.furry, false
 assert.strictEqual puff.numberOfLegs, undefined
 assert.ok(!Cat.prototype.isPrototypeOf puff)
@@ -60,7 +70,7 @@ piff = Snake 'slippery snake'
 assert.strictEqual piff.toString(), "I'm a happy little fella"
 
 # Remove the constructor, causing Animal.prototype.constructor to be used
-Snake.prototype.constructor = null
+delete Snake.prototype.constructor
 piff = Snake 'slippery snake'
 assert.strictEqual piff.toString(), "I'm a slippery snake"
 
@@ -95,3 +105,33 @@ assert.strictEqual miff.name, undefined
 assert.strictEqual miff.furry, undefined
 assert.strictEqual miff.numberOfLegs, undefined
 assert.ok Snake.prototype.isPrototypeOf miff
+
+# Test constructor differential invocation
+kFoo = {}
+
+A = class { constructor: ^{ @foo = kFoo } }
+B = class A, {}
+C = class B, {}
+D = class C, {}
+E = class D, {}
+
+a = A()
+b = B()
+c = C()
+d = D()
+e = E()
+
+assert.strictEqual a.foo, kFoo
+assert.strictEqual b.foo, kFoo
+assert.strictEqual c.foo, kFoo
+assert.strictEqual d.foo, kFoo
+assert.strictEqual e.foo, kFoo
+
+assert.strictEqual e.__proto__, E.prototype
+assert.strictEqual e.__proto__.__proto__, D.prototype
+assert.strictEqual e.__proto__.__proto__.__proto__, C.prototype
+assert.strictEqual e.__proto__.__proto__.__proto__.__proto__, B.prototype
+assert.strictEqual e.__proto__.__proto__.__proto__.__proto__.__proto__, A.prototype
+
+assert.strictEqual e.__proto__.__proto__.__proto__.__proto__.__proto__.__proto__,
+                   Object.prototype
