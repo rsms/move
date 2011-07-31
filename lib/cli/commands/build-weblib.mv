@@ -1,9 +1,23 @@
 import fs, buffer
 filenameToModuleId = require('../').filenameToModuleId
+enumerateDirectory = require('../cmdutil').enumerateDirectory
 move = __move
 
 baseDir = fs.realpathSync __dirname+'/../../..'
 defaultOutputDir = baseDir+'/web'
+
+# Confirm output directory
+try {
+  stat = fs.statSync defaultOutputDir
+  if (!stat.isDirectory()) throw Error()
+  testFile = defaultOutputDir+'.build-weblib-write-test'
+  fs.writeFileSync testFile, ''
+  fs.unlinkSync testFile
+} catch (e) {
+  defaultOutputDir = fs.realpathSync './web'
+}
+
+exports.defaultOutputDir = defaultOutputDir
 
 export desc = 'Build the Move library for web browsers'
 export options = [
@@ -20,23 +34,6 @@ export options = [
 
   ['verbose',             'Print details to stderr.', {type:'bool', 'short':'none'}],
 ]
-
-
-# Function which produces the text content of a file
-read = ^(path, encoding: "utf8") { fs.readFileSync(path, encoding) }
-
-# Function which enumerate all files in `dir` matching a pattern
-enumerateDirectory = ^(path, deep:true, pattern: /.*/, apply, parentPath:''){
-  fs.readdirSync(path).forEach(^(name) {
-    entryPath = path+'/'+name
-    if (deep && (fs.statSync entryPath).isDirectory()) {
-      enumerateDirectory { path:entryPath, deep:true, pattern:pattern,
-                           apply:apply, parentPath: parentPath + name + '/' }
-    } else if (pattern.test name) {
-      apply parentPath + name
-    }
-  })
-}
 
 
 optimizeJS = ^(uglifyjs, source, options) {
@@ -81,11 +78,11 @@ export main = ^{
   # Variables holding the final output and the browser template
   output = ''
   outputRTOnly = ''
-  browserTemplate = read { path: baseDir+'/browser/template.js' }
+  browserTemplate = fs.readFileSync baseDir+'/browser/template.js'
 
   # Static includes
   browserTemplate.forEachMatch(/\/\*#include\s+(.+)\*\//gm, ^(m) {
-    content = read { path:  baseDir+'/browser/' + m[1] }
+    content = fs.readFileSync baseDir+'/browser/' + m[1]
     browserTemplate = browserTemplate.substr(0, m.index) +
                       content +
                       browserTemplate.substr(m.index + m[0].length)
@@ -117,13 +114,15 @@ export main = ^{
   # Collect all sources into `output`
   enumerateDirectory { path: sourceDir,
                     pattern: /\.(js|move|mv)$/,
-                      apply: ^(filename) {
+                      apply: ^(filename, isDir) {
+    if (isDir)
+      return
     for (i=0; i < exclude.length; ++i)
       if (exclude[i].test filename)
         return
 
     # Read text source
-    source = read { path: sourceDir + '/' + filename }
+    source = fs.readFileSync sourceDir + '/' + filename
     ++filesLoaded
 
     # Pass Move sources through the Move compiler

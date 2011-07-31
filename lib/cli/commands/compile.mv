@@ -1,5 +1,6 @@
 import fs, Path = 'path', crypto
 filenameToModuleId = require('../index').filenameToModuleId
+buildWeblibCommand = require('./build-weblib')
 
 try { import uglifyjs = 'uglify-js' } catch (e) { }
 
@@ -45,128 +46,152 @@ export options = [
 
 
 # Compiler
-compileMove = ^(inputPath, options) {
-  # Compile
-  result = __move.compile options
-
-  # Output
-  if (!options.codegen) {
-    # AST
-    return result
-  }
-
-  # JavaScript
-  jscode = result
-
-  # bundle
-  if (@parsedOptions.bundle) {
-
-    # Confirm and strip basedir from inputPath
-    if (@parsedOptions.basedir) {
-      absfilename = fs.realpathSync inputPath
-      if (!@parsedOptions.basedir_)
-        @parsedOptions.basedir_ = fs.realpathSync @parsedOptions.basedir
-      if (absfilename.substr(0, @parsedOptions.basedir_.length+1) != @parsedOptions.basedir_+'/')
-        @program.exit 'Incompatible basedir: '+JSON(absfilename)+' is not based in '+JSON(@parsedOptions.basedir_)
-      inputPath = absfilename.substr @parsedOptions.basedir_.length+1
-    }
-
-    if (options.moduleStub) {
-      #shasum = crypto.createHash 'sha1'
-      #shasum.update options.source
-      #uri = 'urn:mvsrc:' + inputPath + '@' + shasum.digest 'hex'
-      uri = inputPath
-      
-      id = filenameToModuleId inputPath
-      
-      options.moduleId = id
-      options.moduleURI = uri
-      jscode = options.moduleDefinitionPrefix+'('+JSON(id)+','+JSON(uri)+','+jscode + ');';
-    }
-  }
-
-  jscode
+export compileMove = ^(options) {
+  __move.compile options
 }
 
 
-compileJS = ^(inputPath, options) {
+export compileJS = ^(options) {
   if (uglifyjs) {
     ast = uglifyjs.parser.parse options.source
     if (options.mangleNames)
       ast = uglifyjs.uglify.ast_mangle ast
     if (options.optimizationLevel > 0)
       ast = uglifyjs.uglify.ast_squeeze ast
-
-    if (!options.codegen) {
+    if (!options.codegen && options.codegen != undefined) {
       result = ast
     } else {
       result = uglifyjs.uglify.gen_code ast, options.outputFormatting
     }
   } else if (!options.codegen) {
-    throw Error 'unable to parse JavaScript '+JSON(inputPath)+' into AST since the uglify-js module is not installed'
+    throw Error 'unable to parse JavaScript '+JSON(options.filename)+
+                ' into AST since the uglify-js module is not installed'
   } else {
     result = options.source
   }
+
+  if (typeof result == 'string' && options.moduleStub)
+    result = 'function(require,module,exports){'+result+'}'
+
   result
 }
 
 
-readStdin = ^(callback, limit:1024*1000){
+export wrapBundledModule = ^(jscode, baseDir, options) {
+  if (!options.moduleStub)
+    throw Error 'Unable to wrap code as a module without moduleStub'
+  
+  # Confirm and strip basedir from options.filename
+  if (baseDir) {
+    absfilename = options.filename[0] == '/' ? options.filename
+                                             : fs.realpathSync options.filename
+    if (absfilename.substr(0, baseDir.length+1) == baseDir+'/')
+      id = filenameToModuleId absfilename.substr baseDir.length+1
+  }
+
+  if (!id)
+    id = filenameToModuleId options.filename
+
+  # Wrap in module definition
+  uri = options.filename
+  options.moduleId = id
+  options.moduleURI = uri
+  jscode = options.moduleDefinitionPrefix+'('+JSON(id)+','+JSON(uri)+','+jscode + ');';
+  
+  jscode
+}
+
+
+export readStdin = ^(callback, limit:1024*1000){
   process.stdin.resume()
   process.stdin.setEncoding 'utf8'
   stdinbuf = ''
+  self = this
   process.stdin.on 'data', ^(chunk) {
     stdinbuf += chunk
     if (stdinbuf.length > limit) {
       process.stdin.close()
-      return callback && callback Error 'stdin exceeded maximum limit ('+limit+' bytes)'
+      return callback && callback.call self, Error 'stdin exceeded maximum limit ('+limit+' bytes)'
     }
   }
   process.stdin.on 'end', ^{
-    callback && callback null, stdinbuf
+    callback && callback.call self, null, stdinbuf
   }
 }
 
 
-readInput = ^(inputPath, options, callback) {
+export readFile = ^(inputPath, callback) {
   self = this
+  fs.readFile inputPath, 'utf8', ^(err, buf) {
+    if (err) {
+      if (err.errno != undefined) {
+        if (err.errno == 9)
+          err = err.message.replace 'EBADF, Bad file descriptor', 'File not found'
+        else
+          err = err.message
+      }
+      callback.call self, err
+    } else {
+      callback.call self, null, buf, inputPath
+    }
+  }
+}
+
+
+export readInput = ^(inputPath, callback) {
   if (inputPath == '-') {
-    # Read from stdin
-    readStdin ^(err, buf) {
-      if (err) callback.call self, err
-      else     callback.call self, null, buf
+    readStdin.call this, ^(err, buf) {
+      if (err) callback.call this, err
+      else     callback.call this, null, buf
     }
   } else {
-    # Read from disk
-    fs.readFile inputPath, 'utf8', ^(err, buf) {
-      if (err) {
-        if (err.errno != undefined) {
-          if (err.errno == 9)
-            err = err.message.replace 'EBADF, Bad file descriptor', 'File not found'
-          else
-            err = err.message
-        }
-        callback.call self, err
-      } else {
-        callback.call self, null, buf, inputPath
-      }
-    }
+    readFile.call this, inputPath, callback
   }
 }
 
 
 readAndCompile = ^(inputPath, options, callback) {
-  readInput.call this, inputPath, options, ^(err, source, inputPath:"") {
+  # Read and apply any input path options
+  # e.g. foo/bar.mv:{"bundle":false}
+  if (m = /^([^:]+):(.+)$/.exec(inputPath)) {
+    inputPath = m[1]
+    try { inputOptions = JSON.parse m[2] } catch(e) {}
+    if (typeof inputOptions == 'object') {
+      extend options, inputOptions
+    } else {
+      console.error 'Warning: options for', JSON(inputPath),
+                    'is not an object and thus ignored'
+    }
+  }
+  
+  readInput.call this, inputPath, ^(err, source, inputPath:"") {
     if (err) return callback.call this, err
 
     options.source = source
-
+    options.filename = inputPath
+    
+    if ((options.codegen || options.codegen == undefined) &&
+          @parsedOptions.bundle &&
+          (options.bundle || options.bundle == undefined)) {
+      options.bundle = true
+      options.moduleStub = true
+    } else {
+      options.bundle = false
+      options.moduleStub = false
+    }
+    
     err = null
     try {
-      if (/\.js$/.test inputPath)
-        result = compileJS.call this, inputPath, options
-      else
-        result = compileMove.call this, inputPath, options
+      if (/\.js$/.test inputPath) {
+        result = compileJS.call this, options
+      } else {
+        result = compileMove.call this, options
+      }
+      if (options.bundle) {
+        if (@parsedOptions.basedir && !@parsedOptions.basedir_)
+          @parsedOptions.basedir_ = fs.realpathSync @parsedOptions.basedir
+        result = wrapBundledModule result, @parsedOptions.basedir_, options
+      }
     } catch (e) {
       err = e
     }
@@ -176,7 +201,27 @@ readAndCompile = ^(inputPath, options, callback) {
 }
 
 
+webLibDir = buildWeblibCommand.defaultOutputDir
+
+export createMoveWebLibsIfNeeded = ^(verbose) {
+  # Create web libraries unless they exist
+  try {
+    stat = fs.statSync webLibDir+'/move.js'
+    if (stat.isFile()) {
+      return webLibDir
+      # TODO: Verify version
+    }
+  } catch (e) {}
+  if (verbose) print 'Building web browser library...'
+  @program.runCommand 'build-weblib', []
+  webLibDir
+}
+
+
 export main = ^{
+  # Allow programmatic use by overriding @argv
+  #argv
+  
   #print '@parsedOptions ->', @parsedOptions
   if (@argv.length == 0)
     @program.exit 'No input'
@@ -186,21 +231,7 @@ export main = ^{
 
   if (@parsedOptions.bundleWithCore || @parsedOptions.bundleWithFull) {
     @parsedOptions.bundle = true
-    
-    # Create web libraries unless they exist
-    webLibDir = fs.realpathSync __dirname+'/../../../web'
-    needToBuildWebLibs = true
-    try {
-      stat = fs.statSync webLibDir+'/move.js'
-      if (stat.isFile()) {
-        needToBuildWebLibs = false
-        # TODO: Verify version
-      }
-    } catch (e) {}
-    if (needToBuildWebLibs) {
-      print 'Building web browser library...'
-      @program.runCommand 'build-weblib', []
-    }
+    createMoveWebLibsIfNeeded {verbose:true}
   }
 
   # stdin?
@@ -210,9 +241,9 @@ export main = ^{
 
   # Add Move runtime?
   if (@parsedOptions.bundleWithCoreFull)
-    @argv.unshift webLibDir+'/move.js'
+    @argv.unshift webLibDir+'/move.js:{"bundle":false}'
   else if (@parsedOptions.bundleWithCore)
-    @argv.unshift webLibDir+'/move-rt.js'
+    @argv.unshift webLibDir+'/move-rt.js:{"bundle":false}'
 
   # Set compilation options
   options = create __move.defaultCompilationOptions, {
