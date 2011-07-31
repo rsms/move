@@ -78,11 +78,11 @@ export main = ^{
   # Variables holding the final output and the browser template
   output = ''
   outputRTOnly = ''
-  browserTemplate = fs.readFileSync baseDir+'/browser/template.js'
+  browserTemplate = fs.readFileSync baseDir+'/browser/template.js', 'utf8'
 
   # Static includes
   browserTemplate.forEachMatch(/\/\*#include\s+(.+)\*\//gm, ^(m) {
-    content = fs.readFileSync baseDir+'/browser/' + m[1]
+    content = fs.readFileSync baseDir+'/browser/' + m[1], 'utf8'
     browserTemplate = browserTemplate.substr(0, m.index) +
                       content +
                       browserTemplate.substr(m.index + m[0].length)
@@ -122,7 +122,7 @@ export main = ^{
         return
 
     # Read text source
-    source = fs.readFileSync sourceDir + '/' + filename
+    source = fs.readFileSync sourceDir + '/' + filename, 'utf8'
     ++filesLoaded
 
     # Pass Move sources through the Move compiler

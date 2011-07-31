@@ -2,3 +2,6 @@ import foo
 print 'foo ->', foo
 print 'foo.bar() ->', foo.bar()
 print 'foo.bar "Rob" ->', foo.bar 'Rob'
+
+html = document.body.innerHTML
+document.body.innerHTML = html + '<h1>Pass OK</h1>'

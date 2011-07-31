@@ -89,7 +89,7 @@ export wrapBundledModule = ^(jscode, baseDir, options) {
       id = filenameToModuleId absfilename.substr baseDir.length+1
   }
 
-  if (!id)
+  if (id == undefined)
     id = filenameToModuleId options.filename
 
   # Wrap in module definition
@@ -283,19 +283,30 @@ export main = ^{
       if (@parsedOptions.bundle) {
         entryPoints = @parsedOptions.entryPoints.split(',').map ^(moduleId) { moduleId.trim() }
         
-        # Special case: If only one entry point is requested (""), ignore silently unless existing
+        # Special case: If only one entry point is requested (""), ignore silently unless
+        # existing
         if (entryPoints.length == 1 && entryPoints[0] == '' && moduleIds.indexOf('') == -1) {
           entryPoints = []
         }
         
         # Append to output
-        entryPoints.forEach ^(moduleId) {
-          # Confirm all the entry points exist
-          if (moduleIds.indexOf(moduleId) == -1)
-            throw Error 'Unknown entry point "'+moduleId+'"'
-          # Append to output
-          output += '__move.require('+JSON(moduleId)+');'
+        if (entryPoints.length) {
+          output += '(function(){var boot=function boot(){'
+          entryPoints.forEach ^(moduleId) {
+            # Confirm all the entry points exist
+            if (moduleIds.indexOf(moduleId) == -1)
+              throw Error 'Unknown entry point "'+moduleId+'"'
+            # Append to output
+            output += '__move.require('+JSON(moduleId)+');'
+          }
+          output += '};'+
+            'if(window.addEventListener){'+
+              'window.addEventListener("DOMContentLoaded",boot,false);'+
+            '}else{'+
+              'window.attachEvent("onload",boot);}'+
+            '})();'
         }
+        
       }
     }
 
