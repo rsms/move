@@ -1,0 +1,1 @@
+export bar = ^(name:"John"){ "This is bar, with my friend "+name }

@@ -5,13 +5,10 @@
     <title>Move web browser test</title>
     <script src="../../web/move.js"></script>
     <script type="text/move" src="test.mv"></script>
-    <script type="text/move">
-    import test
-    print 'test ->', test
-    print 'test.foo() ->', test.foo()
-    </script>
+    <script type="text/move" src="foo.mv"></script>
+    <script type="text/move">import test</script>
   </head>
   <body>
-    See console log
+    <p>Upon success, you should see "Pass OK" right here:</p>
   </body>
 </html>
