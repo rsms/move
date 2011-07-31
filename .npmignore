@@ -1,0 +1,6 @@
+web/
+web_generated/
+web_generated/*
+etc/
+extras/
+admin-notes.txt

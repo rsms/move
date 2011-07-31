@@ -15,7 +15,8 @@ git tag -m v$V v$V
 git pu --tags
 
 
-3. Publish website
+3. Publish website and NPM
 
 git push origin gh-pages
+npm publish .
 

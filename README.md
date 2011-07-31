@@ -41,7 +41,7 @@ The above program compiles down to the following JavaScript:
 
 For now, it's easiest to install Move using the [Node Package Manager](http://npmjs.org/):
 
-    npm install move
+    sudo npm install -g move
 
 Then require the "move" module before requiring any move code. In this `example.js` we load "foo.move" which is a module written in Move:
 
