@@ -14,7 +14,7 @@ try {
   fs.writeFileSync testFile, ''
   fs.unlinkSync testFile
 } catch (e) {
-  defaultOutputDir = fs.realpathSync './web'
+  defaultOutputDir = process.env['TMPDIR'] || process.env['TMP'] || '/tmp'
 }
 
 exports.defaultOutputDir = defaultOutputDir
