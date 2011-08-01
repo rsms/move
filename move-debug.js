@@ -5854,7 +5854,7 @@ _require('');
 var move = global.__move;
 
 // --------------------------------------------------------------
-move.version = function () { return "0.4.2"; };
+move.version = function () { return "0.4.3"; };
 
 // --------------------------------------------------------------
 move.require = Require();
