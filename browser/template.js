@@ -27,9 +27,10 @@ move.require = Require();
 
 // Called when a Move script has been compiled (or failed to compile or load)
 // For a <script> tag source, `origin` is the HTMLElement instance
+var _eval = window.execScript || function _eval(jscode) { window["eval"].call(window, jscode); };
 move.executeScript = function executeScript(err, jscode, origin) {
   if (err) throw err;
-  Function(jscode)();
+  _eval(jscode);
 };
 
 
