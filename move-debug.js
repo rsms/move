@@ -5621,15 +5621,18 @@ _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(requir
   defineConstant(exports, "_MoveKWArgsT", _MoveKWArgsT);
   defineConstant(exports, "Text", String);
   String.prototype.toText = String.prototype.toString;
-  exports.extend = extend = function extend(object, body) {
-    object !== null && typeof object === "object" && object.__kw === _MoveKWArgsT && (arguments.keywords = object, body = object.body, object = object.object);
+  exports.extend = extend = function extend(object, body, onlyOwnProperties) {
+    object !== null && typeof object === "object" && object.__kw === _MoveKWArgsT && (arguments.keywords = object, onlyOwnProperties = object.onlyOwnProperties, body = object.body, object = object.object);
     var T;
     T = body === null ? "undefined" : typeof body;
-    if (T === "object") Object.keys(body).forEach(function (key) {
-      key !== null && typeof key === "object" && key.__kw === _MoveKWArgsT && (arguments.keywords = key, key = key.key);
-      var value;
-      if ((value = body[key]) !== undefined && value !== _MoveKWArgsT) return object[key] = value;
-    }); else if (T === "function") body.call(object); else if (T !== "undefined") throw new TypeError('"body" argument must be either an object or a function, not a ' + T);
+    if (T === "object" || T === "function") {
+      Object.prototype.forEach.call(body, function (key, value) {
+        key !== null && typeof key === "object" && key.__kw === _MoveKWArgsT && (arguments.keywords = key, value = key.value, key = key.key);
+        if (value !== undefined && value !== _MoveKWArgsT) return object[key] = value;
+      }, null, onlyOwnProperties);
+    } else if (T !== "undefined") {
+      throw new TypeError('"body" argument must be either an object or a function, not a ' + T);
+    }
     return object;
   };
   exports.create = create = function create(prototype, body) {
@@ -5760,12 +5763,16 @@ _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(requir
   return exports.__class = require("./runtime_class").__class;
 })();});
 _require.define("runtime/runtime_object","runtime/runtime_object.js",function(require, module, exports, __filename, __dirname){if (!Object.prototype.forEach) {
-  var forEach = function forEach(block, ctx) {
-    if (ctx !== null && typeof ctx !== 'object') ctx = this;
-    var obj = this;
-    Object.keys(this).forEach(function (key) {
-      block.call(ctx, key, obj[key], obj);
-    });
+  var forEach = function forEach(block, ctx, onlyOwnProperties) {
+    if (!ctx || (typeof ctx !== 'object' && typeof ctx !== 'function')) ctx = this;
+    var obj = this, key;
+    if (onlyOwnProperties) {
+      Object.keys(this).forEach(function (key) {
+        block.call(ctx, key, obj[key], obj);
+      });
+    } else {
+      for (key in this) block.call(ctx, key, obj[key], obj);
+    }
     return this;
   };
   if (Object.defineProperty) {
@@ -5865,9 +5872,10 @@ move.require = Require();
 
 // Called when a Move script has been compiled (or failed to compile or load)
 // For a <script> tag source, `origin` is the HTMLElement instance
+var _eval = window.execScript || function _eval(jscode) { window["eval"].call(window, jscode); };
 move.executeScript = function executeScript(err, jscode, origin) {
   if (err) throw err;
-  Function(jscode)();
+  _eval(jscode);
 };
 
 
