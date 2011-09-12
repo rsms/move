@@ -1,0 +1,43 @@
+# Embedded HTML
+
+hasDOM = typeof document != 'undefined'
+
+if (hasDOM) {
+  EHTML = ^(html) {
+    if (!EHTML.spawnerElement)
+      EHTML.spawnerElement = document.createElement 'div'
+    EHTML.spawnerElement.innerHTML = html
+    el = EHTML.spawnerElement.firstChild
+    #el.toString = ^{ html }
+    el
+  }
+} else {
+  # Dummy implementation
+  EHTML = ^(html) { return {innerHTML:html} }
+}
+
+__move.EHTML = EHTML
+
+# Style class name wrapper
+# Usage (before any embedded html is evaluated):
+#
+#   EHTML = EHTML.classNameWrapper 'my-classname'
+#   ...
+#   p = <p>Hello</p>  ->  <p class="my-classname">Hello</p>
+#
+if (typeof document != 'undefined' && document.body && document.body.classList) {
+  EHTML.classNameWrapper = ^(className) {^(html) {
+    if (node = __move.EHTML html)
+      node.classList.add className
+    node
+  }}
+} else {
+  EHTML.classNameWrapper = ^(className) {
+    className = ' '+className
+    ^(html) {
+      if (node = __move.EHTML html)
+        node.className += className
+      node
+    }
+  }
+}

@@ -1,23 +1,4 @@
-# Runtime instantiator
-__move.EHTML = EHTML = ^(html) {
-  if (!EHTML.spawnerElement)
-    EHTML.spawnerElement = document.createElement 'div'
-  EHTML.spawnerElement.innerHTML = html
-  el = EHTML.spawnerElement.firstChild
-  el.toString = ^{ html }
-  el
-}
-
-EHTML.classNameWrapper = ^(className) {
-  className = ' '+className
-  ^(html) {
-    node = __move.EHTML html
-    node.className += className
-    node
-  }
-}
-
-# Preprocessor
+# Embedded HTML
 export process = ^(src, options) {
   i = 0
   skipString = ^(endch) {
