@@ -171,7 +171,7 @@ export repeat = ^(times, every, block) {
 }
 
 # Perform a `block` after a delay or date/time
-export after = ^(delay, date) {
+export after = ^(delay, date, target) {
   if (delay) {
     #if (arguments.)...
     if (typeof delay != 'number')
@@ -186,7 +186,14 @@ export after = ^(delay, date) {
     }
     delay = Math.max(0, date.getTime() - (new Date).getTime())
   }
-  return ^(block) { setTimeout(block, delay) }
+  return ^(block) {
+    if (target) {
+      b = ^{ block.apply target, arguments }
+    } else {
+      b = block
+    }
+    setTimeout b, delay
+  }
 }
 
 # -----------------------------------------------------------------------------
