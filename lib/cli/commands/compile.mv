@@ -1,6 +1,7 @@
 import fs, Path = 'path', crypto
 filenameToModuleId = require('../index').filenameToModuleId
 buildWeblibCommand = require('./build-weblib')
+Program = require('../cli').Program
 
 try { import uglifyjs = 'uglify-js' } catch (e) { }
 
@@ -213,7 +214,7 @@ export createMoveWebLibsIfNeeded = ^(verbose) {
     }
   } catch (e) {}
   if (verbose) print 'Building web browser library...'
-  @program.runCommand 'build-weblib', []
+  Program.sharedProgram.runCommand 'build-weblib', []
   webLibDir
 }
 
