@@ -51,6 +51,10 @@ h3 { font-size: 18px; }
 h4 { font-size: 16px; color:#333; }
 h5,h6 { font-size:12px; color:#888; }
 
+h1:target, h2:target, h3:target, h4:target {
+  background-image: -webkit-linear-gradient(rgba(255,255,100,0), rgba(255,255,100,0), rgba(255,255,100,1));
+}
+
 a { text-decoration:none; }
 a:link, a:active { color:#316d96; }
 a:visited { color:#7e5494; }
@@ -143,6 +147,7 @@ section.body samp {
   float: right;
   clear:right;
 }
+pre.wide { width:100% !important; }
 @media screen, tv, projection {
   section.body code, section.body tt {
     background-color: #FBF0FA;

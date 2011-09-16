@@ -22,7 +22,7 @@ permalink: /articles/:title/
 
 markdown: rdiscount
 rdiscount:
-  extensions: [smart]
+  extensions: [smart, generate_toc]
 
 #markdown: kramdown
 #kramdown:
