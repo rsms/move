@@ -1,6 +1,7 @@
-import fs, Path = 'path', crypto
+import fs, Path = 'path', crypto, FSWatcher = '../FSWatcher'
 filenameToModuleId = require('../index').filenameToModuleId
 buildWeblibCommand = require('./build-weblib')
+scanDirectorySync = require('../cmdutil').scanDirectorySync
 Program = require('../cli').Program
 
 try { import uglifyjs = 'uglify-js' } catch (e) { }
@@ -14,19 +15,19 @@ export options = [
                           {type: 'string', 'short': 'o', 'long': 'output'}],
 
   ['bundle',              'Bundle all input files together as modules into one web-browser compatible JavaScript file.',
-                          {type: 'bool', 'long':'bundle', 'short':'none'}],
+                          {type: 'bool', 'long':'bundle', 'short':'b'}],
 
   ['entryPoints',         'When creating a bundle, specifies one or more module ids which will be imported on DOM ready (like the main() function in a C program). Defaults to the empty string (equivalent to an index.{mv,js} file in the root directory).',
                           {type: 'string', 'short':'p', 'long':'entry-points', def:''}],
 
   ['bundleWithCore',      'Same as --bundle but also embeds the Move runtime library',
-                          {type: 'bool', 'long':'bundle-standalone', 'short':'b'}],
+                          {type: 'bool', 'long':'bundle-standalone', 'short':'none'}],
 
   ['bundleWithFull',      'Same as --bundle-standalone but also embeds the Move compiler',
                           {type: 'bool', 'long':'bundle-standalone-full', 'short':'B'}],
 
-  ['basedir',             'Base directory to exclude when calculating bundle id-s. Only effective in combination with --bundle.',
-                          {type: 'string', 'long':'basedir', 'short':'C'}],
+  ['basedir',             'Base directory to exclude when calculating bundle id-s. Only effective in combination with --bundle. If no input files are specified, all move and js files found under --basedir will be used as input sources.',
+                          {type: 'string', 'long':'basedir', 'short':'d'}],
 
   ['raw',                 'Do not depend on the Move runtime.',
                           {type: 'bool', 'short':'none'}],
@@ -43,6 +44,25 @@ export options = [
   ['optimizationLevel',   'Optimization level. Defaults to 0 (basic).',
                           {type: 'int', 'short': 'O', 'long': 'optimization-level',
                            def: __move.defaultCompilationOptions.optimizationLevel}],
+
+  ['autoRebuild',         'Watch source files for changes and automatically re-compile.',
+                          {type: 'bool', 'long':'auto', 'short':'a'}],
+
+  ['silent',              'Do not output information to stderr.',
+                          {type: 'bool', 'short':'none'}],
+
+  ['help',                'Show this message.',
+                          {type: 'bool', 'long':'help', 'short':'h'}],
+  
+  '',
+  'Examples:',
+  '',
+  '  move compile foo.mv bar/*.js',
+  '    Process foo.bar and all JavaScript files in the "bar" directory and output compiled code to stdout.',
+  '',
+  '  move compile --auto --bundle --basedir=client/src --output=public/main.js',
+  '    Takes all Move and JavaScript files in the "client/src" directory, compiles them into a bundle and automatically recompiles the app when any of the source files changes.',
+  '',
 ]
 
 
@@ -127,9 +147,9 @@ export readFile = ^(inputPath, callback) {
     if (err) {
       if (err.errno != undefined) {
         if (err.errno == 9)
-          err = err.message.replace 'EBADF, Bad file descriptor', 'File not found'
-        else
-          err = err.message
+          err.message = err.message.replace 'EBADF, Bad file descriptor', 'File not found'
+        #else
+        #  err = err.message
       }
       callback.call self, err
     } else {
@@ -151,6 +171,11 @@ export readInput = ^(inputPath, callback) {
 }
 
 
+logmsg = ^{
+  console.error.apply console, arguments
+}
+
+
 readAndCompile = ^(inputPath, options, callback) {
   # Read and apply any input path options
   # e.g. foo/bar.mv:{"bundle":false}
@@ -160,8 +185,8 @@ readAndCompile = ^(inputPath, options, callback) {
     if (typeof inputOptions == 'object') {
       extend options, inputOptions
     } else {
-      console.error 'Warning: options for', JSON(inputPath),
-                    'is not an object and thus ignored'
+      logmsg 'Warning: options for', JSON(inputPath),
+             'is not an object and thus ignored'
     }
   }
   
@@ -183,15 +208,13 @@ readAndCompile = ^(inputPath, options, callback) {
     
     err = null
     try {
-      if (/\.js$/.test inputPath) {
+      if ((/\.js$/i).test inputPath) {
         result = compileJS.call this, options
       } else {
         result = compileMove.call this, options
       }
       if (options.bundle) {
-        if (@parsedOptions.basedir && !@parsedOptions.basedir_)
-          @parsedOptions.basedir_ = fs.realpathSync @parsedOptions.basedir
-        result = wrapBundledModule result, @parsedOptions.basedir_, options
+        result = wrapBundledModule result, @parsedOptions.basedir, options
       }
     } catch (e) {
       err = e
@@ -222,10 +245,9 @@ export createMoveWebLibsIfNeeded = ^(verbose) {
 export main = ^{
   # Allow programmatic use by overriding @argv
   #argv
+  doNotWatchFiles = []
   
   #print '@parsedOptions ->', @parsedOptions
-  if (@argv.length == 0)
-    @program.exit 'No input'
 
   if (@parsedOptions.raw && @parsedOptions.bundle)
     @program.exit 'Can not bundle raw code (the --raw and --bundle flags can not both be defined)'
@@ -237,14 +259,17 @@ export main = ^{
 
   # stdin?
   hasReadStdin = false
-  if (@argv.length == 0)
+  if (@argv.length == 0 && !@parsedOptions.basedir)
     @argv = ['-']
 
   # Add Move runtime?
-  if (@parsedOptions.bundleWithCoreFull)
+  if (@parsedOptions.bundleWithFull) {
     @argv.unshift webLibDir+'/move.js:{"bundle":false}'
-  else if (@parsedOptions.bundleWithCore)
+    doNotWatchFiles.push webLibDir+'/move.js'
+  } else if (@parsedOptions.bundleWithCore) {
     @argv.unshift webLibDir+'/move-rt.js:{"bundle":false}'
+    doNotWatchFiles.push webLibDir+'/move-rt.js'
+  }
 
   # Set compilation options
   options = create __move.defaultCompilationOptions, {
@@ -260,21 +285,28 @@ export main = ^{
   }
   if (options.optimizationLevel > 0)
     options.outputFormatting = false
+    
+  if (@parsedOptions.basedir)
+    @parsedOptions.basedir = fs.realpathSync @parsedOptions.basedir
 
-  outputs = []
+  outputs = {}
   outputCount = 0
 
   # Finalizer called after all input has been successfully compiled
-  finalize = ^{
+  # finalize ([callback ^(Error err, String outputFilename, String outputText)])
+  finalize = ^(callback) {
     if (@parsedOptions.outputAST) {
       # AST
       output = {}
-      outputs.forEach ^(result) { output[result.inputPath] = result.result }
+      outputs.forEach ^(inputPath, result) { output[inputPath] = result.result }
       output = JSON output
     } else {
       # JavaScript code
       moduleIds = []
-      output = outputs.map(^(result) {
+      
+      output = []
+      outputs.forEach ^(inputPath, result) { output.push result }
+      output = output.map(^(result) {
         if (result.options && result.options.moduleId != undefined)
           moduleIds.push result.options.moduleId
         result.result
@@ -295,8 +327,11 @@ export main = ^{
           output += '(function(){var boot=function boot(){'
           entryPoints.forEach ^(moduleId) {
             # Confirm all the entry points exist
-            if (moduleIds.indexOf(moduleId) == -1)
-              throw Error 'Unknown entry point "'+moduleId+'"'
+            if (moduleIds.indexOf(moduleId) == -1) {
+              err = Error 'Unknown entry point "'+moduleId+'"'
+              if (callback) return callback e
+              else throw e
+            }
             # Append to output
             output += '__move.require('+JSON(moduleId)+');'
           }
@@ -312,26 +347,173 @@ export main = ^{
     }
 
     # Write output
-    if (@parsedOptions.outputFilename) {
-      fs.writeFileSync @parsedOptions.outputFilename, output, 'utf8'
-    } else {
-      process.stdout.write output, 'utf8'
+    try {
+      if (@parsedOptions.outputFilename) {
+        fs.writeFileSync @parsedOptions.outputFilename, output, 'utf8'
+      } else {
+        process.stdout.write output, 'utf8'
+      }
+      if (callback)
+        callback null, @parsedOptions.outputFilename, output
+    } catch (err) {
+      if (callback) callback err
+      else throw err
     }
   }
+  
+  self = this
+  compileSources = ^(inputPaths, callback) {
+    count = inputPaths.length
+    ABORT = {}
+    error = null
+  
+    inputPaths.forEach ^(inputPath) {
+      readAndCompile.call this, inputPath, create(options), ^(err, result) {
+        if (err)
+          error = err
 
-  # Compile all inputs in parallel
-  @argv.forEach ^(inputPath, inputIndex) {
-    readAndCompile.call this, inputPath, create(options), ^(err, result) {
-      if (err) {
-        # Abort immediately
-        console.error(err.stack || err)
-        return process.exit 1
+        outputs[inputPath] = result
+        if (--count == 0) {
+          if (error) {
+            callback error
+          } else {
+            finalize.call this, callback
+          }
+        }
       }
-      outputs[inputIndex] = result
-      if (++outputCount == @argv.length) {
-        finalize.call this
+    }, self
+    
+    if (error) {
+      if (callback) {
+        callback error
+      } else {
+        throw error
       }
     }
+  }
+  
+  # Mutable copy of input paths, managed by fs watcher
+  inputPaths = @argv.slice()
+  
+  
+  # If no input paths, but we have a basedir, use basedir
+  if (inputPaths.length - doNotWatchFiles.length == 0 && @parsedOptions.basedir)
+    inputPaths.push @parsedOptions.basedir
+  
+  
+  # Expand directories
+  error = null
+  inputPaths.forEach ^(inputPath, i) {
+    if (error)
+      return
+    try {
+      stats = fs.statSync inputPath
+      if (stats.isDirectory()) {
+        inputPaths.splice i, 1
+        
+        filenames = scanDirectorySync { path:inputPath, deep:true, thisObject:this,
+                                        pattern:/^[^\.].+(?:mv|move|js)$/}
+        filenames.forEach ^(filename, isDirectory) {
+          if (!isDirectory && inputPaths.indexOf(filename) == -1) {
+            inputPaths.push filename
+          }
+        }
+        
+      }
+    } catch (e) {
+      error = e
+    }
   }, this
+  if (error) {
+    throw error
+  }
+  
+  
+  # Watch sources?
+  if (@parsedOptions.autoRebuild) {
+    w = fsWatcher = FSWatcher()
+    
+    isMoveFilename = ^(path) {
+      (/\.(?:mv|move|js)$/).test path
+    }
+    
+    scheduleRecompileTimer = null
+    scheduleRecompile = ^{
+      if (scheduleRecompileTimer != null)
+        return
+      scheduleRecompileTimer = after {delay:100} ^{
+        if (!self.parsedOptions.silent) {
+          process.stderr.write 'Recompiling...'
+          timeStarted = Date.now()
+        }
+        
+        compileSources inputPaths, ^(err) {
+          timeTaken = Date.now()-timeStarted
+          if (err) {
+            if (!self.parsedOptions.silent)
+              process.stderr.write 'FAIL\n'
+            logmsg err.stack || err
+          } else {
+            if (!self.parsedOptions.silent)
+              process.stderr.write 'OK ('+timeTaken+' ms).\n'
+          }
+          scheduleRecompileTimer = null
+        }
+      }
+    }
+    
+    debugWatcher = false
+
+    w.on 'added', ^(path, isDirectory) {
+      debugWatcher && print '[fsw] on added:', path, '('+(isDirectory ? 'directory':'file')+')'
+      if (!isDirectory && isMoveFilename path) {
+        inputPaths.push path
+        scheduleRecompile()
+      }
+      @watch path
+    }
+    w.on 'modified', ^(path, isDirectory) {
+      debugWatcher && print '[fsw] on modified:', path, '('+(isDirectory ? 'directory':'file')+')'
+      if (!isDirectory && inputPaths.indexOf(path) != -1)
+        scheduleRecompile()
+    }
+    w.on 'removed', ^(path, isDirectory) {
+      debugWatcher && print '[fsw] on removed:', path, '('+(isDirectory ? 'directory':'file')+')'
+      if ((i = inputPaths.indexOf(path)) != -1) {
+        inputPaths.splice i, 1
+        scheduleRecompile()
+      }
+      @unwatch path
+    }
+    
+    inputPaths.forEach ^(inputPath) {
+      if (m = /^([^:]+):(.+)$/.exec inputPath)
+        inputPath = m[1]
+      if (doNotWatchFiles.indexOf(inputPath) != -1)
+        return
+      fsWatcher.watch inputPath, ^(err) { if (err) logmsg err.stack || err }
+    }
+    
+    if (!self.parsedOptions.silent)
+      logmsg 'Standing by for changes...'
+  }
+  
+  
+  if (inputPaths.length == 0)
+    @program.exit 'No input'
+  
+  
+  #print 'inputPaths', inputPaths
+  
+  
+  # Compile
+  compileSources inputPaths, ^(err) {
+    if (err) {
+      logmsg err.diagnostic || err.stack || err
+      
+      if (!self.parsedOptions.autoRebuild)
+        process.exit 1
+    }
+  }
 
 }

@@ -1,0 +1,210 @@
+import fs, events
+import Path = 'path'
+scanDirectorySync = require('./cmdutil').scanDirectorySync
+
+module.exports = exports = FSWatcher = class {
+  pollInterval: 100,
+  deep: true,
+  
+  constructor: ^{
+    events.EventEmitter.call this
+    @watchedFiles = {}
+    @watchedDirs = {}
+  },
+  
+  watch: ^(path, deep:@deep, pollInterval:@pollInterval, callback) {
+    if (path in @watchedFiles || path in @watchedDirs)
+      return false
+    #print 'X', arguments
+    if (typeof pollInterval == 'function') {
+      callback = pollInterval
+      pollInterval = @pollInterval
+    } else if (typeof deep == 'function') {
+      callback = deep
+      deep = @deep
+    }
+
+    watcher = this
+    path = Path.normalize path
+    
+    #fs.realpath path, ^(err, path) {
+    #  if (err) return callback && callback err
+    
+    # FIXME hack
+    if ((deep = !!deep) != !!@deep) {
+      deep1 = @deep
+      @deep = deep
+    }
+
+    fs.stat path, ^(err, stats) {
+      if (!err && stats) {
+        if (stats.isDirectory()) {
+          watcher._watchDirectory path, pollInterval
+        } else if (stats.isFile()) {
+          watcher._watchFile path, pollInterval
+        } else {
+          err = Error 'Unsupported file system device'
+        }
+      }
+    
+      # FIXME hack
+      if (deep1 != undefined)
+        @deep = deep1
+      
+      return callback && callback err
+    }
+    
+    #}
+  },
+  
+  unwatch: ^(path) {
+    if (path in @watchedFiles) {
+      #print path, 'in @watchedFiles'
+      delete @watchedFiles[path]
+    } else if (path in @watchedDirs) {
+      #print path, 'in @watchedDirs'
+      delete @watchedDirs[path]
+    } else {
+      #print path, 'not watched'
+      #print '@watchedFiles ->', @watchedFiles
+      #print '@watchedDirs ->', @watchedDirs
+      return false
+    }
+    fs.unwatchFile path
+    @emit 'unwatch', path
+    true
+  },
+  
+  # _scanDirectorySync(string path) -> {string filename: bool isDir, ..}
+  _scanDirectorySync: ^(path) {
+    scanDirectorySync {path:path, deep:false, thisObject:this, pattern:/^[^\.]/}
+  },
+  
+  _onDirChanged: ^(path, curr, prev) {
+    if (   (prev.mtime.getTime() != curr.mtime.getTime())
+        || (prev.ino != curr.ino)
+        || (prev.nlink != curr.nlink) ) {
+      #print '[directory changed]', path, curr
+      
+      previousListing = @watchedDirs[path]
+      try {
+        currentListing = @_scanDirectorySync path
+      } catch (e) {
+        # ENOENT
+        if (e.errno != 2)
+          throw e
+      }
+      
+      if (curr.nlink == 0) {
+        #print 'emit removed', path
+        @emit 'removed', path, true
+      }
+      
+      if (previousListing) previousListing.forEach ^(filename, previousEntryIsDir) {
+        currentEntryIsDir = currentListing ? currentListing[filename] : undefined
+        if (currentEntryIsDir == undefined) {
+          @emit 'removed', filename, previousEntryIsDir
+        } else if (currentEntryIsDir != previousEntryIsDir) {
+          @emit 'removed', filename, previousEntryIsDir
+          @emit 'added', filename, currentEntryIsDir
+        }
+      }, this
+      
+      if (currentListing) currentListing.forEach ^(filename, currentEntryIsDir) {
+        previousEntryIsDir = previousListing ? previousListing[filename] : undefined
+        if (previousEntryIsDir == undefined) {
+          @emit 'added', filename, currentEntryIsDir
+        } else if (currentEntryIsDir != previousEntryIsDir) {
+          @emit 'removed', filename, previousEntryIsDir
+          @emit 'added', filename, currentEntryIsDir
+        }
+      }, this
+      
+      @watchedDirs[path] = currentListing
+    }
+  },
+  
+  _onFileChanged: ^(path, curr, prev) { 
+    if (   (prev.mtime.getTime() != curr.mtime.getTime())
+        || (prev.ino != curr.ino) ) {
+      @emit 'modified', path, curr.isDirectory()
+    }
+  },
+  
+  _watchDirectory: ^(path, pollInterval) {
+    watcher = this
+    
+    try {
+      @watchedDirs[path] = @_scanDirectorySync path
+    } catch (e) {
+      # ENOENT
+      if (e.errno == 2)
+        return false
+      throw e
+    }
+    
+    if (@deep) {
+      @watchedDirs[path].forEach ^(filename, isDir) {
+        if (isDir) {
+          @_watchDirectory filename, pollInterval
+        } else {
+          @_watchFile filename, pollInterval
+        }
+      }, this
+    }
+    
+    fs.watchFile path, {interval:pollInterval}, ^{
+      watcher._onDirChanged.call watcher, path, arguments[0], arguments[1]
+    }
+    @emit 'watch', path, true
+  },
+  
+  _watchFile: ^(path, pollInterval) {
+    watcher = this
+    
+    dirname = Path.dirname path
+    if (@deep && @watchedDirs[dirname] == undefined) {
+      @_watchDirectory dirname, pollInterval
+    }
+    
+    if (@deep && @watchedFiles[path] != undefined) {
+      # The above might have started watching this file
+      return
+    }
+    
+    @watchedFiles[path] = true
+    fs.watchFile path, {interval:pollInterval}, ^{
+      watcher._onFileChanged.call watcher, path, arguments[0], arguments[1]
+    }
+    @emit 'watch', path, false
+  }
+}
+
+FSWatcher.prototype.__proto__ = events.EventEmitter.prototype
+
+return
+
+w = FSWatcher()
+
+w.on 'watch', ^(path, isDirectory) {
+  print 'on watch:', path, '('+(isDirectory ? 'directory':'file')+')'
+}
+w.on 'unwatch', ^(path, isDirectory) {
+  print 'on unwatch:', path, '('+(isDirectory ? 'directory':'file')+')'
+}
+
+w.on 'added', ^(path, isDirectory) {
+  print 'on added:', path, '('+(isDirectory ? 'directory':'file')+')'
+  @watch path
+}
+w.on 'modified', ^(path, isDirectory) {
+  print 'on modified:', path, '('+(isDirectory ? 'directory':'file')+')'
+}
+w.on 'removed', ^(path, isDirectory) {
+  print 'on removed:', path, '('+(isDirectory ? 'directory':'file')+')'
+  @unwatch path
+}
+
+
+w.watch '/Library/WebServer/Documents/vizhub/client/src/index.mv', false
+
