@@ -32,12 +32,14 @@ function runNext() {
   if (fn.match(/\.mv$/)) {
     args = args.concat([
       "-e", "(function(){"+
+        "process.argv.push('--full-test-suite');"+
         "require('../lib');"+
         "require("+JSON.stringify('./'+fn)+");"+
         "process.exit(0);"+
       "})()" ]);
   } else {
     args.push(fn);
+    args.push('--full-test-suite');
   }
   var child = spawn(nodebin, args);
   child.stdin.end();
