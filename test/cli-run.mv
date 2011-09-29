@@ -6,6 +6,12 @@ testOKExitStatus = [
   ['fixtures/arguments-program.mv', '--first-argument', 'second arg', '-t', '-fourth', 'fifth'],
   # move run <script-filename>
   ['run', 'fixtures/arguments-program.mv', '--first-argument', 'second arg', '-t', '-fourth', 'fifth'],
+  
+  # w/o filename extension -- currently broken. See cli/run.mv for "BUG"
+  # move <script-filename>
+  #['fixtures/arguments-program2', '--first-argument', 'second arg', '-t', '-fourth', 'fifth'],
+  # move run <script-filename>
+  #['run', 'fixtures/arguments-program2', '--first-argument', 'second arg', '-t', '-fourth', 'fifth'],
 ]
 
 testOKExitStatusNext = ^(callback) {
