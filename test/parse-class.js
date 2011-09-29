@@ -1,8 +1,8 @@
 var assert = require('assert'),
     util = require('util'),
     move = require('../lib'), r;
-inspect = function (obj) { return util.inspect(obj, false, 40); }
-assertContainsCode = function (r, code) {
+var inspect = function (obj) { return util.inspect(obj, false, 40); }
+var assertContainsCode = function (r, code) {
   assert.ok(r.code.indexOf(code) !== -1, JSON.stringify(code)+' expected but not found');
 };
 
