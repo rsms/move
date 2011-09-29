@@ -1,4 +1,4 @@
-import fs
+import fs, Path = 'path'
 
 export desc = 'Run a Move program.'
 export options = [
@@ -53,10 +53,21 @@ export main = ^{
     process.argv = [process.argv[1]].concat @argv
     # ['move', 'foo/filename.mv', ..]
     #print 'process.argv ->', process.argv
+    
+    # BUG: Unless the filename has an extension that can be connected to move
+    # (i.e. filename is "foo"), Node.js is hard-coded to default to ".js" and
+    # thus not triggering our compiler. Seems there's no clean solution for
+    # this. Currently, feeding "move run" a filename w/o a move extension will
+    # case it to be compiled as JavaScript, which probably will case a SyntaxError.
+    
+    extname = Path.extname filename
+    if (extname && !(extname in require.extensions)) {
+      require.extensions[extname] = require.extensions['.mv']
+    }
 
-    process.nextTick ^{
+    #process.nextTick ^{
       __move.defaultCompilationOptions = compileOptions
       require filename
-    }
+    #}
   }
 }
