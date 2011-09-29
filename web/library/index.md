@@ -372,8 +372,6 @@ John</samp>
 
 - `create(prototype) → object` — Creates a new object whose prototype is the *prototype* object.
 
-- `create(prototype, ^{...}) → object` — Creates a new object whose prototype is the *prototype* object. The second argument (a function) is applied to the newly created object (the "this" variable represents the new object within the function) which can be used to initialize any properties.
-
 Example:
 <samp>Cat: I'm furry</samp>
 

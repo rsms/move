@@ -76,7 +76,6 @@ export extend = ^(object, body, onlyOwnProperties) {
 }
 
 # create (prototype, {member1: value1, ...}) -> object
-# create (prototype, ^{...}) -> object
 # create (prototype) -> object
 export create = ^(prototype, body) {
   extend Object.create(prototype), body

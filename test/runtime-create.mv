@@ -38,12 +38,3 @@ animal.type = "Creature"
 EQ cat.type, "Furry animal" # local property ovverides prototype
 EQ frog.type, "Creature"    # should fall through to prototype
 EQ animal.type, "Creature"
-
-# Creation with initializer block
-cat2 = create animal, ^{
-  @name = "Busta Rhymes"
-  @date_born = new Date('2008-01-01')
-  @days_old = ^{ ((new Date) - @date_born)/1000/60/60/24 }
-}
-EQ cat2.name, "Busta Rhymes"
-EQ (typeof cat2.days_old(), "number")
