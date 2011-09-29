@@ -13,8 +13,3 @@ EQ foo.b, 'B'
 EQ (typeof foo.c, 'function')
 EQ foo.c(), 'C'
 EQ foo.d, undefined
-
-# Extend foo with `d` using a block
-extend foo, ^{ @d = 'D' }
-
-EQ foo.d, 'D'

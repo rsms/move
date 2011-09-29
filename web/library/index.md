@@ -383,9 +383,7 @@ Example:
 
 ### extend
 
-- `extend(object, body) → object` — Extend *object* by adding a (shallow) copy of all property values from the *body* object.
-
-- `extend(object, ^{...}) → object` — Extend or manipulate *object* by calling the passed function (second argument) on *object* (the "this" variable will represent *object*)
+- `extend(object, body, onlyOwnProperties:false) → object` — Extend *object* by adding a (shallow) copy of all property values from the *body* object.
 
 Example:
 <samp>{ bananas: 'yellow',
