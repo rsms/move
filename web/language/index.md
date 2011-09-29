@@ -228,6 +228,74 @@ hel
     print x
 
 
+## Module system
+
+Move uses the [CommonJS module system](http://wiki.commonjs.org/wiki/Modules/1.1).
+
+### Importing modules
+
+Modules are imported using the `import` expression or `require` function.
+
+Import a globally available module named "foo":
+
+    import foo
+    # is equivalent to:
+    foo = require 'foo'
+
+Import a module from the same source tree location:
+
+    import .foo
+    # is equivalent to:
+    foo = require './foo'
+
+Import a module from the parent source tree location:
+
+    import ..foo
+    # is equivalent to:
+    foo = require '../foo'
+
+Several modules can be specified in a single statement, separated by commas:
+
+    import ..foo, bar, ...baz
+    # is equivalent to:
+    foo = require '../foo'
+    bar = require 'bar'
+    baz = require '../../baz'
+
+*Consistent `import` was was introduced in Move 0.4.4*
+
+
+### Exporting module API
+
+A module exports its API by using the `export` expression or by adding values to the `module.exports` object.
+
+Examples:
+
+    export foo = 'This is foo'
+
+    bar = "This is bar"
+    export bar
+    
+    module.exports.baz = "This is baz"
+    
+    # The exports object is also available as a module-local variable,
+    # thus the above has the same effect as the following:
+    exports.baz = "This is baz"
+
+When other code imports your module, the exported API is what's available to the calling code. For instance, consider this module "foo.mv":
+
+    export version = "1.2.3"
+    build = "4"
+    export run = ^{ print "Running", version, '/', build }
+
+Now we import this module into some other code:
+
+    import foo
+    print foo.verison  #--> "1.2.3"
+    print foo.build    #--> undefined
+    print foo          # { version: "1.2.3", run: [Function run] }
+
+
 ## Embedded HTML
 
 Embedded HTML -- or "EHTML" -- is a way to embed HTML inside Move code:

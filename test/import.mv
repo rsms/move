@@ -1,0 +1,30 @@
+import assert
+assert.ok true
+
+# Relative imports
+import .fixtures/import1
+assert.strictEqual import1.message, "import fixture 1"
+
+import .fixtures/import2
+assert.strictEqual import2.message, "import fixture 2"
+
+import .fixtures/import2/import3
+assert.strictEqual import3.message, "import fixture 3"
+
+import .fixtures/import2/import4
+assert.strictEqual import4.message, "import fixture 4"
+
+import .fixtures/import2/import4/import5
+assert.strictEqual import5.message, "import fixture 5"
+
+# import5 imports parent modules and then exports them (see import5.mv)
+assert.strictEqual import5.import4.message, "import fixture 4"
+assert.strictEqual import5.import3.message, "import fixture 3"
+assert.strictEqual import5.import2.message, "import fixture 2"
+assert.strictEqual import5.import1.message, "import fixture 1"
+
+# Same modules returned?
+assert.strictEqual import5.import4, import4
+assert.strictEqual import5.import3, import3
+assert.strictEqual import5.import2, import2
+assert.strictEqual import5.import1, import1

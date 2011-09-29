@@ -1,0 +1,14 @@
+export message = "import fixture 5"
+
+import .index
+export import4 = index
+
+import ..import3
+export import3
+
+import ..index
+export import2 = index
+
+import ...import1
+export import1
+
