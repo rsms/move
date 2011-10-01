@@ -1,5 +1,5 @@
 // Move for web browers
-if (!window.move) window.move = (function(){
+if (!window.Move) window.Move = (function(){
 
 if (typeof window.global === 'undefined')
   window.global = window;
@@ -48,7 +48,7 @@ move.compileModule = function compileModule(mvcode, id, uri, execute, compileOpt
   if (id) {
     jscode = wrapAsModule(jscode, null, uri, id);
   } else {
-    jscode = '(' + jscode + ')(__move.require, {exports:{}}, {});\n';
+    jscode = '(' + jscode + ')(Move.require, {exports:{}}, {});\n';
   }
   execute = execute || execute === undefined;
   return execute ? move.executeScript(null, jscode, uri) : jscode;
@@ -61,7 +61,7 @@ move.scriptCompilationOptions = {preprocess:['ehtml']};
 // Module wrapper
 var wrapAsModule = function wrapAsModule(jscode, src, uri, id) {
   if (!id) id = src.replace(/\.[^\.]+$/, '');
-  return '__move.require.define('+
+  return 'Move.require.define('+
     JSON.stringify(id)+','+
     JSON.stringify(uri || src)+','+
     jscode + ');\n';

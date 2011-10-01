@@ -12,7 +12,7 @@ export options = [
 
   #['optimizationLevel',   'Optimization level. Defaults to 0 (basic).',
   #                        {type: 'int', 'short': 'O', 'long': 'optimization-level',
-  #                         def: __move.defaultCompilationOptions.optimizationLevel}],
+  #                         def: Move.defaultCompilationOptions.optimizationLevel}],
 
   # Following are options for the "compile" command
   # ...
@@ -111,7 +111,7 @@ SourceCodeHandler = class SourceHandler, {
 MoveSourceHandler = class SourceCodeHandler, {
   compilerOptions: {
     moduleStub: true,  # since we are creating a bundle
-    moduleDefinitionPrefix: '__move.require.define',
+    moduleDefinitionPrefix: 'Move.require.define',
     optimizationLevel: 0,
     preprocess: ['ehtml'],  # Since we are building for a DOM environment
   },
@@ -137,7 +137,7 @@ sourceFileHandlers['mv'] = MoveSourceHandler
 JavaScriptSourceHandler = class SourceCodeHandler, {
   compilerOptions: {
     moduleStub: true,  # since we are creating a bundle
-    moduleDefinitionPrefix: '__move.require.define',
+    moduleDefinitionPrefix: 'Move.require.define',
     optimizationLevel: 0,
   },
   
@@ -341,7 +341,7 @@ Builder = class {
     }
     
     # This last piece "boots" the app by importing src/index.{mv,js}
-    headHtml.push '<script>__move.require("");</script>'
+    headHtml.push '<script>Move.require("");</script>'
     
     html = @htmlInsertBeforeTag html, '/head', headHtml
     

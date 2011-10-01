@@ -1,4 +1,4 @@
 export desc = 'Print version and exit.'
 export main = ^{
-  @program.exit 'move '+__move.version()
+  @program.exit 'move '+Move.version()
 }

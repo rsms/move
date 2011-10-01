@@ -1,8 +1,8 @@
 # Move runtime library
 
 # A few things that need to be defined in order for this very module to compile
-_MoveKWArgsT = global.__move.runtime._MoveKWArgsT
-global.__move.runtime = exports
+_MoveKWArgsT = global.Move.runtime._MoveKWArgsT
+global.Move.runtime = exports
 
 # -----------------------------------------------------------------------------
 # ES5 compatibility

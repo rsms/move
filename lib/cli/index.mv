@@ -2,7 +2,7 @@
 import fs, cli = './cli', Path = 'path'
 
 # Redirect print
-__move.runtime.print = console.error
+Move.runtime.print = console.error
 
 export program = new cli.Program([
   'Usage: move [global options] <command> [command arguments ..]\n'+

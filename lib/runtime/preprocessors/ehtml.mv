@@ -16,7 +16,7 @@ if (hasDOM) {
   EHTML = ^(html) { return {innerHTML:html} }
 }
 
-__move.EHTML = EHTML
+Move.EHTML = EHTML
 
 # Style class name wrapper
 # Usage (before any embedded html is evaluated):
@@ -27,7 +27,7 @@ __move.EHTML = EHTML
 #
 if (typeof document != 'undefined' && document.body && document.body.classList) {
   EHTML.classNameWrapper = ^(className) {^(html) {
-    if (node = __move.EHTML html)
+    if (node = Move.EHTML html)
       node.classList.add className
     node
   }}
@@ -35,7 +35,7 @@ if (typeof document != 'undefined' && document.body && document.body.classList) 
   EHTML.classNameWrapper = ^(className) {
     className = ' '+className
     ^(html) {
-      if (node = __move.EHTML html)
+      if (node = Move.EHTML html)
         node.className += className
       node
     }

@@ -43,7 +43,7 @@ export options = [
 
   ['optimizationLevel',   'Optimization level. Defaults to 0 (basic).',
                           {type: 'int', 'short': 'O', 'long': 'optimization-level',
-                           def: __move.defaultCompilationOptions.optimizationLevel}],
+                           def: Move.defaultCompilationOptions.optimizationLevel}],
 
   ['autoRebuild',         'Watch source files for changes and automatically re-compile.',
                           {type: 'bool', 'long':'auto', 'short':'a'}],
@@ -68,7 +68,7 @@ export options = [
 
 # Compiler
 export compileMove = ^(options) {
-  __move.compile options
+  Move.compile options
 }
 
 
@@ -272,7 +272,7 @@ export main = ^{
   }
 
   # Set compilation options
-  options = create __move.defaultCompilationOptions, {
+  options = create Move.defaultCompilationOptions, {
     codegen: !@parsedOptions.outputAST,
     optimizationLevel: @parsedOptions.optimizationLevel,
     source: null,
@@ -281,7 +281,7 @@ export main = ^{
     mangleNames: @parsedOptions.mangleNames || @parsedOptions.optimizationLevel > 2,
     strict: !@parsedOptions.noStrict,
     preprocess: ['ehtml'],
-    moduleDefinitionPrefix: '__move.require.define',
+    moduleDefinitionPrefix: 'Move.require.define',
   }
   if (options.optimizationLevel > 0)
     options.outputFormatting = false
@@ -333,7 +333,7 @@ export main = ^{
               else throw e
             }
             # Append to output
-            output += '__move.require('+JSON(moduleId)+');'
+            output += 'Move.require('+JSON(moduleId)+');'
           }
           output += '};'+
             'if(window.addEventListener){'+

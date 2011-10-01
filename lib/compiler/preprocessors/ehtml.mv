@@ -147,7 +147,7 @@ export process = ^(src, options) {
     output
   }
 
-  output = 'EHTML = __move.EHTML\n' + parseAny()
+  output = 'EHTML = Move.EHTML\n' + parseAny()
   #print output
   output
 }

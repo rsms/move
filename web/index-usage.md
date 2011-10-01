@@ -64,16 +64,16 @@ You don't have to care about the order in which you define your modules. The onl
 
 When the DOM loads, "Hello Worlds!" is printed to the console.
 
-The Move module itself is available as the global variable `move` (technically a property of `window`). This module provides access to preprocessors, the parser & compiler and version info. It also houses the Move runtime library (`move.runtime`) which can be manipulated. An example of evaluating some Move code:
+The Move module itself is available as the global variable `Move` (technically a property of `window`). This module provides access to preprocessors, the parser & compiler and version info. It also houses the Move runtime library (`Move.runtime`) which can be manipulated. An example of evaluating some Move code:
 <samp>"function () {
   return print("Hello");
 }"</samp>
 
-    move.eval '^{ print "Hello" }'
+    Move.eval '^{ print "Hello" }'
 
 This is available in both Move-land *and JavaScript-land*:
 
-    move.eval('^{ print "Hello" }');
+    Move.eval('^{ print "Hello" }');
 
 
 ### Using Move in Node.js
@@ -151,22 +151,22 @@ move compile --bundle --output bundle.js --basedir src main.mv src lib/*.js
 Which will write something like this to `bundle.js`:
 
 <pre class="wide">
-__move.require.define("main","main.mv",function(require,module,exports) {
+Move.require.define("main","main.mv",function(require,module,exports) {
   // code generated from main.mv
 });
-__move.require.define("lib/bar","lib/bar.js",function(require,module,exports) {
+Move.require.define("lib/bar","lib/bar.js",function(require,module,exports) {
   // code generated from lib/bar.js
 });
-__move.require.define("","src/index.mv",function(require,module,exports) {
+Move.require.define("","src/index.mv",function(require,module,exports) {
   // code generated from src/index.mv
 });
-__move.require.define("foo","src/foo.mv",function(require,module,exports) {
+Move.require.define("foo","src/foo.mv",function(require,module,exports) {
   // code generated from src/foo.mv
 });
-__move.require.define("cat","src/cat/index.mv",function(require,module,exports) {
+Move.require.define("cat","src/cat/index.mv",function(require,module,exports) {
   // code generated from src/cat/index.mv
 });
-__move.require.define("cat/zelda","src/cat/zelda.js",function(require,module,exports) {
+Move.require.define("cat/zelda","src/cat/zelda.js",function(require,module,exports) {
   // code generated from src/cat/zelda.js
 });
 (function(){

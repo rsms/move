@@ -162,7 +162,7 @@ export main = ^{
   try { import uglifyjs = 'uglify-js' } catch (e) {}
   if (uglifyjs && @parsedOptions.optimizationLevel > 0) {
     print 'Optimizing...'
-    options = create __move.defaultCompilationOptions, {
+    options = create Move.defaultCompilationOptions, {
       optimizationLevel: @parsedOptions.optimizationLevel,
       mangleNames: @parsedOptions.optimizationLevel > 1,
       outputFormatting: @parsedOptions.optimizationLevel > 0 ? false : true,

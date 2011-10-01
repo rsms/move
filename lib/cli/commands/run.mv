@@ -6,14 +6,14 @@ export options = [
   'Options:',
   ['optimizationLevel',   'Optimization level. Defaults to 0 (basic).',
                           {type: 'int', short: 'O', long: 'optimization-level',
-                           def: __move.defaultCompilationOptions.optimizationLevel}],
+                           def: Move.defaultCompilationOptions.optimizationLevel}],
 ]
 
 kStdinMaxBufferSize = 1024*1000
 
 export main = ^{
   # Set compilation options
-  compileOptions = create __move.defaultCompilationOptions
+  compileOptions = create Move.defaultCompilationOptions
   compileOptions.optimizationLevel = @parsedOptions.optimizationLevel
   if (@parsedOptions.optimizationLevel > 0)
     compileOptions.outputFormatting = false
@@ -35,7 +35,7 @@ export main = ^{
     process.stdin.on 'end', ^{
       compileOptions.filename = 'stdio:stdin'
       compileOptions.source = stdinbuf
-      __move.eval compileOptions
+      Move.eval compileOptions
     }
   } else {
     # file on disk
@@ -66,7 +66,7 @@ export main = ^{
     }
 
     #process.nextTick ^{
-      __move.defaultCompilationOptions = compileOptions
+      Move.defaultCompilationOptions = compileOptions
       require filename
     #}
   }
