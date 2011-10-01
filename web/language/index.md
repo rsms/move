@@ -256,11 +256,12 @@ Import a module from the parent source tree location:
 
 Several modules can be specified in a single statement, separated by commas:
 
-    import ..foo, bar, ...baz
+    import ..foo, bar, ...baz, .john/smith
     # is equivalent to:
     foo = require '../foo'
     bar = require 'bar'
     baz = require '../../baz'
+    smith = require './john/smith'
 
 *Consistent `import` was was introduced in Move 0.4.4*
 
