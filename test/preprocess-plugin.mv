@@ -1,5 +1,5 @@
 import assert
-move = __move
+move = Move
 
 assertContainsText = ^(source, text) {
   index = source.indexOf text

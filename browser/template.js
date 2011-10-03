@@ -13,7 +13,7 @@ var _require = Require();
 // %CONTENT%
 
 _require('%REQUIRE_ENTRY%');
-var move = global.__move;
+var move = global.Move;
 
 // --------------------------------------------------------------
 move.version = function () { return %VERSION%; };

@@ -2,7 +2,6 @@
 
 # A few things that need to be defined in order for this very module to compile
 _MoveKWArgsT = global.Move.runtime._MoveKWArgsT
-global.Move.runtime = exports
 
 # -----------------------------------------------------------------------------
 # ES5 compatibility
@@ -121,9 +120,8 @@ if (typeof console != 'undefined' && console.log) {
     # no code executed can directly reference native objects, thus we wrap
     # console.log in a lambda
     exports.print = ^{
-      print.consoleFun.apply(console, Array.prototype.slice.call(arguments))
+      console.log.apply console, Array.prototype.slice.call arguments
     }
-    exports.print.consoleFun = console.log
   } else {
     exports.print = console.log
   }
@@ -131,6 +129,11 @@ if (typeof console != 'undefined' && console.log) {
   # As a last resort, make print a no-op
   exports.print = ^{}
 }
+
+# dprint implementation
+exports.dprinter = ^(module) {^{
+  exports.print.apply null, ['['+module.id+']'].concat arguments
+}}
 
 # Repeat a `block`...
 #
@@ -233,15 +236,19 @@ wrapEventEmitter = ^(target, propertyName) {
 }
 
 # most things that emit events are based on events.EventEmitter
-try { import events } catch(e) {}
-if (events && events.EventEmitter) {
-  wrapEventEmitter(events.EventEmitter.prototype, 'addListener')
-  events.EventEmitter.prototype.on = events.EventEmitter.prototype.addListener
-}
-
-# process has a custom implementation
-if (typeof process != 'undefined' && typeof process.on == 'function')
-  wrapEventEmitter(process, 'on')
+try {
+  import events
+  if (events && events.EventEmitter) {
+    wrapEventEmitter(events.EventEmitter.prototype, 'addListener')
+    events.EventEmitter.prototype.on = events.EventEmitter.prototype.addListener
+  }
+  # process has a custom implementation
+  if (typeof process != 'undefined' && typeof process.on == 'function')
+    wrapEventEmitter(process, 'on')
+} catch(e) {}
 
 # class
 exports.__class = require('./runtime_class').__class
+
+
+global.Move.runtime = exports

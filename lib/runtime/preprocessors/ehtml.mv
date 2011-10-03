@@ -2,21 +2,47 @@
 
 hasDOM = typeof document != 'undefined'
 
-if (hasDOM) {
-  EHTML = ^(html) {
-    if (!EHTML.spawnerElement)
-      EHTML.spawnerElement = document.createElement 'div'
-    EHTML.spawnerElement.innerHTML = html
-    el = EHTML.spawnerElement.firstChild
-    #el.toString = ^{ html }
-    el
-  }
-} else {
+if (!hasDOM) {
   # Dummy implementation
   EHTML = ^(html) { return {innerHTML:html} }
+  return
+}
+
+EHTML = ^(html) {
+  if (!EHTML.spawnerElement)
+    EHTML.spawnerElement = document.createElement 'div'
+  EHTML.spawnerElement.innerHTML = html
+  el = EHTML.spawnerElement.firstChild
+  #el.toString = ^{ html }
+  el
 }
 
 Move.EHTML = EHTML
+
+# Feature detection
+hasClassList = document.body && document.body.classList
+
+# createView implementation
+# Called with the module "exports" object as the "this" object
+if (hasClassList) {
+  EHTML.createViewImpl = ^{
+    if (@createView) {
+      el = @createView.apply this, arguments
+      if (el && el instanceof Element)
+        el.classList.add @__domid
+    }
+    el
+  }
+} else {
+  EHTML.createViewImpl = ^{
+    if (@createView) {
+      el = @createView.apply this, arguments
+      if (el && el instanceof Element)
+        el.className += ' '+@__domid
+    }
+    el
+  }
+}
 
 # Style class name wrapper
 # Usage (before any embedded html is evaluated):
@@ -25,7 +51,7 @@ Move.EHTML = EHTML
 #   ...
 #   p = <p>Hello</p>  ->  <p class="my-classname">Hello</p>
 #
-if (typeof document != 'undefined' && document.body && document.body.classList) {
+if (hasClassList) {
   EHTML.classNameWrapper = ^(className) {^(html) {
     if (node = Move.EHTML html)
       node.classList.add className

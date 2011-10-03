@@ -1,7 +1,7 @@
 import fs, buffer
 filenameToModuleId = require('../').filenameToModuleId
 enumerateDirectory = require('../cmdutil').enumerateDirectory
-move = __move
+move = Move
 
 baseDir = fs.realpathSync __dirname+'/../../..'
 defaultOutputDir = baseDir+'/web'
@@ -168,6 +168,7 @@ export main = ^{
       outputFormatting: @parsedOptions.optimizationLevel > 0 ? false : true,
     }
     outputDebug = output
+    outputRTOnlyDebug = outputRTOnly
     output = optimizeJS uglifyjs, output, options
     outputRTOnly = optimizeJS uglifyjs, outputRTOnly, options
   }
@@ -180,7 +181,8 @@ export main = ^{
     fs.writeFileSync filename, data
   }
 
-  write output,       'move.js'
-  write outputRTOnly, 'move-rt.js'
-  write outputDebug,  'move-debug.js'
+  write output,            'move.js'
+  write outputRTOnly,      'move-rt.js'
+  write outputDebug,       'move-debug.js'
+  write outputRTOnlyDebug, 'move-rt-debug.js'
 }

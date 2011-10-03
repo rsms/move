@@ -147,7 +147,17 @@ export process = ^(src, options) {
     output
   }
 
-  output = 'EHTML = Move.EHTML\n' + parseAny()
-  #print output
-  output
+  output = parseAny()
+
+  if (!options.ehtmlDisableImplicitViewConstructor) {
+    if (output.match(/(exports\.createView|export\s+createView)\s*[=\r\n]/)) {
+      // Convert the exported module object to a view factory
+      moduleName = Move.filenameToModuleId(options.filename).split('/')[-1:][0].replace '.', '_'
+      output = 'exports = module.exports = '+moduleName+' = ^{'+
+               ' EHTML.createViewImpl.apply exports, arguments };'+
+               'exports.__domid = module.id.replace("/", "_");' + output
+    }
+  }
+  
+  output = 'EHTML = Move.EHTML\n' + output
 }
