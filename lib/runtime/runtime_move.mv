@@ -132,7 +132,7 @@ if (typeof console != 'undefined' && console.log) {
 
 # dprint implementation
 exports.dprinter = ^(module) {^{
-  exports.print.apply null, ['['+module.id+']'].concat arguments
+  exports.print.apply null, ['['+module.id+']'].concat Array.prototype.slice.call arguments
 }}
 
 # Repeat a `block`...
