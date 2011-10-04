@@ -27,11 +27,19 @@ move.require = Require();
 
 // Called when a Move script has been compiled (or failed to compile or load)
 // For a <script> tag source, `origin` is the HTMLElement instance
-var _eval = window.execScript || function _eval(jscode) { window["eval"].call(window, jscode); };
-move.executeScript = function executeScript(err, jscode, origin) {
-  if (err) throw err;
-  _eval(jscode);
-};
+
+if (typeof window.execScript === 'function') {
+  // MSIE specific
+  move.executeScript = function executeScript(jscode, origin) {
+    return window.execScript(jscode);
+  };
+} else {
+  // Fallback on window.eval
+  move.executeScript = function executeScript(jscode, origin) {
+    return window["eval"](jscode);
+  };
+}
+
 
 
 // Convenience function for compiling and defining modules based on move source
@@ -76,9 +84,16 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
   var decr = function () {
     if ((--pending) === 0) {
       // all loaded -- exec in order
-      var i = 0, L = completeQ.length;
-      for (;i<L;++i)
-        move.executeScript.apply(move, completeQ[i]);
+      var i = 0, L = completeQ.length, args;
+      for (;i<L;++i) {
+        // note: "apply", not "call". completeQ[i] => [err, jscode, uri, extra1, extraN, ..]
+        args = completeQ[i];
+        if (!args[0]) {
+          move.executeScript.apply(move, args[1], args[2]);
+        } else { // error
+          throw args[0];
+        }
+      }
       if (typeof callback === 'function')
         callback(null, completeQ);
     }
@@ -96,17 +111,18 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
           opts.moduleStub = true;
           move.compileURL(opts.filename, opts, function (err, jscode) {
             jscode = wrapAsModule(jscode, script.getAttribute('src'), opts.filename);
-            completeQ[qIndex] = [err, jscode, script];
+            completeQ[qIndex] = [err, jscode, opts.filename, script];
             decr();
           });
         } else {
+          var id = script.getAttribute('module');
+          opts.filename = '<script module="'+id+'">';
           try {
-            // RIP OUT into public function
-            var id = script.getAttribute('module');
+            // TODO: rip out into public function
             jscode = move.compileModule(script.innerHTML, id, null, false, opts);
-            completeQ[qIndex] = [null, jscode, script];
+            completeQ[qIndex] = [null, jscode, opts.filename, script];
           } catch (e) {
-            completeQ[qIndex] = [e, null, script];
+            completeQ[qIndex] = [e, null, opts.filename, script];
           }
           decr();
         }
