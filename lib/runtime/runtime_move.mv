@@ -220,6 +220,10 @@ _JSON.stringify = JSON.stringify
 exports.JSON = _JSON
 
 
+# Export our API as the Move runtime API
+global.Move.runtime = exports
+
+
 # Wraps an EventEmitter addListener-style function with keyword arguments and
 # shorthand block-style calls
 wrapEventEmitter = ^(target, propertyName) {
@@ -249,6 +253,3 @@ try {
 
 # class
 exports.__class = require('./runtime_class').__class
-
-
-global.Move.runtime = exports
