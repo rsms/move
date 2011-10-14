@@ -1,5 +1,5 @@
 
-export EventEmitter = class {
+EventEmitter = exports.EventEmitter = class {
   on: ^(event, invoke) {
     if (!@eventListeners) {
       Object.defineProperty this, 'eventListeners', {value:{}}
@@ -21,7 +21,7 @@ export EventEmitter = class {
     }
   },
 
-  removeListener: ^(event, callback) {
+  removeEventListener: ^(event, callback) {
     if (@eventListeners) {
       if (callback && (listeners = @eventListeners[event])) {
         i = listeners.indexOf callback
@@ -33,6 +33,6 @@ export EventEmitter = class {
   }
 }
 
-EventEmitter.enableFor = ^(object) {
-  extend object, EventEmitter.prototype
+exports.EventEmitter.enableFor = ^(object) {
+  extend object, exports.EventEmitter.prototype
 }
