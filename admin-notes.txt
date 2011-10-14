@@ -9,7 +9,7 @@ web/build.sh
 
 2. Tag version
 
-V=$(echo 'console.log(JSON.parse(require("fs").readFileSync("package.json", "utf8")).version)' | node)
+V=$(bin/move version 2>&1 | cut -d ' ' -f 2)
 # optionally commit: git ci $V
 git tag -m v$V v$V
 git pu --tags
