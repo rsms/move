@@ -26,7 +26,7 @@ export options = [
   ['bundleWithFull',      'Same as --bundle-standalone but also embeds the Move compiler',
                           {type: 'bool', 'long':'bundle-standalone-full', 'short':'B'}],
 
-  ['basedir',             'Base directory to exclude when calculating bundle id-s. Only effective in combination with --bundle. If no input files are specified, all move and js files found under --basedir will be used as input sources.',
+  ['basedir',             'Base directory to exclude when calculating bundle id-s. If no input files are specified, all move and js files found under --basedir will be used as input sources. Implies --bundle (unless --bundle-standalone or --bundle-standalone-full is defined).',
                           {type: 'string', 'long':'basedir', 'short':'d'}],
 
   ['raw',                 'Do not depend on the Move runtime.',
@@ -60,7 +60,7 @@ export options = [
   '  move compile foo.mv bar/*.js',
   '    Process foo.bar and all JavaScript files in the "bar" directory and output compiled code to stdout.',
   '',
-  '  move compile --auto --bundle --basedir=client/src --output=public/main.js',
+  '  move compile --auto --basedir=client/src --output=public/main.js',
   '    Takes all Move and JavaScript files in the "client/src" directory, compiles them into a bundle and automatically recompiles the app when any of the source files changes.',
   '',
 ]
@@ -102,19 +102,25 @@ export wrapBundledModule = ^(jscode, baseDir, options) {
   if (!options.moduleStub)
     throw Error 'Unable to wrap code as a module without moduleStub'
   
+  uri = options.filename
+  
   # Confirm and strip basedir from options.filename
   if (baseDir) {
     absfilename = options.filename[0] == '/' ? options.filename
                                              : fs.realpathSync options.filename
-    if (absfilename.substr(0, baseDir.length+1) == baseDir+'/')
-      id = filenameToModuleId absfilename.substr baseDir.length+1
+    if (absfilename.substr(0, baseDir.length+1) == baseDir+'/') {
+      relfilename = absfilename.substr baseDir.length+1
+      id = filenameToModuleId relfilename
+      uri = relfilename
+    } else {
+      uri = absfilename
+    }
   }
 
   if (id == undefined)
     id = filenameToModuleId options.filename
 
   # Wrap in module definition
-  uri = options.filename
   options.moduleId = id
   options.moduleURI = uri
   jscode = options.moduleDefinitionPrefix+'('+JSON(id)+','+JSON(uri)+','+jscode + ');';
@@ -255,6 +261,9 @@ export main = ^{
   if (@parsedOptions.bundleWithCore || @parsedOptions.bundleWithFull) {
     @parsedOptions.bundle = true
     createMoveWebLibsIfNeeded {verbose:true}
+  } else if (@parsedOptions.basedir) {
+    # --basedir implies --bundle
+    @parsedOptions.bundle = true
   }
 
   # stdin?
