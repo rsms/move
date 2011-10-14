@@ -1,0 +1,38 @@
+
+export EventEmitter = class {
+  on: ^(event, invoke) {
+    if (!@eventListeners) {
+      Object.defineProperty this, 'eventListeners', {value:{}}
+      @eventListeners[event] = [invoke]
+    } else if (!(listeners = @eventListeners[event])) {
+      @eventListeners[event] = [invoke]
+    } else {
+      listeners.push invoke
+    }
+  },
+
+  emit: ^{  # event [, args..]
+    event = arguments[0]
+    if (@eventListeners && (listeners = @eventListeners[event])) {
+      args = Array.prototype.slice.call arguments, 1
+      for (i=0,L=listeners.length; i < L; ++i) {
+        listeners[i] && listeners[i].apply this, args
+      }
+    }
+  },
+
+  removeListener: ^(event, callback) {
+    if (@eventListeners) {
+      if (callback && (listeners = @eventListeners[event])) {
+        i = listeners.indexOf callback
+        listeners.splice i, 1
+      } else {
+        @eventListeners[event] = undefined
+      }
+    }
+  }
+}
+
+EventEmitter.enableFor = ^(object) {
+  extend object, EventEmitter.prototype
+}
