@@ -89,7 +89,7 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
         // note: "apply", not "call". completeQ[i] => [err, jscode, uri, extra1, extraN, ..]
         args = completeQ[i];
         if (!args[0]) {
-          move.executeScript.apply(move, args[1], args[2]);
+          move.executeScript.call(move, args[1], args[2]);
         } else { // error
           throw args[0];
         }
