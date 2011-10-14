@@ -1,0 +1,636 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+  <head>
+    <meta charset="utf-8">
+    <title>Language &mdash; Move</title>
+    <meta name="viewport" content="width=900">
+    <link rel="shortcut icon" href="/res/favicon.png">
+    <link rel="apple-touch-icon-precomposed" href="/res/apple-touch-icon.png">
+
+    <script src="/move.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <link rel="stylesheet" href="/res/screen.css" type="text/css" media="all">
+    <link rel="alternate" type="application/json" title="package.json" href="http://movelang.org/package.json">
+    <script type="text/move">
+visibleMenus = {}
+overlay = null
+enabled = true
+
+hideMenu = ^(menu_el){
+  menu_el.style.webkitTransition = 'opacity 200ms ease-out'
+  menu_el.style.opacity = '0'
+  clearTimeout menu_el.hideTimer
+  if (enabled) {
+    menu_el.hideTimer = after {delay:200} ^{ menu_el.style.display = 'none' }
+  } else {
+    menu_el.style.display = 'none'
+  }
+  overlay.style.display = 'none'
+}
+
+hideAllMenus = ^(ev) {
+  cancelEvent ev;
+  (Object.keys visibleMenus).forEach ^(k) {
+    hideMenu visibleMenus[k]
+  }
+}
+
+disableContextMenus = ^(ev) {
+  enabled = false
+  hideAllMenus ev
+}
+
+cancelEvent = ^(ev) {
+  if (ev) {
+    ev.preventDefault()
+    ev.stopPropagation()
+  }
+}
+
+mkhandler = ^(menu_id) { ^(ev) {
+  if (!enabled)
+    return
+
+  ev.preventDefault()
+
+  menu_el = document.getElementById menu_id
+  clearTimeout menu_el.hideTimer
+
+  menu_el.style.left = ev.pageX + 'px'
+  menu_el.style.top = ev.pageY + 'px'
+  menu_el.style.webkitTransition = 'none'
+  menu_el.style.opacity = '1'
+  menu_el.style.display = 'block'
+  menu_el.addEventListener 'mousedown', hideAllMenus, false
+
+  v = menu_el.getElementsByTagName 'a'
+  for (i=0,L=v.length; i < L; ++i) {
+    a = v[i]
+    a.addEventListener 'click', cancelEvent, false
+    if ((a.href.indexOf '#disable-context-menu') != -1) {
+      a.addEventListener 'mouseup', disableContextMenus, false
+    } else {
+      a.addEventListener 'mouseup', ^(ev) {
+        window.open @href, @getAttribute 'target'
+        hideMenu menu_el
+        cancelEvent ev
+      }, false
+    }
+  }
+
+  visibleMenus[menu_id] = menu_el
+
+  if (!overlay) {
+    overlay = document.createElement 'context-menu-overlay'
+    overlay.addEventListener 'mousedown', hideAllMenus, false
+    overlay.addEventListener 'touchstart', hideAllMenus, false
+    document.body.appendChild overlay
+  }
+  overlay.style.display = 'block'
+}}
+
+# Attach menu handlers
+v = document.getElementsByTagName 'a'
+for (i=0,L=v.length; i < L; ++i) {
+  el = v[i]
+  if (menu_id = el.getAttribute 'context-menu') {
+    el.addEventListener 'contextmenu', (mkhandler menu_id), false
+  }
+}
+</script>
+    <script type="text/move"># Sticky menu
+
+$menu = $ '#menu'
+$filler = $ '#menu-filler'
+$menu.find('a[href="#"]').last().click ^{ window.scrollTo 0, 0 }
+
+$menu.$wrapper = $menu.find('> wrapper').first()
+$window = $ window
+initialOrigin = $menu.offset()
+menuTop = initialOrigin.top
+menuIsFloating = false
+isPanningDevice = navigator.userAgent.indexOf('Safari/') != -1 &&
+                  navigator.userAgent.indexOf('Mobile/') != -1
+
+updateMenuOrigin = ^{
+  y = menuTop - $window.scrollTop()
+  if (y >= 0) {
+    if (menuIsFloating) {
+      menuIsFloating = false
+      $menu.css {
+        position: 'static',
+        width: 'auto'
+      }
+      $menu.removeClass 'floating'
+      $filler.removeClass 'enabled'
+    }
+  } else {
+    if (!menuIsFloating) {
+      $filler.css {height: $menu.height() + 'px'}
+      $filler.addClass 'enabled'
+      $menu.addClass 'floating'
+      menuIsFloating = true
+    }
+    $menu.css {
+      position: isPanningDevice ? 'absolute' : 'fixed',
+      top:      (isPanningDevice ? $window.scrollTop()
+                                 : Math.max(0, menuTop - $window.scrollTop())) +
+                'px',
+      left:     '-7px',
+      width:    window.innerWidth + 'px'
+    }
+  }
+}
+
+window.updateMenuOrigin = updateMenuOrigin
+updateMenuOrigin()
+$(window).bind 'scroll', updateMenuOrigin
+$(window).bind 'resize', updateMenuOrigin
+
+if (isPanningDevice) {
+  $(window).bind 'load', ^{ after {delay: 500} updateMenuOrigin }
+  setInterval updateMenuOrigin, 1000
+}
+
+
+$menu.find('a').each ^{
+  if ((@getAttribute 'href') == document.location.pathname) {
+    @className += ' current'
+  }
+}
+</script>
+
+    <!-- Open Graph -->
+    <meta property="fb:admins" content="728642302">
+    <meta property="fb:app_id" content="158328320889704">
+    <meta property="og:url" content="http://movelang.org/language/index.html">
+    <meta property="og:site_name" content="Move">
+    
+    <meta property="og:title" content="Language">
+    
+  </head>
+
+
+  <body>
+    <div id="fb-root"></div>
+
+    <header>
+      <wrapper>
+        <h1><a href="/" context-menu="logo-context-menu"><img src="/res/logo.png" width="343" height="122" alt="Move logo"></a></h1><p class="description">
+Move is a modern and simple <em>programming language</em> which can run on virtually
+any computer. Move is primarily aimed towards people not previously familiar with
+programming computers.
+        </p>
+        <context-menu id="logo-context-menu">
+          <a href="/res/logo.png" target="logo">logo.png</a>
+          <a href="/res/logo.pdf" target="logo">logo.pdf (for high-resolution work)</a>
+          <hr>
+          <a href="#disable-context-menu">Disable this fancy context menu</a>
+        </context-menu>
+      </wrapper>
+    </header>
+
+    <section id="menu">
+      <wrapper>
+        <menu-items>
+          <a href="/" context-menu="logo-context-menu" class="small-logo"><img src="/res/menu-logo.png" width="65" height="36" alt="Small Move logo"></a><a
+             href="/how-to-move/" title="An introduction to programming">How to Move</a>
+          <a href="/library/" title="Built-in objects and functions">Library</a>
+          <a href="/language/" title="Language reference">Language</a>
+          <!--a href="/articles/" title="Articles with tutorials etc">Articles</a-->
+          <a href="https://github.com/rsms/move/issues" title="Report and browse bugs">Bugs</a>
+          <a href="/try/" title="Try Move in an interactive console">Try it</a>
+          <a href="#" title="Jump to the top of the scroll">&uarr;</a>
+        </menu-items>
+      </wrapper>
+    </section>
+    <section id="menu-filler"></section>
+
+
+    <section class="body">
+  <wrapper>
+    <h1 id="Language+reference">Language reference</h1>
+
+<p>This is a summary of the Move language and not a complete reference. Please see <a href="http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-262.pdf">the ECMA-262 specification</a> for details.</p>
+
+<hr />
+
+<h2 id="Value+types">Value types</h2>
+
+<p>There are five different value types in Move: numbers, text, lists, objects and
+functions.</p>
+
+<h3 id="Numbers">Numbers</h3>
+
+<p>Numbers can be written in either decimal, hexadecimal or octal notation.</p>
+
+<ul>
+<li><p>Decimal notation: <code>1234</code>, <code>5.31</code> or <code>.8</code> — Starts with zero or more digits
+(0-9), has an optional dot (&ldquo;.&rdquo; aka &ldquo;full stop&rdquo;) followed by zero or more
+digits. The regular expression used by the Move parser to interpret decimal
+numbers is: <code>/^\d*\.?\d*(?:e[+-]?\d*(?:\d\.?|\.?\d)\d*)?$/i</code></p></li>
+<li><p>Hexadecimal notation: <code>0x4d2</code> or <code>0x5</code> — Starts with &ldquo;0x&rdquo; and is followed by
+one or more hexadecimal digits (0-9, a-f) where the &ldquo;alpha digits&rdquo; (a-f) can
+be written in either lower case, upper case or a mix thereof.
+Only integers can be expressed in &ldquo;hex&rdquo; notation.
+Regular expression used by the parser: <code>/^0x[0-9a-f]+$/i</code></p></li>
+<li><p>Octal notation: <code>02322</code> or <code>0664</code> — Starts with &ldquo;0&rdquo; and is followed by one
+or more octal digits (0-7). Regular expression used by the parser:
+<code>/^0[0-7]+$/</code></p></li>
+<li><p>&ldquo;Not a number&rdquo;: <code>NaN</code> — A special constant
+used to represent an illegal computation or a failed to-number conversion.</p></li>
+</ul>
+
+
+<p>The Number type has exactly 18437736874454810627 (that is, 2<sup>64</sup>-2<sup>53</sup>+3) values, representing the double- precision 64-bit format IEEE 754 values as specified in the IEEE Standard for Binary Floating-Point Arithmetic, except that the 9007199254740990 (that is, 2<sup>53</sup>-2) distinct “Not-a-Number” values of the IEEE Standard are represented in ECMAScript as a single special NaN value.</p>
+
+<p>Example:
+<samp>1234
+1234
+1234
+true</samp></p>
+
+<pre><code>print 1234
+print 0x4d2
+print 02322
+print 1234 == 1234.0
+</code></pre>
+
+<h3 id="Text">Text</h3>
+
+<p>Text can contain any Unicode characters and is stored as UTF-16 text. A piece of
+text is denoted by enclosing quotation marks (&ldquo; and &rdquo; or &lsquo; and &rsquo;) with any text except line breaks or (same as the enclosing) quotation marks. Standard
+escape sequences (like &ldquo;\n&rdquo; and &ldquo;\t&rdquo;) as well as Unicode
+escape sequences (&ldquo;\u&rdquo; followed by four hexadecimal digits) can be used to encode any Unicode character into the text, like line breaks. The backslash character (&ldquo;\&rdquo;) can also be used to escape characters like an embedded quotation
+mark.</p>
+
+<ul>
+<li><p>Text: <code>"John"</code> — A piece of text representing &ldquo;John&rdquo;</p></li>
+<li><p>Text with Unicode escape sequence: <code>"John \u2665 Jane"</code> — A piece of text
+representing &ldquo;John ♥ Jane&rdquo;</p></li>
+<li><p>Text with embedded quotation marks: <code>"John aka \"Johnny\""</code> — A piece of text representing &ldquo;John aka "Johnny&rdquo;"</p></li>
+<li><p>Text with embedded quotation marks wrapped in single quotes: <code>'John aka "Johnny"'</code> — A piece of text representing &ldquo;John aka "Johnny&rdquo;"</p></li>
+</ul>
+
+
+<p>Text is internally represented by <em>Text</em> objects (an alias for <em>String</em> JavaScript objects). Adding functions to the
+<em>Text</em> object&rsquo;s prototype will make that function available to any text value.</p>
+
+<p>Example of calling the built-in <tt>split</tt> function on a piece of text to produce a list of
+substrings:
+<samp>[&ldquo;Kittens&rdquo;, &ldquo;are&rdquo;, &ldquo;cute&rdquo;]</samp></p>
+
+<pre><code>print "Kittens are cute".split(" ")
+</code></pre>
+
+<h3 id="Lists+++arrays">Lists &amp; arrays</h3>
+
+<p>A List (or Array) is a form of compound value which contains other values in a
+ordered sequence. Lists are composed by enclosing zero or more values in a square bracket character pair (&ldquo;[&rdquo; and &ldquo;]&rdquo;), separated by comma characters. Lists can also be created by programmatic composition. The built-in <tt>Array</tt> object&rsquo;s prototype is the prototype used for new lists.</p>
+
+<ul>
+<li><p><code>["Kittens", "are", "cute"]</code> — A list containing three pieces of text: &ldquo;Kittens&rdquo;, &ldquo;are&rdquo; and &ldquo;cute&rdquo;</p></li>
+<li><p><code>["Kittens", 123, ["are", "cute"]]</code> — A list containing three values of different types: some text, a number and another list.</p></li>
+</ul>
+
+
+<p>Example of programmatic composition:
+<samp>[&ldquo;Kittens&rdquo;, &ldquo;are&rdquo;, &ldquo;cute&rdquo;]</samp></p>
+
+<pre><code>list = []
+list.push "Kittens"
+list[1] = "are"
+list[list.length] = "cute"
+print list
+</code></pre>
+
+<h3 id="Objects">Objects</h3>
+
+<p>The Object type is fundamental to Move (and JavaScript) as all other values are in fact Objects. E.g. a Number is a special type of Object. We say that &ldquo;Move contains five different types of values&rdquo; which is a simplification. Move has in fact only one type — Object — but at the same time,
+the language and the runtime <em>treats some Object subtypes differently</em>, like Numbers which can be used for mathematical operations or text which when &ldquo;added&rdquo;
+together creates a new piece of text being the two texts glued together. Therefore we simplify value types by saying there&rsquo;s only five of them.</p>
+
+<p>An Object is a set of (unique) keys with associated values. Keys must be text values, but an associated value can be of any type. Objects are denoted by a pair of curly brackets (&ldquo;{&rdquo; and &ldquo;}&rdquo;) holding zero or more key-value pairs. Keys are written either as regular text with wrapping quotation marks or without wrapping quotation marks for text which conforms to the rule that it is a valid name (starts with a-z, A-Z, _ or $ and is followed by zero or more letters, numbers, etc). A key is terminated by a colon character and is followed by a value expression. Two successive key-value pairs are separated by a comma character.</p>
+
+<ul>
+<li><code>{a:1, b:2}</code> — An object with two pairs: Key &ldquo;a&rdquo; represents the value 1 and
+key &ldquo;b&rdquo; represents the value 2.</li>
+</ul>
+
+
+<p>Example:
+<samp>1
+2
+undefined
+3</samp></p>
+
+<pre><code>obj = {a:1, "b-B":2}
+print obj.a
+print obj["b-B"]
+print obj.c
+obj.c = 3
+print obj.c
+</code></pre>
+
+<h3 id="Functions">Functions</h3>
+
+<p>Functions are denoted by a circumflex accent character (&ldquo;<sup>&ldquo;)</sup> optionally followed by argument declarations wrapped in a parenthesis character pair (&rdquo;(&ldquo; and &rdquo;)&ldquo;), finally followed by a block of code wrapped in a pair of curly bracket characters (&rdquo;{&ldquo; and &rdquo;}&ldquo;).</p>
+
+<p>The block of code in a function has it&rsquo;s own scope — a variable defined (assigned for the first time) in such a block will &ldquo;live&rdquo; in that block, thus any references to that variable <em>before</em> the declaration of the code block will
+refer to <em>another</em>, probably undefined, variable.</p>
+
+<p>The last statement in a function&rsquo;s code block is <em>returned</em>. There&rsquo;s also a special &ldquo;return&rdquo; keyword which can be used to prematurely return a value from
+a function.</p>
+
+<p>Arguments can have explicit default values which are denoted by a postfix assignment operator (&ldquo;=&rdquo;) for the argument name followed by a value. If no explicit default value is given, the &ldquo;undefined&rdquo; atom is used.</p>
+
+<ul>
+<li><p><code>^(a, b){ a + b }</code> — A function which produces the sum of two numbers</p></li>
+<li><p><code>^{ 5 + 7 }</code> — A function which does not expect any arguments</p></li>
+<li><p><code>^(a: 5, b: 7){ a + b }</code> — A function with default values for its arguments</p></li>
+<li><p>&nbsp;<code><sup>(a,</sup> b){ if (a > 4) return a; a + b }</code> — A function which use the &ldquo;return&rdquo; keyword to, in some cases, prematurely return a value and stop execution of that function&rsquo;s code.</p></li>
+</ul>
+
+
+<p>Here is an illustrating example of how scope works. The following code will yield a reference error with the message &ldquo;x is not defined&rdquo; since &ldquo;x&rdquo; is defined in the &ldquo;y&rdquo; function&rsquo;s scope and is thus not available to the outer scope:
+<samp>ReferenceError: x is not defined
+&hellip;</samp></p>
+
+<pre><code>y = ^{ x = 5 }
+y{}
+print x
+</code></pre>
+
+<p>Here we assign something to x in the outer scope which will tell Move that &ldquo;x&rdquo; should live and be available in that (outer) scope:
+<samp>5</samp></p>
+
+<pre><code>x = 0
+y = ^{ x = 5 }
+y{}
+print x
+</code></pre>
+
+<h3 id="Atoms">Atoms</h3>
+
+<p>Move has a set of &ldquo;atoms&rdquo; which are basically pre-defined constants with itself as its value. They are called &ldquo;atoms&rdquo; since there is only one single, global and immutable instance (or &ldquo;version&rdquo; if you will) of each of these special values:</p>
+
+<ul>
+<li><p><code>undefined</code> — Means that something is not defined. E.g. A function&rsquo;s argument without an explicit default value will have this atom as its value unless provided during a call to such a function.</p></li>
+<li><p><code>null</code> — Means &ldquo;empty&rdquo; or &ldquo;nothing&rdquo;. Handy in the case <code>undefined</code> is not suitable (i.e. you have defined a value but it&rsquo;s empty).</p></li>
+<li><p><code>true</code> — Represents truth and is the product of a truthy logical comparison (e.g. <code>4 &lt; 6 == true</code>)</p></li>
+<li><p><code>false</code> — Represents something being false or &ldquo;no&rdquo; and is the product of a false logical comparison (e.g. <code>4 &gt; 6 == false</code>)</p></li>
+</ul>
+
+
+<p>Example:
+<samp>true
+true
+true</samp></p>
+
+<pre><code>print true != false
+print undefined != null
+Yes = true
+print Yes == true
+</code></pre>
+
+<h2 id="List+slices">List slices</h2>
+
+<p>Move features a syntax for extracting and assigning slices of collections.</p>
+
+<ul>
+<li><code>foo[1:3]</code> — Returns a slice of <em>foo</em> including items at index 1, 2 and 3.</li>
+<li><code>foo[:3]</code> — Returns a slice of <em>foo</em> including items at index 0, 1, 2 and 3.</li>
+<li><code>foo[1:]</code> — Returns a slice of <em>foo</em> including items at index 1 up until (and including) the last item.</li>
+<li><code>foo[:-2]</code> — Returns a slice of <em>foo</em> including items at index 0 up until index <em>foo.length &ndash; 2</em>.</li>
+<li><p><code>foo[-2:]</code> — Returns a slice of <em>foo</em> including items at index <em>foo.length &ndash; 2</em> up until (and including) the last item.</p></li>
+<li><p><code>foo[1:3] = [1,2]</code> — Replaces items of <em>foo</em> in the range <em>[1,3]</em> with items &ldquo;1&rdquo; and &ldquo;2&rdquo;</p></li>
+<li><code>foo[1:3] = [9]</code> — Replaces items of <em>foo</em> in the range <em>[1,3]</em> with &ldquo;9&rdquo;</li>
+<li><code>foo[1:3] = 9</code> — Replaces items of <em>foo</em> in the range <em>[1,3]</em> with &ldquo;9&rdquo;</li>
+</ul>
+
+
+<p>This special slice syntax compiles down to two different method calls depending on whether a slice is read or written:</p>
+
+<ul>
+<li><p>For reading/extracting slices a <strong><em>slice</em></strong> method is called on the left hand-side expression with the arguments. I.e. <code>foo[1:3]</code> compiles down to <code>foo.slice(1, 3)</code>. You can implement a &ldquo;slice&rdquo; method for any object to allow that object (prototype) to be accessible through slice notation. Both lists and text support slice access by default.</p></li>
+<li><p>For writing/modifying slices of collections a <strong><em>_move_setSlice</em></strong> method is called. I.e. <code>foo[1:3] = bar</code> compiles down to <code>foo._move_setSlice(1, 3, bar)</code>. A slice assignment operation returns the (old) slice that was replaced. You can implement a &ldquo;_move_setSlice&rdquo; method for any object to allow that object (prototype) to be modifiable through slice notation. Lists (but not text, which is immutable) support slice assignment by default.</p></li>
+</ul>
+
+
+<p><em>Slice syntax was introduced in Move 0.2.0</em></p>
+
+<p>Example:
+<samp>el
+hel
+&nbsp;
+&nbsp;
+[ 2, 3 ]
+[ 3, 4 ]
+&nbsp;
+[ 1, 2, 3, 4 ]
+&nbsp;
+[ 1, 9, 4 ]</samp></p>
+
+<pre><code>print "hello"[1:3]
+print "hello"[:-2]
+
+x = [1,2,3,4]
+print x[1:3]
+print x[-2:]
+
+print x
+x[1:3] = [9]
+print x
+</code></pre>
+
+<h2 id="Module+system">Module system</h2>
+
+<p>Move uses the <a href="http://wiki.commonjs.org/wiki/Modules/1.1">CommonJS module system</a>.</p>
+
+<h3 id="Importing+modules">Importing modules</h3>
+
+<p>Modules are imported using the <code>import</code> expression or <code>require</code> function.</p>
+
+<p>Import a globally available module named &ldquo;foo&rdquo;:</p>
+
+<pre><code>import foo
+# is equivalent to:
+foo = require 'foo'
+</code></pre>
+
+<p>Import a module from the same source tree location:</p>
+
+<pre><code>import .foo
+# is equivalent to:
+foo = require './foo'
+</code></pre>
+
+<p>Import a module from the parent source tree location:</p>
+
+<pre><code>import ..foo
+# is equivalent to:
+foo = require '../foo'
+</code></pre>
+
+<p>Several modules can be specified in a single statement, separated by commas:</p>
+
+<pre><code>import ..foo, bar, ...baz, .john/smith
+# is equivalent to:
+foo = require '../foo'
+bar = require 'bar'
+baz = require '../../baz'
+smith = require './john/smith'
+</code></pre>
+
+<p><em>Consistent <code>import</code> was was introduced in Move 0.4.4</em></p>
+
+<h3 id="Exporting+module+API">Exporting module API</h3>
+
+<p>A module exports its API by using the <code>export</code> expression or by adding values to the <code>module.exports</code> object.</p>
+
+<p>Examples:</p>
+
+<pre><code>export foo = 'This is foo'
+
+bar = "This is bar"
+export bar
+
+module.exports.baz = "This is baz"
+
+# The exports object is also available as a module-local variable,
+# thus the above has the same effect as the following:
+exports.baz = "This is baz"
+</code></pre>
+
+<p>When other code imports your module, the exported API is what&rsquo;s available to the calling code. For instance, consider this module &ldquo;foo.mv&rdquo;:</p>
+
+<pre><code>export version = "1.2.3"
+build = "4"
+export run = ^{ print "Running", version, '/', build }
+</code></pre>
+
+<p>Now we import this module into some other code:</p>
+
+<pre><code>import foo
+print foo.verison  #--&gt; "1.2.3"
+print foo.build    #--&gt; undefined
+print foo          # { version: "1.2.3", run: [Function run] }
+</code></pre>
+
+<h2 id="Embedded+HTML">Embedded HTML</h2>
+
+<p>Embedded HTML &mdash; or &ldquo;EHTML&rdquo; &mdash; is a way to embed HTML inside Move code:
+<samp>&hellip;&lt;div class=&ldquo;profile-picture&rdquo;&gt;↩
+&lt;img src=&ldquo;profile-pictures/↩
+rsms.jpg&rdquo; alt=&ldquo;&rdquo;&gt;&lt;/div&gt;&hellip;</samp></p>
+
+<pre><code>img = ^(src, alt) { &lt;img src="{src}" alt="{alt}" /&gt;  }
+
+profilePicture = ^(username) {
+  div = &lt;div class="profile-picture" /&gt;
+  div.appendChild img 'profile-pictures/'+username+'.jpg'
+  div
+}
+
+document.body.appendChild profilePicture 'rsms'
+</code></pre>
+
+<p>EHTML is enabled by default when running in a web browser. It&rsquo;s otherwise disabled by default. EHTML is a preprocessor and can be explicitly enabled or disabled using the &ldquo;enable&rdquo; and &ldquo;disable&rdquo; pragma directives.</p>
+
+<p>The following will cause errors during compilation in Node.js:</p>
+
+<pre><code>foo = &lt;div/&gt;
+</code></pre>
+
+<p>But if we tell the compiler to preprocess EHTML even though we are not in a web browser, the code will compile just fine in Node.js:</p>
+
+<pre><code>#pragma enable ehtml
+foo = &lt;div/&gt;
+</code></pre>
+
+<p>Same thing goes for the &ldquo;disable&rdquo; pragma. The following code will cause compilation errors in any environment:</p>
+
+<pre><code>#pragma disable ehtml
+foo = &lt;div/&gt;
+</code></pre>
+
+<p><em>Embedded HTML was introduced in Move 0.3.0</em></p>
+
+  </wrapper>
+</section>
+
+
+
+    <footer>
+      <wrapper>
+Move is free software and <a href="https://github.com/rsms/move">open source</a>
+under a permissive license, created by <a href="http://rsms.me/">Rasmus Andersson</a>.
+      </wrapper>
+    </footer>
+
+    <script type="text/move">// curry pre < code to be able to get prettified
+v = document.getElementsByTagName('pre')
+for (i=0,L=v.length; i < L; ++i) {
+  n = v.item i
+  a = n.getAttribute('class') || ''
+  if (a.indexOf('wide') == -1)
+    n.setAttribute 'title', 'Move code'
+  if (n.firstChild && n.firstChild.nodeName == 'CODE') {
+    if (a.indexOf('prettyprint') === -1 &&
+        (n.firstChild.getAttribute('class') || '').indexOf('prettyprint') === -1) {
+      n.setAttribute 'class', a+' prettyprint lang-mv'
+    }
+  } else {
+    n.setAttribute 'class', a+' prettyprint lang-mv'
+  }
+}
+
+v = document.getElementsByTagName('code');
+for (i=0,L=v.length; i < L; ++i) {
+  n = v.item i
+  a = (n.getAttribute 'class') || '';
+  if ((a.indexOf 'prettyprint') === -1)
+    n.setAttribute 'class', a+' prettyprint lang-mv'
+}
+$('section.body samp').attr 'title', 'Output'
+script = document.createElement 'script'
+script.async = true
+script.src = "/res/prettify.js"
+document.getElementsByTagName('head')[0].appendChild script
+</script>
+    <script type="text/move">if (!/AppleWebKit/.test(navigator.userAgent) || !/iP[oa]d|iPhone/.test(navigator.userAgent)) {
+
+  link = document.createElement 'link'
+  link.type = "text/css"
+  link.rel = "stylesheet"
+  link.href = "https://fonts.googleapis.com/css?family=Droid+Serif:regular,italic,bold|Droid+Sans+Mono"
+  document.documentElement.getElementsByTagName('head')[0].appendChild link
+
+  checkLoaded = ^{
+    for (i = 0; i < document.styleSheets.length; i++) {
+      if (document.styleSheets[i].href &&
+          document.styleSheets[i].href.indexOf('://fonts.googleapis.com/css') != -1) {
+        document.body.className += ' custom-fonts-loaded';
+        if (window.updateMenuOrigin)
+          window.updateMenuOrigin()
+        return
+      }
+    }
+    after {delay:100} checkLoaded
+  }
+  checkLoaded()
+}</script>
+    <script src="https://connect.facebook.net/en_US/all.js#appId=158328320889704&amp;xfbml=1"></script>
+    <script>var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-9078556-5']);
+_gaq.push(['_trackPageview']);
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+</script>
+  </body>
+</html>
