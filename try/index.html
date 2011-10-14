@@ -140,10 +140,10 @@ $(function () {
       var f = new Function("window", "with(window){ " + jsSource + " }");
       result = f({
         $: $, // jQuery
-        __move: window.__move,
+        Move: window.Move,
         console: console,
         __js_source: jsSource,
-        require: __move.runtime.require
+        require: Move.runtime.require
       });
 
     } catch (e) {

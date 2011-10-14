@@ -1,5 +1,5 @@
 // Move for web browers
-if (!window.move) window.move = (function(){
+if (!window.Move) window.Move = (function(){
 
 if (typeof window.global === 'undefined')
   window.global = window;
@@ -560,9 +560,14 @@ exports.defaultCompilationOptions = {
   raw: false // Do not wrap source and do not enable runtime
 };
 
+// Convert a filename to a module id
+exports.filenameToModuleId = function filenameToModuleId(filename) {
+  return String(filename).replace(/\/index$|^index$|^\/+|\/+$|\.[^\.]+$/g, '');
+};
+
 
 var formatSyntaxError = function (e, source, op) {
-  e.name = 'SyntaxError';
+  e.name = 'MoveSyntaxError';
 
   var sourceLines = source.split(/[\r\n]/),
       lineIndex = e.line+1,
@@ -581,9 +586,10 @@ var formatSyntaxError = function (e, source, op) {
 
   var epindent = ''; for (var x=0;x<e.col;++x) epindent += ' ';
 
+  e.filename = op.filename
+  e.sourceDetails = sourceLines+'\n'+epindent+'\u2b06';
   e.diagnostic = e.name+': '+e.message+' ('+op.filename+':'+e.line+':'+
-                 e.col+')\n'+sourceLines+'\n'+
-                 epindent+'\u2b06';
+                 e.col+')\n'+e.sourceDetails;
   if (e.stack)
     e.stack = e.diagnostic+'\n'+e.stack.split(/[\r\n]/).slice(1).join('\n');
 
@@ -591,7 +597,7 @@ var formatSyntaxError = function (e, source, op) {
 }
 
 
-// If __move.debug is set to true, some things like compiled code will be output
+// If Move.debug is set to true, some things like compiled code will be output
 // on console.log
 //exports.debug = true;
 
@@ -787,13 +793,23 @@ exports.compileFileSync = function compileFileSync(filename, options) {
 //     move.eval("r = ^(a, b){ a * b-a * Math.PI }; r { b:1, a:8.1 }")
 //     // -17.346900494077325
 //
+// eval(object options) -> any
+// eval(string source, object options) -> any
+// eval(string source, string filename) -> any
+//
 exports.eval = function (source, options) {
   // Allow Move keyword call style
   if (typeof source === 'object') {
     options = source;
     source = options.source;
   } else {
-    if (!options || typeof options !== 'object') options = {};
+    if (!options || typeof options !== 'object') {
+      if (typeof option === 'string') {
+        options = {filename:options};
+      } else {
+        options = {};
+      }
+    }
     options.source = source;
   }
   var jsSource = exports.compile(options);
@@ -826,10 +842,8 @@ try {
 } catch (e) {
   evalFunc = function _eval(jsSource, options) {
     var gr = global.require;
-    global.require = __move.require;
-    var r = global.eval(
-        jsSource.code !== undefined ? jsSource.code : jsSource,
-        String((options && options.filename) || '<input>'));
+    global.require = Move.require;
+    var r = global.eval(jsSource.code !== undefined ? jsSource.code : jsSource);
     if (gr !== undefined) global.require = gr;
     else delete global.require;
     return r;
@@ -925,13 +939,14 @@ var wrapInRuntime = function wrapInRuntime(source, op) {
   var s = '(function() { ';
   if (!op.automaticVarDeclarations)
     s += 'var ';
-  s += 'Move = __move.runtime';
-  var names = Object.keys(global.__move.runtime);
-  if (names.length) {
-    s += ', ' + names.map(function (name) {
-           return name + ' = Move.'+name;
-         }).join(',');
-  }
+  s += 'M = Move.runtime';
+  Object.keys(global.Move.runtime).forEach(function (name) {
+    if (name === 'dprinter') {
+      s += ', dprint = M.dprinter(module)';
+    } else {
+      s += ', ' + name + ' = M.'+name;
+    }
+  });
   return s + '; ' + source + '})()';
 }
 
@@ -944,9 +959,9 @@ if (require.extensions) {
   };
 }
 
-// Export our symbols to the __move global
+// Export our symbols to the Move global
 Object.keys(exports).forEach(function (k) {
-  global.__move[k] = exports[k];
+  global.Move[k] = exports[k];
 });
 
 // Import the runtime library
@@ -2090,6 +2105,56 @@ function parse($TEXT, strict_mode, embed_tokens) {
     return a;
   };
 
+  function importdefs() {
+    var a = [], relPathDepth = 0, name, symbolName, path, n;
+    for (;;) {
+      // Zero or more "."
+      relPathDepth = 0;
+      while (S.token.value === '.') {
+        ++relPathDepth;
+        next();
+      }
+      // A symbol name
+      if (!is("name"))
+        unexpected();
+
+      name = [S.token.value];
+      next();
+
+      // "foo/bar/baz" -> ["foo", "bar", "baz"]
+      while (S.token.value === '/') {
+        next();
+        if (!is("name"))
+          unexpected();
+        name.push(S.token.value);
+        next();
+      }
+      
+      symbolName = name[name.length-1];
+      path = name.join('/');
+      
+      // Optional explicit value
+      if (relPathDepth) {
+        if (relPathDepth === 1) {
+          path = './'+path;
+        } else {
+          n = relPathDepth-1;
+          while (n--) path = '../' + path;
+        }
+        a.push([ symbolName, ["string", path] ]);
+      } else if (is("operator", "=")) {
+        next();
+        a.push([ symbolName, expression(false) ]);
+      } else {
+        a.push([ symbolName, ["string", path] ]);
+      }
+      if (!is("punc", ","))
+        break;
+      next();
+    }
+    return a;
+  };
+
   function var_() {
     return as("var", vardefs());
   };
@@ -2099,7 +2164,7 @@ function parse($TEXT, strict_mode, embed_tokens) {
   };
 
   function import_() {
-    return as("import", vardefs());
+    return as("import", importdefs());
   };
 
   function export_() {
@@ -2620,33 +2685,11 @@ exports.is_alphanumeric_char = is_alphanumeric_char;
 exports.is_identifier_char = is_identifier_char;
 });
 _require.define("compiler/preprocessors/ehtml","compiler/preprocessors/ehtml.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
-  var Move, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class, EHTML, process;
-  Move = __move.runtime, _MoveKWArgsT = Move._MoveKWArgsT, Text = Move.Text, extend = Move.extend, create = Move.create, print = Move.print, repeat = Move.repeat, after = Move.after, JSON = Move.JSON, __class = Move.__class;
-  __move.EHTML = EHTML = function EHTML(html) {
-    html !== null && typeof html === "object" && html.__kw === _MoveKWArgsT && (arguments.keywords = html, html = html.html);
-    var el;
-    if (!EHTML.spawnerElement) EHTML.spawnerElement = document.createElement("div");
-    EHTML.spawnerElement.innerHTML = html;
-    el = EHTML.spawnerElement.firstChild;
-    el.toString = function toString() {
-      return html;
-    };
-    return el;
-  };
-  EHTML.classNameWrapper = function classNameWrapper(className) {
-    className !== null && typeof className === "object" && className.__kw === _MoveKWArgsT && (arguments.keywords = className, className = className.className);
-    className = " " + className;
-    return function (html) {
-      html !== null && typeof html === "object" && html.__kw === _MoveKWArgsT && (arguments.keywords = html, html = html.html);
-      var node;
-      node = __move.EHTML(html);
-      node.className += className;
-      return node;
-    };
-  };
+  var M, _MoveKWArgsT, Text, extend, create, print, dprint, repeat, after, JSON, __class, EventEmitter, process;
+  M = Move.runtime, _MoveKWArgsT = M._MoveKWArgsT, Text = M.Text, extend = M.extend, create = M.create, print = M.print, dprint = M.dprinter(module), repeat = M.repeat, after = M.after, JSON = M.JSON, __class = M.__class, EventEmitter = M.EventEmitter;
   exports.process = process = function process(src, options) {
     src !== null && typeof src === "object" && src.__kw === _MoveKWArgsT && (arguments.keywords = src, options = src.options, src = src.src);
-    var i, skipString, readEHTMLNode, parseAny, output;
+    var i, skipString, readEHTMLNode, parseAny, output, moduleName;
     i = 0;
     skipString = function skipString(endch) {
       endch !== null && typeof endch === "object" && endch.__kw === _MoveKWArgsT && (arguments.keywords = endch, endch = endch.endch);
@@ -2773,8 +2816,14 @@ _require.define("compiler/preprocessors/ehtml","compiler/preprocessors/ehtml.mv"
       }
       return output;
     };
-    output = "EHTML = __move.EHTML\n" + parseAny();
-    return output;
+    output = parseAny();
+    if (!options.ehtmlDisableImplicitViewConstructor) {
+      if (output.match(/(exports\.createView|export\s+createView)\s*[=\r\n]/)) {
+        moduleName = Move.filenameToModuleId(options.filename).split("/").slice(-1)[0].replace(".", "_");
+        output = "exports = module.exports = " + moduleName + " = ^{" + " EHTML.createViewImpl.apply exports, arguments };" + 'exports.__domid = module.id.replace("/", "_");' + output;
+      }
+    }
+    return output = "EHTML = Move.EHTML\n" + output;
   };
 })();});
 _require.define("compiler/process","compiler/process.js",function(require, module, exports, __filename, __dirname){/***********************************************************************
@@ -2957,7 +3006,7 @@ function ast_walker(ast) {
     },
     "object": function(props) {
       return [ this[0], MAP(props, function(p){
-        return p.length == 2
+        return p.length === 2
           ? [ p[0], walk(p[1]) ]
           : [ p[0], walk(p[1]), p[2] ]; // get/set-ter
       }) ];
@@ -2988,7 +3037,7 @@ function ast_walker(ast) {
   var user = {};
   var stack = [];
   function walk(ast) {
-    if (!ast)
+    if (!ast || ast.length === 0)
       return null;
     try {
       stack.push(ast);
@@ -3192,7 +3241,7 @@ function ast_add_scope(ast) {
         ];
       },
       "name": function(name) {
-        if (name == "eval")
+        if (name === "eval")
           having_eval.push(current_scope);
         reference(name);
       },
@@ -3329,11 +3378,11 @@ function ast_mangle(ast, do_toplevel) {
 var warn = function(){};
 
 function best_of(ast1, ast2) {
-  return gen_code(ast1).length > gen_code(ast2[0] == "stat" ? ast2[1] : ast2).length ? ast2 : ast1;
+  return gen_code(ast1).length > gen_code(ast2[0] === "stat" ? ast2[1] : ast2).length ? ast2 : ast1;
 };
 
 function last_stat(b) {
-  if (b[0] == "block" && b[1] && b[1].length > 0)
+  if (b[0] === "block" && b[1] && b[1].length > 0)
     return b[1][b[1].length - 1];
   return b;
 }
@@ -3341,38 +3390,38 @@ function last_stat(b) {
 function aborts(t) {
   if (t) {
     t = last_stat(t);
-    if (t[0] == "return" || t[0] == "break" || t[0] == "continue" || t[0] == "throw")
+    if (t[0] === "return" || t[0] === "break" || t[0] === "continue" || t[0] === "throw")
       return true;
   }
 };
 
 function boolean_expr(expr) {
-  return ( (expr[0] == "unary-prefix"
+  return ( (expr[0] === "unary-prefix"
       && member(expr[1], [ "!", "delete" ])) ||
 
-     (expr[0] == "binary"
+     (expr[0] === "binary"
       && member(expr[1], [ "in", "instanceof", "==", "!=", "===", "!==", "<", "<=", ">=", ">" ])) ||
 
-     (expr[0] == "binary"
+     (expr[0] === "binary"
       && member(expr[1], [ "&&", "||" ])
       && boolean_expr(expr[2])
       && boolean_expr(expr[3])) ||
 
-     (expr[0] == "conditional"
+     (expr[0] === "conditional"
       && boolean_expr(expr[2])
       && boolean_expr(expr[3])) ||
 
-     (expr[0] == "assign"
+     (expr[0] === "assign"
       && expr[1] === true
       && boolean_expr(expr[3])) ||
 
-     (expr[0] == "seq"
+     (expr[0] === "seq"
       && boolean_expr(expr[expr.length - 1]))
          );
 };
 
 function make_conditional(c, t, e) {
-  if (c[0] == "unary-prefix" && c[1] == "!") {
+  if (c[0] === "unary-prefix" && c[1] === "!") {
     return e ? [ "conditional", c[2], e, t ] : [ "binary", "||", c[2], t ];
   } else {
     return e ? [ "conditional", c, t, e ] : [ "binary", "&&", c, t ];
@@ -3380,13 +3429,13 @@ function make_conditional(c, t, e) {
 };
 
 function empty(b) {
-  return !b || (b[0] == "block" && (!b[1] || b[1].length == 0));
+  return !b || (b[0] === "block" && (!b[1] || b[1].length === 0));
 };
 
 function is_string(node) {
-  return (node[0] == "string" ||
-    node[0] == "unary-prefix" && node[1] == "typeof" ||
-    node[0] == "binary" && node[1] == "+" &&
+  return (node[0] === "string" ||
+    node[0] === "unary-prefix" && node[1] === "typeof" ||
+    node[0] === "binary" && node[1] === "+" &&
     (is_string(node[2]) || is_string(node[3])));
 };
 
@@ -3459,8 +3508,8 @@ var when_constant = (function(){
       return yes.call(expr, ast, val);
     } catch(ex) {
       if (ex === $NOT_CONSTANT) {
-        if (expr[0] == "binary"
-            && (expr[1] == "===" || expr[1] == "!==")
+        if (expr[0] === "binary"
+            && (expr[1] === "===" || expr[1] === "!==")
             && ((is_string(expr[2]) && is_string(expr[3]))
           || (boolean_expr(expr[2]) && boolean_expr(expr[3])))) {
           expr[1] = expr[1].substr(0, 2);
@@ -3492,7 +3541,7 @@ function ast_squeeze(ast, options) {
     var not_c = [ "unary-prefix", "!", c ];
     switch (c[0]) {
         case "unary-prefix":
-      return c[1] == "!" && boolean_expr(c[2]) ? c[2] : not_c;
+      return c[1] === "!" && boolean_expr(c[2]) ? c[2] : not_c;
         case "seq":
       c = slice(c);
       c[c.length - 1] = negate(c[c.length - 1]);
@@ -3530,10 +3579,10 @@ function ast_squeeze(ast, options) {
   };
 
   function rmblock(block) {
-    if (block != null && block[0] == "block" && block[1]) {
-      if (block[1].length == 1)
+    if (block != null && block[0] === "block" && block[1]) {
+      if (block[1].length === 1)
         block = block[1][0];
-      else if (block[1].length == 0)
+      else if (block[1].length === 0)
         block = [ "block" ];
     }
     return block;
@@ -3551,11 +3600,11 @@ function ast_squeeze(ast, options) {
   // 2. join consecutive var declarations
   // 3. remove obviously dead code
   // 4. transform consecutive statements using the comma operator
-  // 5. if block_type == "lambda" and it detects constructs like if(foo) return ... - rewrite like if (!foo) { ... }
+  // 5. if block_type === "lambda" and it detects constructs like if(foo) return ... - rewrite like if (!foo) { ... }
   function tighten(statements, block_type) {
     statements = statements.reduce(function(a, stat){
       if (stat) {
-        if (stat[0] == "block") {
+        if (stat[0] === "block") {
           if (stat[1]) {
             a.push.apply(a, stat[1]);
           }
@@ -3568,8 +3617,8 @@ function ast_squeeze(ast, options) {
 
     statements = (function(a, prev){
       statements.forEach(function(cur){
-        if (prev && ((cur[0] == "var" && prev[0] == "var") ||
-               (cur[0] == "const" && prev[0] == "const"))) {
+        if (prev && ((cur[0] === "var" && prev[0] === "var") ||
+               (cur[0] === "const" && prev[0] === "const"))) {
           prev[1] = prev[1].concat(cur[1]);
         } else {
           a.push(cur);
@@ -3579,10 +3628,20 @@ function ast_squeeze(ast, options) {
       return a;
     })([]);
 
+
     if (options.dead_code) statements = (function(a, has_quit){
       statements.forEach(function(st){
         if (has_quit) {
-          if (member(st[0], [ "function", "defun" , "var", "const" ])) {
+          if (st[0] === "function" || st[0] === "defun") {
+            a.push(st);
+          } else if (st[0] === "var" || st[0] === "const") {
+            if (!options.no_warnings)
+              warn("Variables declared in unreachable code");
+            st[1] = MAP(st[1], function(def){
+              if (def[1] && !options.no_warnings)
+                warn_unreachable([ "assign", true, [ "name", def[0] ], def[1] ]);
+              return [ def[0] ];
+            });
             a.push(st);
           }
           else if (!options.no_warnings)
@@ -3597,9 +3656,10 @@ function ast_squeeze(ast, options) {
       return a;
     })([]);
 
+
     if (options.make_seqs) statements = (function(a, prev) {
       statements.forEach(function(cur){
-        if (prev && prev[0] == "stat" && cur[0] == "stat") {
+        if (prev && prev[0] === "stat" && cur[0] === "stat") {
           prev[1] = [ "seq", prev[1], cur[1] ];
         } else {
           a.push(cur);
@@ -3609,16 +3669,16 @@ function ast_squeeze(ast, options) {
       return a;
     })([]);
 
-    if (block_type == "lambda") statements = (function(i, a, stat){
+    if (block_type === "lambda") statements = (function(i, a, stat){
       while (i < statements.length) {
         stat = statements[i++];
-        if (stat[0] == "if" && !stat[3]) {
-          if (stat[2][0] == "return" && stat[2][1] == null) {
+        if (stat[0] === "if" && !stat[3]) {
+          if (stat[2][0] === "return" && stat[2][1] == null) {
             a.push(make_if(negate(stat[1]), [ "block", statements.slice(i) ]));
             break;
           }
           var last = last_stat(stat[2]);
-          if (last[0] == "return" && last[1] == null) {
+          if (last[0] === "return" && last[1] == null) {
             a.push(make_if(stat[1], [ "block", stat[2][1].slice(0, -1) ], [ "block", statements.slice(i) ]));
             break;
           }
@@ -3673,12 +3733,12 @@ function ast_squeeze(ast, options) {
     if (empty(e) && empty(t))
       return [ "stat", c ];
     var ret = [ "if", c, t, e ];
-    if (t[0] == "if" && empty(t[3]) && empty(e)) {
+    if (t[0] === "if" && empty(t[3]) && empty(e)) {
       ret = best_of(ret, walk([ "if", [ "binary", "&&", c, t[1] ], t[2] ]));
     }
-    else if (t[0] == "stat") {
+    else if (t[0] === "stat") {
       if (e) {
-        if (e[0] == "stat") {
+        if (e[0] === "stat") {
           ret = best_of(ret, [ "stat", make_conditional(c, t[1], e[1]) ]);
         }
       }
@@ -3686,12 +3746,12 @@ function ast_squeeze(ast, options) {
         ret = best_of(ret, [ "stat", make_conditional(c, t[1]) ]);
       }
     }
-    else if (e && t[0] == e[0] && (t[0] == "return" || t[0] == "throw") && t[1] && e[1]) {
+    else if (e && t[0] === e[0] && (t[0] === "return" || t[0] === "throw") && t[1] && e[1]) {
       ret = best_of(ret, [ t[0], make_conditional(c, t[1], e[1] ) ]);
     }
     else if (e && aborts(t)) {
       ret = [ [ "if", c, t ] ];
-      if (e[0] == "block") {
+      if (e[0] === "block") {
         if (e[1]) ret = ret.concat(e[1]);
       }
       else {
@@ -3701,7 +3761,7 @@ function ast_squeeze(ast, options) {
     }
     else if (t && aborts(e)) {
       ret = [ [ "if", negate(c), e ] ];
-      if (t[0] == "block") {
+      if (t[0] === "block") {
         if (t[1]) ret = ret.concat(t[1]);
       } else {
         ret.push(t);
@@ -3724,7 +3784,7 @@ function ast_squeeze(ast, options) {
 
   return w.with_walkers({
     "sub": function(expr, subscript) {
-      if (subscript[0] == "string") {
+      if (subscript[0] === "string") {
         var name = subscript[1];
         if (is_identifier(name)) {
           return [ "dot", walk(expr), name ];
@@ -3741,9 +3801,9 @@ function ast_squeeze(ast, options) {
       var last = body.length - 1;
       return [ "switch", walk(expr), MAP(body, function(branch, i){
         var block = tighten(MAP(branch[1], walk));
-        if (i == last && block.length > 0) {
+        if (i === last && block.length > 0) {
           var node = block[block.length - 1];
-          if (node[0] == "break" && !node[1])
+          if (node[0] === "break" && !node[1])
             block.pop();
         }
         return [ branch[0] ? walk(branch[0]) : null, block ];
@@ -3781,7 +3841,7 @@ function ast_squeeze(ast, options) {
     "unary-prefix": function(op, expr) {
       expr = walk(expr);
       var ret = [ "unary-prefix", op, expr ];
-      if (op == "!")
+      if (op === "!")
         ret = best_of(ret, negate(expr));
       return when_constant(ret, function(ast, val){
         return walk(ast); // it's either true or false, so minifies to !0 or !1
@@ -3794,7 +3854,7 @@ function ast_squeeze(ast, options) {
       }
     },
     "new": function(ctor, args) {
-      if (ctor[0] == "name" && ctor[1] == "Array" && !scope.has("Array")) {
+      if (ctor[0] === "name" && ctor[1] === "Array" && !scope.has("Array")) {
         if (args.length != 1) {
           return [ "array", args ];
         } else {
@@ -3803,7 +3863,7 @@ function ast_squeeze(ast, options) {
       }
     },
     "call": function(expr, args) {
-      if (expr[0] == "name" && expr[1] == "Array" && args.length != 1 && !scope.has("Array")) {
+      if (expr[0] === "name" && expr[1] === "Array" && args.length != 1 && !scope.has("Array")) {
         return [ "array", args ];
       }
     },
@@ -3905,10 +3965,10 @@ function gen_code(ast, beautify) {
   };
 
   function best_of(a) {
-    if (a.length == 1) {
+    if (a.length === 1) {
       return a[0];
     }
-    if (a.length == 2) {
+    if (a.length === 2) {
       var b = a[1];
       a = a[0];
       return a.length <= b.length ? a : b;
@@ -3917,7 +3977,7 @@ function gen_code(ast, beautify) {
   };
 
   function needs_parens(expr) {
-    if (expr[0] == "function") {
+    if (expr[0] === "function") {
       // dot/call on a literal function requires the
       // function literal itself to be parenthesized
       // only if it's the first "thing" in a
@@ -3928,10 +3988,10 @@ function gen_code(ast, beautify) {
       // but it worths the trouble.
       var a = slice($stack), self = a.pop(), p = a.pop();
       while (p) {
-        if (p[0] == "stat") return true;
-        if ((p[0] == "seq" && p[1] === self) ||
-            (p[0] == "call" && p[1] === self) ||
-            (p[0] == "binary" && p[2] === self)) {
+        if (p[0] === "stat") return true;
+        if ((p[0] === "seq" && p[1] === self) ||
+            (p[0] === "call" && p[1] === self) ||
+            (p[0] === "binary" && p[2] === self)) {
           self = p;
           p = a.pop();
         } else {
@@ -4053,7 +4113,7 @@ function gen_code(ast, beautify) {
     },
     "dot": function(expr) {
       var out = make(expr), i = 1;
-      if (expr[0] == "num")
+      if (expr[0] === "num")
         out += ".";
       else if (needs_parens(expr))
         out = "(" + out + ")";
@@ -4084,7 +4144,7 @@ function gen_code(ast, beautify) {
       cond = (cond != null ? make(cond) : "").replace(/;*\s*$/, ";" + space);
       step = (step != null ? make(step) : "").replace(/;*\s*$/, "");
       var args = init + cond + step;
-      if (args == "; ; ") args = ";;";
+      if (args === "; ; ") args = ";;";
       out.push("(" + args + ")", make(block));
       return add_spaces(out);
     },
@@ -4112,12 +4172,12 @@ function gen_code(ast, beautify) {
       //      we need to be smarter.
       //      adding parens all the time is the safest bet.
       if (member(lvalue[0], [ "assign", "conditional", "seq" ]) ||
-          lvalue[0] == "binary" && PRECEDENCE[operator] > PRECEDENCE[lvalue[1]]) {
+          lvalue[0] === "binary" && PRECEDENCE[operator] > PRECEDENCE[lvalue[1]]) {
         left = "(" + left + ")";
       }
       if (member(rvalue[0], [ "assign", "conditional", "seq" ]) ||
-          rvalue[0] == "binary" && PRECEDENCE[operator] >= PRECEDENCE[rvalue[1]] &&
-          !(rvalue[1] == operator && member(operator, [ "&&", "||", "*" ]))) {
+          rvalue[0] === "binary" && PRECEDENCE[operator] >= PRECEDENCE[rvalue[1]] &&
+          !(rvalue[1] === operator && member(operator, [ "&&", "||", "*" ]))) {
         right = "(" + right + ")";
       }
       if (operator === 'xor') {
@@ -4127,13 +4187,13 @@ function gen_code(ast, beautify) {
     },
     "unary-prefix": function(operator, expr) {
       var val = make(expr);
-      if (!(expr[0] == "num" || (expr[0] == "unary-prefix" && !HOP(OPERATORS, operator + expr[1])) || !needs_parens(expr)))
+      if (!(expr[0] === "num" || (expr[0] === "unary-prefix" && !HOP(OPERATORS, operator + expr[1])) || !needs_parens(expr)))
         val = "(" + val + ")";
       return operator + (jsp.is_alphanumeric_char(operator.charAt(0)) ? " " : "") + val;
     },
     "unary-postfix": function(operator, expr) {
       var val = make(expr);
-      if (!(expr[0] == "num" || (expr[0] == "unary-postfix" && !HOP(OPERATORS, operator + expr[1])) || !needs_parens(expr)))
+      if (!(expr[0] === "num" || (expr[0] === "unary-postfix" && !HOP(OPERATORS, operator + expr[1])) || !needs_parens(expr)))
         val = "(" + val + ")";
       return val + operator;
     },
@@ -4144,11 +4204,11 @@ function gen_code(ast, beautify) {
       return hash + "[" + make(subscript) + "]";
     },
     "object": function(props) {
-      if (props.length == 0)
+      if (props.length === 0)
         return "{}";
       return "{" + newline + with_indent(function(){
         return MAP(props, function(p){
-          if (p.length == 3) {
+          if (p.length === 3) {
             // getter/setter.  The name is in p[0], the arg.list in p[1][2], the
             // body in p[1][3] and type ("get" / "set") in p[2].
             return indent(make_function(p[0], p[1][2], p[1][3], p[1][4], p[2]));
@@ -4156,7 +4216,7 @@ function gen_code(ast, beautify) {
           var key = p[0], val = make(p[1]);
           if (beautify && beautify.quote_keys) {
             key = make_string(key);
-          } else if ((typeof key == "number" || !beautify && +key + "" == key)
+          } else if ((typeof key === "number" || !beautify && +key + "" === key)
                && parseFloat(key) >= 0) {
             key = make_num(+key);
           } else if (!is_identifier(key)) {
@@ -4172,9 +4232,9 @@ function gen_code(ast, beautify) {
       return "/" + rx + "/" + mods;
     },
     "array": function(elements) {
-      if (elements.length == 0) return "[]";
+      if (elements.length === 0) return "[]";
       return add_spaces([ "[", add_commas(MAP(elements, function(el){
-        if (!beautify && el[0] == "atom" && el[1] == "undefined") return "";
+        if (!beautify && el[0] === "atom" && el[1] === "undefined") return "";
         return parenthesize(el, "seq");
       })), "]" ]);
     },
@@ -4203,7 +4263,7 @@ function gen_code(ast, beautify) {
   // to the inner IF).  This function checks for this case and
   // adds the block brackets if needed.
   function make_then(th) {
-    if (th[0] == "do") {
+    if (th[0] === "do") {
       // https://github.com/mishoo/UglifyJS/issues/#issue/57
       // IE croaks with "syntax error" on code like this:
       //     if (foo) do ... while(cond); else ...
@@ -4213,14 +4273,14 @@ function gen_code(ast, beautify) {
     var b = th;
     while (true) {
       var type = b[0];
-      if (type == "if") {
+      if (type === "if") {
         if (!b[3])
           // no else, we must add the block
           return make([ "block", [ th ]]);
         b = b[3];
       }
-      else if (type == "while" || type == "do") b = b[2];
-      else if (type == "for" || type == "for-in") b = b[4];
+      else if (type === "while" || type === "do") b = b[2];
+      else if (type === "for" || type === "for-in") b = b[4];
       else break;
     }
     return make(th);
@@ -4246,11 +4306,11 @@ function gen_code(ast, beautify) {
       var stat = statements[i];
       var code = make(stat);
       if (code != ";") {
-        if (!beautify && i == last) {
-          if ((stat[0] == "while" && empty(stat[2])) ||
+        if (!beautify && i === last) {
+          if ((stat[0] === "while" && empty(stat[2])) ||
               (member(stat[0], [ "for", "for-in"] ) && empty(stat[4])) ||
-              (stat[0] == "if" && empty(stat[2]) && !stat[3]) ||
-              (stat[0] == "if" && stat[3] && empty(stat[3]))) {
+              (stat[0] === "if" && empty(stat[2]) && !stat[3]) ||
+              (stat[0] === "if" && stat[3] && empty(stat[3]))) {
             code = code.replace(/;*\s*$/, ";");
           } else {
             code = code.replace(/;+\s*$/, "");
@@ -4264,7 +4324,7 @@ function gen_code(ast, beautify) {
 
   function make_switch_block(body) {
     var n = body.length;
-    if (n == 0) return "{}";
+    if (n === 0) return "{}";
     return "{" + newline + MAP(body, function(branch, i){
       var has_body = branch[1].length > 0, code = with_indent(function(){
         return indent(branch[0]
@@ -4281,7 +4341,7 @@ function gen_code(ast, beautify) {
 
   function make_block(statements) {
     if (!statements) return ";";
-    if (statements.length == 0) return "{}";
+    if (statements.length === 0) return "{}";
     return "{" + newline + with_indent(function(){
       return make_block_statements(statements).join(newline);
     }) + newline + indent("}");
@@ -4328,7 +4388,7 @@ function split_lines(code, max_line_length) {
       var tok = next_token.apply(this, arguments);
       out: {
         if (prev_token) {
-          if (prev_token.type == "keyword") break out;
+          if (prev_token.type === "keyword") break out;
         }
         if (current_length(tok) > max_line_length) {
           switch (tok.type) {
@@ -4358,7 +4418,7 @@ function split_lines(code, max_line_length) {
 
 function repeat_string(str, i) {
   if (i <= 0) return "";
-  if (i == 1) return str;
+  if (i === 1) return str;
   var d = repeat_string(str, i >> 1);
   d += d;
   if (i & 1) d += str;
@@ -4473,7 +4533,8 @@ function ast_squeeze_more(ast) {
 
 exports.ast_squeeze_more = ast_squeeze_more;
 });
-_require.define("","index.js",function(require, module, exports, __filename, __dirname){global.__move = exports;
+_require.define("","index.js",function(require, module, exports, __filename, __dirname){global.Move = exports;
+global.__move = exports; // DEPRECATED since 0.4.4. Use global.Move instead.
 
 // Version as a string e.g. "0.2.4"
 exports.version = function version() {
@@ -5201,15 +5262,86 @@ String.prototype.trimRight = function trimRight() {
 });
 _require.define("runtime","runtime/index.js",function(require, module, exports, __filename, __dirname){require('./runtime_string');
 
-// Unless imported by the core module, global.__move is undefined
-if (!global.__move) global.__move = {};
+// Unless imported by the core module, global.Move is undefined
+if (!global.Move) global.Move = {};
 
 // Hack to provide a stub runtime object for things in the runtime lib themselves
-global.__move.runtime = { _MoveKWArgsT: require('./symbols')._MoveKWArgsT };
+global.Move.runtime = {
+  _MoveKWArgsT: require('./symbols')._MoveKWArgsT,
+  dprinter: function(){return function(){};}
+};
 
 // The actual runtime module
-global.__move.runtime = require('./runtime_move');
+global.Move.runtime = require('./runtime_move');
+
+// Load built-in preprocessors' runtime support
+require('./preprocessors/ehtml');
 });
+_require.define("runtime/preprocessors/ehtml","runtime/preprocessors/ehtml.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
+  var M, _MoveKWArgsT, Text, extend, create, print, dprint, repeat, after, JSON, __class, EventEmitter, hasDOM, EHTML, hasClassList;
+  M = Move.runtime, _MoveKWArgsT = M._MoveKWArgsT, Text = M.Text, extend = M.extend, create = M.create, print = M.print, dprint = M.dprinter(module), repeat = M.repeat, after = M.after, JSON = M.JSON, __class = M.__class, EventEmitter = M.EventEmitter;
+  hasDOM = typeof document !== "undefined";
+  if (!hasDOM) {
+    EHTML = function EHTML(html) {
+      html !== null && typeof html === "object" && html.__kw === _MoveKWArgsT && (arguments.keywords = html, html = html.html);
+      return {
+        innerHTML: html
+      };
+    };
+    return;
+  }
+  EHTML = function EHTML(html) {
+    html !== null && typeof html === "object" && html.__kw === _MoveKWArgsT && (arguments.keywords = html, html = html.html);
+    var el;
+    if (!EHTML.spawnerElement) EHTML.spawnerElement = document.createElement("div");
+    EHTML.spawnerElement.innerHTML = html;
+    el = EHTML.spawnerElement.firstChild;
+    return el;
+  };
+  Move.EHTML = EHTML;
+  hasClassList = document.body && document.body.classList;
+  if (hasClassList) {
+    EHTML.createViewImpl = function createViewImpl() {
+      var el;
+      if (this.createView) {
+        el = this.createView.apply(this, arguments);
+        if (el && el instanceof Element) el.classList.add(this.__domid);
+      }
+      return el;
+    };
+  } else {
+    EHTML.createViewImpl = function createViewImpl() {
+      var el;
+      if (this.createView) {
+        el = this.createView.apply(this, arguments);
+        if (el && el instanceof Element) el.className += " " + this.__domid;
+      }
+      return el;
+    };
+  }
+  if (hasClassList) {
+    return EHTML.classNameWrapper = function classNameWrapper(className) {
+      className !== null && typeof className === "object" && className.__kw === _MoveKWArgsT && (arguments.keywords = className, className = className.className);
+      return function (html) {
+        html !== null && typeof html === "object" && html.__kw === _MoveKWArgsT && (arguments.keywords = html, html = html.html);
+        var node;
+        if (node = Move.EHTML(html)) node.classList.add(className);
+        return node;
+      };
+    };
+  } else {
+    return EHTML.classNameWrapper = function classNameWrapper(className) {
+      className !== null && typeof className === "object" && className.__kw === _MoveKWArgsT && (arguments.keywords = className, className = className.className);
+      className = " " + className;
+      return function (html) {
+        html !== null && typeof html === "object" && html.__kw === _MoveKWArgsT && (arguments.keywords = html, html = html.html);
+        var node;
+        if (node = Move.EHTML(html)) node.className += className;
+        return node;
+      };
+    };
+  }
+})();});
 _require.define("runtime/runtime_array","runtime/runtime_array.js",function(require, module, exports, __filename, __dirname){// unique() -> list
 if (typeof Array.prototype.unique !== 'function')
 Array.prototype.unique = function unique() {
@@ -5245,8 +5377,8 @@ if (typeof Array.prototype._move_setSlice != 'function') {
 }
 });
 _require.define("runtime/runtime_class","runtime/runtime_class.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
-  var Move, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class, kObjectConstructor, kProtoKey, __class;
-  Move = __move.runtime, _MoveKWArgsT = Move._MoveKWArgsT, Text = Move.Text, extend = Move.extend, create = Move.create, print = Move.print, repeat = Move.repeat, after = Move.after, JSON = Move.JSON, __class = Move.__class;
+  var M, _MoveKWArgsT, Text, extend, create, print, dprint, repeat, after, JSON, __class, EventEmitter, kObjectConstructor, kProtoKey, __class;
+  M = Move.runtime, _MoveKWArgsT = M._MoveKWArgsT, Text = M.Text, extend = M.extend, create = M.create, print = M.print, dprint = M.dprinter(module), repeat = M.repeat, after = M.after, JSON = M.JSON, __class = M.__class, EventEmitter = M.EventEmitter;
   kObjectConstructor = Object.prototype.constructor;
   kProtoKey = typeof Object.prototype.__proto__ === "object" ? "__proto__" : "prototype";
   exports.__class = __class = function __class() {
@@ -5295,8 +5427,8 @@ _require.define("runtime/runtime_class","runtime/runtime_class.mv",function(requ
   };
 })();});
 _require.define("runtime/runtime_date","runtime/runtime_date.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
-  var Move, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class;
-  Move = __move.runtime, _MoveKWArgsT = Move._MoveKWArgsT, Text = Move.Text, extend = Move.extend, create = Move.create, print = Move.print, repeat = Move.repeat, after = Move.after, JSON = Move.JSON, __class = Move.__class;
+  var M, _MoveKWArgsT, Text, extend, create, print, dprint, repeat, after, JSON, __class, EventEmitter;
+  M = Move.runtime, _MoveKWArgsT = M._MoveKWArgsT, Text = M.Text, extend = M.extend, create = M.create, print = M.print, dprint = M.dprinter(module), repeat = M.repeat, after = M.after, JSON = M.JSON, __class = M.__class, EventEmitter = M.EventEmitter;
   if (Date.distantFuture === undefined) Date.distantFuture = new Date(359753450957352);
   if (Date.distantPast === undefined) Date.distantPast = new Date(-621356868e5);
   if (!Date.nowUTC) Date.nowUTC = function nowUTC() {
@@ -5307,6 +5439,54 @@ _require.define("runtime/runtime_date","runtime/runtime_date.mv",function(requir
   };
   if (!Date.prototype.getUTCComponents) return Date.prototype.getUTCComponents = function getUTCComponents() {
     return [ this.getUTCFullYear(), this.getUTCMonth() + 1, this.getUTCDate(), this.getUTCHours(), this.getUTCMinutes(), this.getUTCSeconds(), this.getUTCMilliseconds() ];
+  };
+})();});
+_require.define("runtime/runtime_events","runtime/runtime_events.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
+  var M, _MoveKWArgsT, Text, extend, create, print, dprint, repeat, after, JSON, __class, EventEmitter;
+  M = Move.runtime, _MoveKWArgsT = M._MoveKWArgsT, Text = M.Text, extend = M.extend, create = M.create, print = M.print, dprint = M.dprinter(module), repeat = M.repeat, after = M.after, JSON = M.JSON, __class = M.__class, EventEmitter = M.EventEmitter;
+  EventEmitter = exports.EventEmitter = __class(EventEmitter = function EventEmitter() {
+    return __class.create(EventEmitter, arguments);
+  }, {
+    on: function (event, invoke) {
+      event !== null && typeof event === "object" && event.__kw === _MoveKWArgsT && (arguments.keywords = event, invoke = event.invoke, event = event.event);
+      var listeners;
+      if (!this.eventListeners) {
+        Object.defineProperty(this, "eventListeners", {
+          value: {}
+        });
+        return this.eventListeners[event] = [ invoke ];
+      } else if (!(listeners = this.eventListeners[event])) {
+        return this.eventListeners[event] = [ invoke ];
+      } else {
+        return listeners.push(invoke);
+      }
+    },
+    emit: function () {
+      var event, listeners, args, i, L;
+      event = arguments[0];
+      if (this.eventListeners && (listeners = this.eventListeners[event])) {
+        args = Array.prototype.slice.call(arguments, 1);
+        for (i = 0, L = listeners.length; i < L; ++i) {
+          listeners[i] && listeners[i].apply(this, args);
+        }
+      }
+    },
+    removeEventListener: function (event, callback) {
+      event !== null && typeof event === "object" && event.__kw === _MoveKWArgsT && (arguments.keywords = event, callback = event.callback, event = event.event);
+      var listeners, i;
+      if (this.eventListeners) {
+        if (callback && (listeners = this.eventListeners[event])) {
+          i = listeners.indexOf(callback);
+          return listeners.splice(i, 1);
+        } else {
+          return this.eventListeners[event] = undefined;
+        }
+      }
+    }
+  });
+  return exports.EventEmitter.enableFor = function enableFor(object) {
+    object !== null && typeof object === "object" && object.__kw === _MoveKWArgsT && (arguments.keywords = object, object = object.object);
+    return extend(object, exports.EventEmitter.prototype);
   };
 })();});
 _require.define("runtime/runtime_inspect","runtime/runtime_inspect.js",function(require, module, exports, __filename, __dirname){/**
@@ -5587,10 +5767,9 @@ function isDate(d) {
 }
 });
 _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
-  var Move, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class, IS_KNOWN_ES5_HOST, defineConstant, extend, create, repeat, after, _JSON, wrapEventEmitter, events;
-  Move = __move.runtime, _MoveKWArgsT = Move._MoveKWArgsT, Text = Move.Text, extend = Move.extend, create = Move.create, print = Move.print, repeat = Move.repeat, after = Move.after, JSON = Move.JSON, __class = Move.__class;
-  _MoveKWArgsT = global.__move.runtime._MoveKWArgsT;
-  global.__move.runtime = exports;
+  var M, _MoveKWArgsT, Text, extend, create, print, dprint, repeat, after, JSON, __class, EventEmitter, IS_KNOWN_ES5_HOST, defineConstant, extend, create, repeat, after, _JSON;
+  M = Move.runtime, _MoveKWArgsT = M._MoveKWArgsT, Text = M.Text, extend = M.extend, create = M.create, print = M.print, dprint = M.dprinter(module), repeat = M.repeat, after = M.after, JSON = M.JSON, __class = M.__class, EventEmitter = M.EventEmitter;
+  _MoveKWArgsT = global.Move.runtime._MoveKWArgsT;
   IS_KNOWN_ES5_HOST = !!(typeof process !== "undefined" && (typeof process.versions === "object" && process.versions.node || process.pid));
   if (!IS_KNOWN_ES5_HOST) {
     require("./es5_object");
@@ -5650,15 +5829,20 @@ _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(requir
   if (typeof console !== "undefined" && console.log) {
     if (typeof window !== "undefined") {
       exports.print = function print() {
-        return print.consoleFun.apply(console, Array.prototype.slice.call(arguments));
+        return console.log.apply(console, Array.prototype.slice.call(arguments));
       };
-      exports.print.consoleFun = console.log;
     } else {
       exports.print = console.log;
     }
   } else {
     exports.print = function print() {};
   }
+  exports.dprinter = function dprinter(module) {
+    module !== null && typeof module === "object" && module.__kw === _MoveKWArgsT && (arguments.keywords = module, module = module.module);
+    return function () {
+      return exports.print.apply(null, [ "[" + module.id + "]" ].concat(Array.prototype.slice.call(arguments)));
+    };
+  };
   exports.repeat = repeat = function repeat(times, every, block) {
     times !== null && typeof times === "object" && times.__kw === _MoveKWArgsT && (arguments.keywords = times, block = times.block, every = times.every, times = times.times);
     var i, timer;
@@ -5707,8 +5891,8 @@ _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(requir
       };
     }
   };
-  exports.after = after = function after(delay, date) {
-    delay !== null && typeof delay === "object" && delay.__kw === _MoveKWArgsT && (arguments.keywords = delay, date = delay.date, delay = delay.delay);
+  exports.after = after = function after(delay, date, target) {
+    delay !== null && typeof delay === "object" && delay.__kw === _MoveKWArgsT && (arguments.keywords = delay, target = delay.target, date = delay.date, delay = delay.delay);
     if (delay) {
       if (typeof delay !== "number") throw new TypeError('"delay" argument must be a number');
     } else if (date) {
@@ -5722,7 +5906,15 @@ _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(requir
     }
     return function (block) {
       block !== null && typeof block === "object" && block.__kw === _MoveKWArgsT && (arguments.keywords = block, block = block.block);
-      return setTimeout(block, delay);
+      var b;
+      if (target) {
+        b = function b() {
+          return block.apply(target, arguments);
+        };
+      } else {
+        b = block;
+      }
+      return setTimeout(b, delay);
     };
   };
   JSON = global.JSON;
@@ -5733,34 +5925,9 @@ _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(requir
   _JSON.parse = JSON.parse;
   _JSON.stringify = JSON.stringify;
   exports.JSON = _JSON;
-  wrapEventEmitter = function wrapEventEmitter(target, propertyName) {
-    target !== null && typeof target === "object" && target.__kw === _MoveKWArgsT && (arguments.keywords = target, propertyName = target.propertyName, target = target.target);
-    var _orig, addListener;
-    _orig = target[propertyName];
-    addListener = function addListener(event, call) {
-      event !== null && typeof event === "object" && event.__kw === _MoveKWArgsT && (arguments.keywords = event, call = event.call, event = event.event);
-      var self;
-      if (call) {
-        return _orig.call(this, event, call);
-      } else {
-        self = this;
-        return function (block) {
-          block !== null && typeof block === "object" && block.__kw === _MoveKWArgsT && (arguments.keywords = block, block = block.block);
-          return _orig.call(self, event, block);
-        };
-      }
-    };
-    return target[propertyName] = addListener;
-  };
-  try {
-    events = require("events");
-  } catch (e) {}
-  if (events && events.EventEmitter) {
-    wrapEventEmitter(events.EventEmitter.prototype, "addListener");
-    events.EventEmitter.prototype.on = events.EventEmitter.prototype.addListener;
-  }
-  if (typeof process !== "undefined" && typeof process.on === "function") wrapEventEmitter(process, "on");
-  return exports.__class = require("./runtime_class").__class;
+  global.Move.runtime = exports;
+  exports.__class = require("./runtime_class").__class;
+  return exports.EventEmitter = require("./runtime_events").EventEmitter;
 })();});
 _require.define("runtime/runtime_object","runtime/runtime_object.js",function(require, module, exports, __filename, __dirname){if (!Object.prototype.forEach) {
   var forEach = function forEach(block, ctx, onlyOwnProperties) {
@@ -5858,10 +6025,10 @@ exports._MoveKWArgsT = function _MoveKWArgsT(obj) {
 
 
 _require('');
-var move = global.__move;
+var move = global.Move;
 
 // --------------------------------------------------------------
-move.version = function () { return "0.4.3"; };
+move.version = function () { return "0.4.4"; };
 
 // --------------------------------------------------------------
 move.require = Require();
@@ -5872,11 +6039,19 @@ move.require = Require();
 
 // Called when a Move script has been compiled (or failed to compile or load)
 // For a <script> tag source, `origin` is the HTMLElement instance
-var _eval = window.execScript || function _eval(jscode) { window["eval"].call(window, jscode); };
-move.executeScript = function executeScript(err, jscode, origin) {
-  if (err) throw err;
-  _eval(jscode);
-};
+
+if (typeof window.execScript === 'function') {
+  // MSIE specific
+  move.executeScript = function executeScript(jscode, origin) {
+    return window.execScript(jscode);
+  };
+} else {
+  // Fallback on window.eval
+  move.executeScript = function executeScript(jscode, origin) {
+    return window["eval"](jscode);
+  };
+}
+
 
 
 // Convenience function for compiling and defining modules based on move source
@@ -5893,7 +6068,7 @@ move.compileModule = function compileModule(mvcode, id, uri, execute, compileOpt
   if (id) {
     jscode = wrapAsModule(jscode, null, uri, id);
   } else {
-    jscode = '(' + jscode + ')(__move.require, {exports:{}}, {});\n';
+    jscode = '(' + jscode + ')(Move.require, {exports:{}}, {});\n';
   }
   execute = execute || execute === undefined;
   return execute ? move.executeScript(null, jscode, uri) : jscode;
@@ -5906,7 +6081,7 @@ move.scriptCompilationOptions = {preprocess:['ehtml']};
 // Module wrapper
 var wrapAsModule = function wrapAsModule(jscode, src, uri, id) {
   if (!id) id = src.replace(/\.[^\.]+$/, '');
-  return '__move.require.define('+
+  return 'Move.require.define('+
     JSON.stringify(id)+','+
     JSON.stringify(uri || src)+','+
     jscode + ');\n';
@@ -5921,9 +6096,16 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
   var decr = function () {
     if ((--pending) === 0) {
       // all loaded -- exec in order
-      var i = 0, L = completeQ.length;
-      for (;i<L;++i)
-        move.executeScript.apply(move, completeQ[i]);
+      var i = 0, L = completeQ.length, args;
+      for (;i<L;++i) {
+        // note: "apply", not "call". completeQ[i] => [err, jscode, uri, extra1, extraN, ..]
+        args = completeQ[i];
+        if (!args[0]) {
+          move.executeScript.call(move, args[1], args[2]);
+        } else { // error
+          throw args[0];
+        }
+      }
       if (typeof callback === 'function')
         callback(null, completeQ);
     }
@@ -5941,17 +6123,18 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
           opts.moduleStub = true;
           move.compileURL(opts.filename, opts, function (err, jscode) {
             jscode = wrapAsModule(jscode, script.getAttribute('src'), opts.filename);
-            completeQ[qIndex] = [err, jscode, script];
+            completeQ[qIndex] = [err, jscode, opts.filename, script];
             decr();
           });
         } else {
+          var id = script.getAttribute('module');
+          opts.filename = '<script module="'+id+'">';
           try {
-            // RIP OUT into public function
-            var id = script.getAttribute('module');
+            // TODO: rip out into public function
             jscode = move.compileModule(script.innerHTML, id, null, false, opts);
-            completeQ[qIndex] = [null, jscode, script];
+            completeQ[qIndex] = [null, jscode, opts.filename, script];
           } catch (e) {
-            completeQ[qIndex] = [e, null, script];
+            completeQ[qIndex] = [e, null, opts.filename, script];
           }
           decr();
         }

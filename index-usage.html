@@ -1,8 +1,17 @@
-<h2>Usage</h2>
+<h2 id="Usage">Usage</h2>
 
 <p>Move can run in web browsers and &ldquo;interpreters&rdquo; like <a href="http://nodejs.org/">Node.js</a>. Move has been designed so that your code can be run in web browsers and &ldquo;interpreters&rdquo; without any changes &mdash; your code is always running in an ES5 environment with a CommonJS module system.</p>
 
-<h3>Using Move in web browsers</h3>
+<p>Jump to:</p>
+
+<ul>
+<li><a href="#Using+Move+in+web+browsers">Using Move in web browsers</a></li>
+<li><a href="#Using+Move+in+Node.js">Using Move in Node.js</a></li>
+<li><a href="#Using+Move+from+the+command+line">Using Move from the command line</a></li>
+</ul>
+
+
+<h3 id="Using+Move+in+web+browsers">Using Move in web browsers</h3>
 
 <p>To run Move in a web browser, you simply include <a href="/move.js">move.js</a>:</p>
 
@@ -38,7 +47,7 @@ foo.sayHello()
 
 <p>You don&rsquo;t have to care about the order in which you define your modules. The only thing you need to think about is where you execute embedded code.</p>
 
-<h4>Complete example</h4>
+<h4 id="Complete+example">Complete example</h4>
 
 <pre><code>&lt;script src="http://movelang.org/move.js"&gt;&lt;/script&gt;
 &lt;script type="text/move" module="bar"&gt;
@@ -59,20 +68,20 @@ bar.sayHello 'worlds'
 
 <p>When the DOM loads, &ldquo;Hello Worlds!&rdquo; is printed to the console.</p>
 
-<p>The Move module itself is available as the global variable <code>move</code> (technically a property of <code>window</code>). This module provides access to preprocessors, the parser &amp; compiler and version info. It also houses the Move runtime library (<code>move.runtime</code>) which can be manipulated. An example of evaluating some Move code:
+<p>The Move module itself is available as the global variable <code>Move</code> (technically a property of <code>window</code>). This module provides access to preprocessors, the parser &amp; compiler and version info. It also houses the Move runtime library (<code>Move.runtime</code>) which can be manipulated. An example of evaluating some Move code:
 <samp>&ldquo;function () {
   return print("Hello&rdquo;);
 }&ldquo;</samp></p>
 
-<pre><code>move.eval '^{ print "Hello" }'
+<pre><code>Move.eval '^{ print "Hello" }'
 </code></pre>
 
 <p>This is available in both Move-land <em>and JavaScript-land</em>:</p>
 
-<pre><code>move.eval('^{ print "Hello" }');
+<pre><code>Move.eval('^{ print "Hello" }');
 </code></pre>
 
-<h3>Using Move in Node.js</h3>
+<h3 id="Using+Move+in+Node.js">Using Move in Node.js</h3>
 
 <p>First up; install Move through <a href="http://npmjs.org/">NPM</a>:</p>
 
@@ -83,7 +92,105 @@ bar.sayHello 'worlds'
 
 <p>To run Move code directly from the command line, use the <code>move</code> program:</p>
 
-<pre><code>$ move hello.mv
+<pre><code>move hello.mv
 </code></pre>
 
 <p>Note that you can not load Move code directly through <code>node</code> since Node has no knowledge about how to compile Move code. The <code>move</code> program simply registers the Move compiler with Node&rsquo;s module loading system and then loads your module.</p>
+
+<h3 id="Using+Move+from+the+command+line">Using Move from the command line</h3>
+
+<p>When you install move for Node.js, you will have access to a <code>move</code> command line client program.</p>
+
+<p>To see a list of available commands, run <code>move --help</code>:</p>
+
+<pre class="wide">
+$ move --help
+Usage: move [global options] &lt;command&gt; [command arguments ..]
+       move [global options] &lt;filename&gt;
+Global options:
+  --help, -h       Show this help message.
+Commands:
+  build            Build a Move web app.
+  build-weblib     Build the Move library for web browsers
+  compile          Parse and compile Move code.
+  run              Run a Move program.
+  version          Print version and exit.
+  help             Display help for a command.
+</pre>
+
+
+<p>To show help for a specific command, run <code>move command --help</code>:</p>
+
+<pre class="wide">
+$ move run --help
+Usage: move run [options] &lt;filename&gt; [..]
+Options:
+  --optimization-level, -O &lt;i&gt;       Optimization level. Defaults to 0 (basic).
+  --help, -h                         Show this message
+</pre>
+
+
+<p>Execute a move program:</p>
+
+<pre><code>move foo/bar.mv
+move run foo/bar.mv
+</code></pre>
+
+<p>Compile move code to JavaScript:</p>
+
+<pre><code>move compile foo/bar.mv
+move compile --output foo/bar.js foo/bar.mv
+</code></pre>
+
+<p>The compile command can do a lot more than just compiling Move code. One of the most useful features is the ability to &ldquo;bundle&rdquo; a source tree of Move and JavaScript into a name-spaced (CommonJS modules), single JavaScript file. Imagine the following source tree:</p>
+
+<pre><code>main.mv
+lib/bar.js
+lib/scrap.txt
+src/index.mv
+src/foo.mv
+src/cat/index.mv
+src/cat/zelda.js
+</code></pre>
+
+<p>Now, we&rsquo;ll bundle these files:</p>
+
+<pre class="wide">
+move compile --bundle --output bundle.js --basedir src main.mv src lib/*.js
+</pre>
+
+
+<p>Which will write something like this to <code>bundle.js</code>:</p>
+
+<pre class="wide">
+Move.require.define("main","main.mv",function(require,module,exports) {
+  // code generated from main.mv
+});
+Move.require.define("lib/bar","lib/bar.js",function(require,module,exports) {
+  // code generated from lib/bar.js
+});
+Move.require.define("","src/index.mv",function(require,module,exports) {
+  // code generated from src/index.mv
+});
+Move.require.define("foo","src/foo.mv",function(require,module,exports) {
+  // code generated from src/foo.mv
+});
+Move.require.define("cat","src/cat/index.mv",function(require,module,exports) {
+  // code generated from src/cat/index.mv
+});
+Move.require.define("cat/zelda","src/cat/zelda.js",function(require,module,exports) {
+  // code generated from src/cat/zelda.js
+});
+(function(){
+  // code that executes the "" module when the DOM is ready
+})();
+</pre>
+
+
+<p>Note that this file can now be imported into a document:</p>
+
+<pre><code>&lt;head&gt;
+  &lt;script src="move.js"&gt;&lt;/script&gt;
+  &lt;script src="bundle.js"&gt;&lt;/script&gt;
+  ...
+</code></pre>

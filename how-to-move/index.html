@@ -211,7 +211,7 @@ programming computers.
 
     <section class="body">
   <wrapper>
-    <h1>How to Move</h1>
+    <h1 id="How+to+Move">How to Move</h1>
 
 <p>Move takes a mix of concepts proven successful in other programming languages,
 simplifies these concepts in the context of non-computer scientists while
@@ -225,7 +225,7 @@ initial effort required to get up to speed and can dive into the adventure of
 software design much earlier, not having to spend too much time thinking about
 the language itself.</p>
 
-<h2>Why?</h2>
+<h2 id="Why?">Why?</h2>
 
 <p>The first thing we must discuss is <em>&ldquo;Why should I learn to program computers?&rdquo;</em>.
 It&rsquo;s a very good question without a single and universally good explanation, so
@@ -258,7 +258,7 @@ we work our way from an abstract idea to a concrete result.</p>
 
 <p>Now, let&rsquo;s get Moving!</p>
 
-<h2>Values and data</h2>
+<h2 id="Values+and+data">Values and data</h2>
 
 <p>A <em>value</em> is a piece of information. Something that <em>does not do anything</em> but
 is rather used by and passed around a program. You can think of a <em>value</em> as the
@@ -291,7 +291,7 @@ which makes these little buggers a very powerful tool.</p>
 </ul>
 
 
-<h2>Organizing values</h2>
+<h2 id="Organizing+values">Organizing values</h2>
 
 <p>When you want to keep a value around there&rsquo;s something called a <em>variable</em>.
 To put a value into a variable, we make up a name for the variable, then use
@@ -320,7 +320,7 @@ simply assign another value to our <code>name</code> variable:</p>
 
 <p>When we print <code>name</code>, &ldquo;John&rdquo; is displayed rather than &ldquo;Julia&rdquo;. Pretty neat, huh?!</p>
 
-<h2>Reusable programs with <em>functions</em></h2>
+<h2 id="Reusable+programs+with+*functions*">Reusable programs with <em>functions</em></h2>
 
 <p>A <em>function</em> is a block of code which can be called (or &ldquo;performed&rdquo; if you will)
 many times. We can put commonly used code inside functions to avoid re-writing
@@ -411,12 +411,15 @@ v = document.getElementsByTagName('pre')
 for (i=0,L=v.length; i < L; ++i) {
   n = v.item i
   a = n.getAttribute('class') || ''
-  n.setAttribute 'title', 'Move code'
+  if (a.indexOf('wide') == -1)
+    n.setAttribute 'title', 'Move code'
   if (n.firstChild && n.firstChild.nodeName == 'CODE') {
     if (a.indexOf('prettyprint') === -1 &&
         (n.firstChild.getAttribute('class') || '').indexOf('prettyprint') === -1) {
       n.setAttribute 'class', a+' prettyprint lang-mv'
     }
+  } else {
+    n.setAttribute 'class', a+' prettyprint lang-mv'
   }
 }
 

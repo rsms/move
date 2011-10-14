@@ -211,11 +211,11 @@ programming computers.
 
     <section class="body">
   <wrapper>
-    <h1>Move standard library</h1>
+    <h1 id="Move+standard+library">Move standard library</h1>
 
 <p>Built-in objects and functions</p>
 
-<h2>Number</h2>
+<h2 id="Number">Number</h2>
 
 <ul>
 <li><p><code>literal → number</code> — Numbers are created using literal numbers like <code>123.4</code> or <code>0xf4</code>. Refer to the <a href="#types/number">language reference on numbers</a> for details.</p></li>
@@ -228,7 +228,7 @@ programming computers.
 </ul>
 
 
-<h3>Number.prototype</h3>
+<h3 id="Number.prototype">Number.prototype</h3>
 
 <ul>
 <li><p><code>toExponential(fractionDigits) → text</code> — Returns text representing the number in exponential notation. <code>fractionDigits</code> defaults to as many digits as necessary to specify the number.</p></li>
@@ -237,7 +237,7 @@ programming computers.
 </ul>
 
 
-<h2>Object</h2>
+<h2 id="Object">Object</h2>
 
 <ul>
 <li><p><code>{key1: value1, key2: value2, ..., keyN: valueN} → object</code> — Creates a new object with zero or more value properties.</p></li>
@@ -258,7 +258,7 @@ programming computers.
 </ul>
 
 
-<h3>Object.prototype</h3>
+<h3 id="Object.prototype">Object.prototype</h3>
 
 <ul>
 <li><p><code>.name ←→ value</code> — Access or modify the value for property named <em>name</em>.</p></li>
@@ -272,7 +272,7 @@ programming computers.
 </ul>
 
 
-<h2>Array</h2>
+<h2 id="Array">Array</h2>
 
 <ul>
 <li><p><code>[value1, value2, ..., valueN] → list</code> — Creates a list holding zero or more values.</p></li>
@@ -281,7 +281,7 @@ programming computers.
 </ul>
 
 
-<h3>Array.prototype</h3>
+<h3 id="Array.prototype">Array.prototype</h3>
 
 <ul>
 <li><p><code>length ←→ number</code> — Number of items in the list.</p></li>
@@ -309,7 +309,7 @@ programming computers.
 </ul>
 
 
-<h2>Text</h2>
+<h2 id="Text">Text</h2>
 
 <p><em>Text</em> is an alias for the JavaScript built-in type <code>String</code> and is the object prototype used for text values. The use of <code>Text</code> in favor for <code>String</code> is recommended but not enforced.</p>
 
@@ -320,7 +320,7 @@ programming computers.
 </ul>
 
 
-<h3>Text.prototype</h3>
+<h3 id="Text.prototype">Text.prototype</h3>
 
 <ul>
 <li><p><code>length → number</code> — Number of characters.</p></li>
@@ -364,14 +364,14 @@ programming computers.
 </ul>
 
 
-<h2>Function</h2>
+<h2 id="Function">Function</h2>
 
 <ul>
 <li><code>^(arg1[:val1], arg2[:val2], ..., argN[:valN]) { body } → function</code> — Create a function with zero or more arguments where &ldquo;body&rdquo; is substituted for the function&rsquo;s code block.</li>
 </ul>
 
 
-<h3>Function.prototype</h3>
+<h3 id="Function.prototype">Function.prototype</h3>
 
 <ul>
 <li><p><code>apply(this, arguments:[]) → value</code> — Applies the function in the context (the &ldquo;this&rdquo; value) of a different object. Arguments can be passed as an Array object.</p></li>
@@ -388,7 +388,7 @@ foo {}
 foo.call {name: "John"}
 </code></pre>
 
-<h2>Date</h2>
+<h2 id="Date">Date</h2>
 
 <ul>
 <li><p><code>Date(year:0, month:0, day:0, hours:0, minutes:0, seconds:0, milliseconds:0) → text</code> — Date and time as text in a locale-specific format</p></li>
@@ -405,7 +405,7 @@ foo.call {name: "John"}
 </ul>
 
 
-<h3>Date.prototype</h3>
+<h3 id="Date.prototype">Date.prototype</h3>
 
 <ul>
 <li><code>getDate() → number</code> — Returns the day of the month (1-31) for the specified date according to local time.</li>
@@ -463,7 +463,7 @@ foo.call {name: "John"}
 </ul>
 
 
-<h2>RegExp</h2>
+<h2 id="RegExp">RegExp</h2>
 
 <ul>
 <li><p><code>/pattern/flags → regexp</code> — Create a regular expression by compiling <code>pattern</code> (unquoted text) with regards to <code>flags</code> (unquoted text).</p></li>
@@ -480,7 +480,7 @@ multiple lines (i.e., match the beginning or end of each line (delimited by
 </ul>
 
 
-<h3>RegExp.prototype</h3>
+<h3 id="RegExp.prototype">RegExp.prototype</h3>
 
 <ul>
 <li><p><code>global ←→ true|false</code> — Whether to test the regular expression against all possible matches in a text, or only against the first.</p></li>
@@ -499,14 +499,14 @@ multiple lines (i.e., match the beginning or end of each line (delimited by
 </ul>
 
 
-<h2>Boolean</h2>
+<h2 id="Boolean">Boolean</h2>
 
 <ul>
 <li><code>Boolean(value) → true|false</code> — Returns the <a href="#types/atom">&ldquo;true&rdquo; atom</a> if <em>value</em> is truthy. Otherwise the &ldquo;false&rdquo; atom is returned.</li>
 </ul>
 
 
-<h2>JSON</h2>
+<h2 id="JSON">JSON</h2>
 
 <ul>
 <li><p><code>JSON(value) → text</code>, <code>JSON{build: value} → text</code>, <code>JSON.stringify(value) → text</code> — Takes any serializable object and returns the <a href="http://json.org/">JSON</a> representation.</p></li>
@@ -514,16 +514,15 @@ multiple lines (i.e., match the beginning or end of each line (delimited by
 </ul>
 
 
-<h2>Move</h2>
+<h2 id="Move">Move</h2>
 
 <p><em>Move</em> houses the Move runtime library. All members of <em>Move</em> are available directly (i.e. access by &ldquo;foo&rdquo; instead of &ldquo;Move.foo&rdquo;) and need not be &ldquo;prefixed&rdquo;.</p>
 
-<h3>create</h3>
+<h3 id="create">create</h3>
 
 <ul>
 <li><p><code>create(prototype, body) → object</code> — Creates a new object whose prototype is the <em>prototype</em> object and whose value properties are those specified by the <em>body</em> object (e.g. <code>{key1: value1, key2: value2, ..., keyN: valueN}</code>). Note that <em>body</em> is not a property specification as accepted by <a href="#Object">Object.create</a>, but a regular object literal with keys and values.</p></li>
 <li><p><code>create(prototype) → object</code> — Creates a new object whose prototype is the <em>prototype</em> object.</p></li>
-<li><p><code>create(prototype, ^{...}) → object</code> — Creates a new object whose prototype is the <em>prototype</em> object. The second argument (a function) is applied to the newly created object (the &ldquo;this&rdquo; variable represents the new object within the function) which can be used to initialize any properties.</p></li>
 </ul>
 
 
@@ -536,11 +535,10 @@ cat = create animal, { type: "furry" }
 print "Cat: " + cat
 </code></pre>
 
-<h3>extend</h3>
+<h3 id="extend">extend</h3>
 
 <ul>
-<li><p><code>extend(object, body) → object</code> — Extend <em>object</em> by adding a (shallow) copy of all property values from the <em>body</em> object.</p></li>
-<li><p><code>extend(object, ^{...}) → object</code> — Extend or manipulate <em>object</em> by calling the passed function (second argument) on <em>object</em> (the &ldquo;this&rdquo; variable will represent <em>object</em>)</p></li>
+<li><code>extend(object, body, onlyOwnProperties:false) → object</code> — Extend <em>object</em> by adding a (shallow) copy of all property values from the <em>body</em> object.</li>
 </ul>
 
 
@@ -554,7 +552,7 @@ extend fruit, { lime: "green", oranges: "orange" }
 print fruit
 </code></pre>
 
-<h3>print</h3>
+<h3 id="print">print</h3>
 
 <ul>
 <li><code>print(value1, value2, ..., valueN)</code> — Present zero or more values in a visual fashion. How the values are presented is defined by the implementation. By default <em>print</em> will send the values to the runtime engine&rsquo;s <em>console.log</em> if exists or do nothing.</li>
@@ -563,7 +561,7 @@ print fruit
 
 <p>The <em>print</em> function is often overridden in user-specific implementations by simply assigning a custom function, e.g. <code>Move.print = ^{ ...my print logic... }</code>.</p>
 
-<h3>repeat</h3>
+<h3 id="repeat">repeat</h3>
 
 <ul>
 <li><p><code>repeat{times: number} → ^(^{...})</code>, <code>repeat(number) → ^(^{...})</code> — Returns an &ldquo;executor&rdquo; function which when called will call the passed function <em>number</em> times. If the passed function returns the <em>true</em> atom, repetition is canceled.</p></li>
@@ -593,7 +591,7 @@ Hello in just a second
 }
 </code></pre>
 
-<h3>after</h3>
+<h3 id="after">after</h3>
 
 <ul>
 <li><code>after{delay: milliseconds} → ^(^{...})</code>, <code>after(milliseconds) → ^(^{...})</code> — Returns an &ldquo;executor&rdquo; function which when called will execute the passed function after <em>delay</em> number of milliseconds.</li>
@@ -608,7 +606,7 @@ Hello in just a second
 
 <p><em><code>after</code> was introduced in Move 0.3.1</em></p>
 
-<h3>class</h3>
+<h3 id="class">class</h3>
 
 <ul>
 <li><code>class parentFactory, prototypeObject → factory</code></li>
@@ -672,12 +670,15 @@ v = document.getElementsByTagName('pre')
 for (i=0,L=v.length; i < L; ++i) {
   n = v.item i
   a = n.getAttribute('class') || ''
-  n.setAttribute 'title', 'Move code'
+  if (a.indexOf('wide') == -1)
+    n.setAttribute 'title', 'Move code'
   if (n.firstChild && n.firstChild.nodeName == 'CODE') {
     if (a.indexOf('prettyprint') === -1 &&
         (n.firstChild.getAttribute('class') || '').indexOf('prettyprint') === -1) {
       n.setAttribute 'class', a+' prettyprint lang-mv'
     }
+  } else {
+    n.setAttribute 'class', a+' prettyprint lang-mv'
   }
 }
 

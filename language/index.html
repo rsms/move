@@ -211,18 +211,18 @@ programming computers.
 
     <section class="body">
   <wrapper>
-    <h1>Language reference</h1>
+    <h1 id="Language+reference">Language reference</h1>
 
 <p>This is a summary of the Move language and not a complete reference. Please see <a href="http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-262.pdf">the ECMA-262 specification</a> for details.</p>
 
 <hr />
 
-<h2>Value types</h2>
+<h2 id="Value+types">Value types</h2>
 
 <p>There are five different value types in Move: numbers, text, lists, objects and
 functions.</p>
 
-<h3>Numbers</h3>
+<h3 id="Numbers">Numbers</h3>
 
 <p>Numbers can be written in either decimal, hexadecimal or octal notation.</p>
 
@@ -258,7 +258,7 @@ print 02322
 print 1234 == 1234.0
 </code></pre>
 
-<h3>Text</h3>
+<h3 id="Text">Text</h3>
 
 <p>Text can contain any Unicode characters and is stored as UTF-16 text. A piece of
 text is denoted by enclosing quotation marks (&ldquo; and &rdquo; or &lsquo; and &rsquo;) with any text except line breaks or (same as the enclosing) quotation marks. Standard
@@ -285,7 +285,7 @@ substrings:
 <pre><code>print "Kittens are cute".split(" ")
 </code></pre>
 
-<h3>Lists &amp; arrays</h3>
+<h3 id="Lists+++arrays">Lists &amp; arrays</h3>
 
 <p>A List (or Array) is a form of compound value which contains other values in a
 ordered sequence. Lists are composed by enclosing zero or more values in a square bracket character pair (&ldquo;[&rdquo; and &ldquo;]&rdquo;), separated by comma characters. Lists can also be created by programmatic composition. The built-in <tt>Array</tt> object&rsquo;s prototype is the prototype used for new lists.</p>
@@ -306,7 +306,7 @@ list[list.length] = "cute"
 print list
 </code></pre>
 
-<h3>Objects</h3>
+<h3 id="Objects">Objects</h3>
 
 <p>The Object type is fundamental to Move (and JavaScript) as all other values are in fact Objects. E.g. a Number is a special type of Object. We say that &ldquo;Move contains five different types of values&rdquo; which is a simplification. Move has in fact only one type — Object — but at the same time,
 the language and the runtime <em>treats some Object subtypes differently</em>, like Numbers which can be used for mathematical operations or text which when &ldquo;added&rdquo;
@@ -334,7 +334,7 @@ obj.c = 3
 print obj.c
 </code></pre>
 
-<h3>Functions</h3>
+<h3 id="Functions">Functions</h3>
 
 <p>Functions are denoted by a circumflex accent character (&ldquo;<sup>&ldquo;)</sup> optionally followed by argument declarations wrapped in a parenthesis character pair (&rdquo;(&ldquo; and &rdquo;)&ldquo;), finally followed by a block of code wrapped in a pair of curly bracket characters (&rdquo;{&ldquo; and &rdquo;}&ldquo;).</p>
 
@@ -372,7 +372,7 @@ y{}
 print x
 </code></pre>
 
-<h3>Atoms</h3>
+<h3 id="Atoms">Atoms</h3>
 
 <p>Move has a set of &ldquo;atoms&rdquo; which are basically pre-defined constants with itself as its value. They are called &ldquo;atoms&rdquo; since there is only one single, global and immutable instance (or &ldquo;version&rdquo; if you will) of each of these special values:</p>
 
@@ -395,7 +395,7 @@ Yes = true
 print Yes == true
 </code></pre>
 
-<h2>List slices</h2>
+<h2 id="List+slices">List slices</h2>
 
 <p>Move features a syntax for extracting and assigning slices of collections.</p>
 
@@ -445,7 +445,81 @@ x[1:3] = [9]
 print x
 </code></pre>
 
-<h2>Embedded HTML</h2>
+<h2 id="Module+system">Module system</h2>
+
+<p>Move uses the <a href="http://wiki.commonjs.org/wiki/Modules/1.1">CommonJS module system</a>.</p>
+
+<h3 id="Importing+modules">Importing modules</h3>
+
+<p>Modules are imported using the <code>import</code> expression or <code>require</code> function.</p>
+
+<p>Import a globally available module named &ldquo;foo&rdquo;:</p>
+
+<pre><code>import foo
+# is equivalent to:
+foo = require 'foo'
+</code></pre>
+
+<p>Import a module from the same source tree location:</p>
+
+<pre><code>import .foo
+# is equivalent to:
+foo = require './foo'
+</code></pre>
+
+<p>Import a module from the parent source tree location:</p>
+
+<pre><code>import ..foo
+# is equivalent to:
+foo = require '../foo'
+</code></pre>
+
+<p>Several modules can be specified in a single statement, separated by commas:</p>
+
+<pre><code>import ..foo, bar, ...baz, .john/smith
+# is equivalent to:
+foo = require '../foo'
+bar = require 'bar'
+baz = require '../../baz'
+smith = require './john/smith'
+</code></pre>
+
+<p><em>Consistent <code>import</code> was was introduced in Move 0.4.4</em></p>
+
+<h3 id="Exporting+module+API">Exporting module API</h3>
+
+<p>A module exports its API by using the <code>export</code> expression or by adding values to the <code>module.exports</code> object.</p>
+
+<p>Examples:</p>
+
+<pre><code>export foo = 'This is foo'
+
+bar = "This is bar"
+export bar
+
+module.exports.baz = "This is baz"
+
+# The exports object is also available as a module-local variable,
+# thus the above has the same effect as the following:
+exports.baz = "This is baz"
+</code></pre>
+
+<p>When other code imports your module, the exported API is what&rsquo;s available to the calling code. For instance, consider this module &ldquo;foo.mv&rdquo;:</p>
+
+<pre><code>export version = "1.2.3"
+build = "4"
+export run = ^{ print "Running", version, '/', build }
+</code></pre>
+
+<p>Now we import this module into some other code:</p>
+
+<pre><code>import foo
+print foo.verison  #--&gt; "1.2.3"
+print foo.build    #--&gt; undefined
+print foo          # { version: "1.2.3", run: [Function run] }
+</code></pre>
+
+<h2 id="Embedded+HTML">Embedded HTML</h2>
 
 <p>Embedded HTML &mdash; or &ldquo;EHTML&rdquo; &mdash; is a way to embed HTML inside Move code:
 <samp>&hellip;&lt;div class=&ldquo;profile-picture&rdquo;&gt;↩
@@ -501,12 +575,15 @@ v = document.getElementsByTagName('pre')
 for (i=0,L=v.length; i < L; ++i) {
   n = v.item i
   a = n.getAttribute('class') || ''
-  n.setAttribute 'title', 'Move code'
+  if (a.indexOf('wide') == -1)
+    n.setAttribute 'title', 'Move code'
   if (n.firstChild && n.firstChild.nodeName == 'CODE') {
     if (a.indexOf('prettyprint') === -1 &&
         (n.firstChild.getAttribute('class') || '').indexOf('prettyprint') === -1) {
       n.setAttribute 'class', a+' prettyprint lang-mv'
     }
+  } else {
+    n.setAttribute 'class', a+' prettyprint lang-mv'
   }
 }
 
