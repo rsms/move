@@ -5,23 +5,13 @@ seenEvents = {}
 x = Object.create(events.EventEmitter.prototype)
 slice = Array.prototype.slice
 
-x.on ("event1") ^{ seenEvents["event1"] = slice.call(arguments) }
+x.on "event1", ^{ seenEvents["event1"] = slice.call(arguments) }
 x.emit "event1"
 assert.deepEqual(seenEvents["event1"], [])
 
-x.on ("event2") ^{ seenEvents["event2"] = slice.call(arguments) }
+x.on "event2", ^{ seenEvents["event2"] = slice.call(arguments) }
 x.emit("event2", 1, 2, 3)
 assert.deepEqual(seenEvents["event2"], [1, 2, 3])
-
-# Keyword call-style
-x.on {event:"event3"} ^{ seenEvents["event3"] = slice.call(arguments) }
-x.emit("event3", "event3")
-assert.equal(seenEvents["event3"], "event3")
-
-# Keyword call-style with embedded block
-x.on {event:"event4", call:^{ seenEvents["event4"] = slice.call(arguments) }}
-x.emit("event4", "event4")
-assert.equal(seenEvents["event4"], "event4")
 
 # Positional call-style with embedded block
 x.on ("event5", ^{ seenEvents["event5"] = slice.call(arguments) })
@@ -29,14 +19,8 @@ x.emit("event5", "event5")
 assert.equal(seenEvents["event5"], "event5")
 
 # process implements its own event emitter
-process.on("exit",            ^{ seenEvents["exit1"] = 'positional' })
-process.on{event:"exit", call:^{ seenEvents["exit2"] = 'keywords' }}
-process.on("exit")            ^{ seenEvents["exit3"] = 'positional+block' }
-process.on{event:"exit"}      ^{ seenEvents["exit4"] = 'keywords+block' }
+process.on "exit", ^{ seenEvents["exit1"] = 'positional' }
 # uhm, let's just hope this last one works
 process.on("exit", ^{
-  assert.equal(seenEvents["exit1"], 'positional')
-  assert.equal(seenEvents["exit2"], 'keywords' )
-  assert.equal(seenEvents["exit3"], 'positional+block' )
-  assert.equal(seenEvents["exit4"], 'keywords+block' )
+  assert.equal seenEvents["exit1"], 'positional'
 })
