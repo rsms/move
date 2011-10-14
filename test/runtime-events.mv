@@ -24,3 +24,48 @@ process.on "exit", ^{ seenEvents["exit1"] = 'positional' }
 process.on("exit", ^{
   assert.equal seenEvents["exit1"], 'positional'
 })
+
+# test custom event emitting objects
+seenEvents = {}
+
+foo = {}
+EventEmitter.enableFor foo
+extend foo, EventEmitter.prototype
+
+foo.on "event1", event1Listener = ^{ seenEvents["event1"] = slice.call(arguments) }
+foo.emit "event1"
+assert.deepEqual(seenEvents["event1"], [])
+
+foo.on "event2", ^{ seenEvents["event2"] = slice.call(arguments) }
+foo.emit "event2", 'arg2', 'arg3'
+assert.deepEqual(seenEvents['event2'], ['arg2', 'arg3'])
+
+foo.on "event2", ^{ seenEvents["event2b"] = slice.call(arguments) }
+foo.emit "event2", 'arg4'
+assert.deepEqual(seenEvents['event2b'], ['arg4'])
+
+
+# remove specific listener
+seenEvents["event1"] = null
+foo.emit "event1", 'got it'
+assert.deepEqual(seenEvents["event1"], ['got it'])
+
+foo.removeEventListener 'event1', event1Listener
+
+seenEvents["event1"] = null
+foo.emit "event1", 'got it'
+assert.deepEqual seenEvents["event1"], null
+
+
+# remove all listeners for event
+seenEvents["event2b"] = seenEvents["event2"] = null
+foo.emit "event2", 'got it'
+assert.deepEqual seenEvents["event2"], ['got it']
+assert.deepEqual seenEvents["event2b"], ['got it']
+
+foo.removeEventListener 'event2'
+
+seenEvents["event2b"] = seenEvents["event2"] = null
+foo.emit "event2", 'got it'
+assert.deepEqual seenEvents["event2"], null
+assert.deepEqual seenEvents["event2b"], null
