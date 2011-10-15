@@ -57,10 +57,6 @@ if (document.location.pathname == "/index.html") {
     document.location.pathname = '/'
   }
 }
-
-# Move version number
-$('.version .text').text gMovePackageInfo.version
-document.body.innerHTML = document.body.innerHTML.replace(/\/move([a-z-]*)\.js/g, '/move-'+gMovePackageInfo.version+'$1.js')
 </script>
 
 <div class="left-column">
@@ -111,3 +107,9 @@ document.body.innerHTML = document.body.innerHTML.replace(/\/move([a-z-]*)\.js/g
 {% for p in site.pages %}{% if p.url == '/index-usage.html' %}
   {{ p.content }}
 {% endif %}{% endfor %}
+
+<script>
+// Move version number. Needs to run before other scripts
+$('.version .text').text(gMovePackageInfo.version);
+document.body.innerHTML = document.body.innerHTML.replace(/\/move([a-z-]*)\.js/g, '/move-'+gMovePackageInfo.version+'$1.js');
+</script>
