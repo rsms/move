@@ -174,10 +174,11 @@ Move.require.define("cat/zelda","src/cat/zelda.js",function(require,module,expor
 })();
 </pre>
 
-Note that this file can now be imported into a document:
+The generated file can now be imported into a document and run with the support of the [runtime library]({{ site.url }}/move-rt.js):
 
-    <head>
-      <script src="move.js"></script>
-      <script src="bundle.js"></script>
-      ...
-
+<pre class="wide">
+&lt;head&gt;
+  &lt;script src="{{ site.url }}/move-rt.js"&gt;&lt;/script&gt;
+  &lt;script src="bundle.js"&gt;&lt;/script&gt;
+  ...
+</pre>
