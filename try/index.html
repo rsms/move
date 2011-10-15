@@ -3,9 +3,36 @@
   <head>
     <meta charset="utf-8">
     <title>Interactive Move</title>
-    <script src="../move.js"></script>
+    <script>window.gMovePackageInfo = { "name":        "move",
+  "version":     "0.4.4",
+  "description": "A programming language",
+  "homepage":    "http://movelang.org/",
+  "author":      "Rasmus Andersson (http://rsms.me/)",
+  "directories": {"lib" : "./lib"},
+  "main":        "lib/index.js",
+  "bin":         {"move": "./bin/move"},
+  "keywords":    ["language", "compiler", "javascript", "move"],
+  "engines":     {"node": ">=0.4.0"},
+  "dependencies":{"uglify-js": ">=1.0.0"},
+  "repository":  {"type": "git", "url": "http://github.com/rsms/move.git"}
+}
+;</script>
+    <script>document.write('<'+'script src="../move-'+gMovePackageInfo.version+'-debug.js"><'+'/script>');</script>
     <script src="codemirror/codemirror.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <link rel="stylesheet" href="/res/screen.css" type="text/css" media="all">
+    <script type="text/move">
+#pragma disable ehtml
+      $.get '/library/', ^(body) {
+        if ((start = body.indexOf('<section class="body">')) !== -1) {
+          if ((end = body.indexOf('</section>', start)) !== -1) {
+            body = body.substring start, end+'</section>'.length
+            sidePane = document.getElementById 'side-pane'
+            sidePane.innerHTML = body
+          }
+        }
+      }
+    </script>
     <script>
 $(function () {
   // Got console?
@@ -63,7 +90,7 @@ $(function () {
   };
 
   // Replace the default print (goes to console.log) to our #output area
-  move.runtime.print = function () {
+  Move.runtime.print = function () {
     var kw;
     if (arguments.length === 1 &&
         typeof (kw = arguments[0]) === 'object' && kw.__kw === true) {
@@ -92,7 +119,7 @@ $(function () {
     $output.css({opacity:0.5}).animate({opacity:1}, 200);
     var moveSource = editor.getCode(), jsSource;
     try {
-      jsSource = move.compile(moveSource, compilerOptions);
+      jsSource = Move.compile(moveSource, compilerOptions);
       $lineHelper.hide();
     } catch (e) {
       if (e.name === 'SyntaxError') {
@@ -139,7 +166,6 @@ $(function () {
       //console.log(jsSource);
       var f = new Function("window", "with(window){ " + jsSource + " }");
       result = f({
-        $: $, // jQuery
         Move: window.Move,
         console: console,
         __js_source: jsSource,
@@ -227,7 +253,7 @@ $(function () {
   var layout = function (){
     clearOverlays();
     // Hide the side pane when the window is less than 600px wide
-    if (window.innerWidth < 600) $sidePane.hide();
+    if (window.innerWidth < 700) $sidePane.hide();
     else $sidePane.show();
   };
   $(window).bind('resize', layout);
@@ -361,6 +387,7 @@ $(function () {
         background: #000;
         color: white;
         text-shadow: #000 0 1px 1px;
+        margin:0;
       }
         header h1 {
           display: block;
@@ -402,15 +429,6 @@ $(function () {
         height:10%;
         width: 100%;
         box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box;
-      }
-
-      #side-pane {
-        margin:0; padding:0;
-        padding:15px;
-        border-left:1px solid #444;
-        background: #666;
-        color: #fff;
-        text-shadow: #555 0 1px 1px;
       }
 
       #line-helper, #line-message {
@@ -457,6 +475,22 @@ $(function () {
       #line-message.error {
         background-color: #FF9C9A;
       }
+
+      #side-pane {
+        display: box; display: -webkit-box; display: -moz-box;
+        margin:0; padding:0;
+        padding:15px;
+        border-left:1px solid #444;
+        background: white;
+        opacity:0.7;
+        color: #473D33;
+        max-width: 600px;
+        overflow: auto;
+      }
+        #side-pane wrapper {
+          margin:0;
+          width:auto;
+        }
 
       vbox, hbox, box {
         display: box; display: -webkit-box; display: -moz-box;
@@ -512,10 +546,6 @@ $(function () {
             <textarea id="output" class="code"></textarea>
           </vbox>
           <div id="side-pane">
-            <div class="context-tip">
-              Press Cmd+R to run your Move code.
-            </div>
-
           </div>
         </hbox>
       </vbox>
