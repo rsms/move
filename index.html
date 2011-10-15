@@ -281,10 +281,6 @@ if (document.location.pathname == "/index.html") {
     document.location.pathname = '/'
   }
 }
-
-# Move version number
-$('.version .text').text gMovePackageInfo.version
-document.body.innerHTML = document.body.innerHTML.replace(/\/move([a-z-]*)\.js/g, '/move-'+gMovePackageInfo.version+'$1.js')
 </script>
 
 <div class="left-column">
@@ -543,6 +539,11 @@ Move.require.define("cat/zelda","src/cat/zelda.js",function(require,module,expor
 
 
 
+<script>
+// Move version number. Needs to run before other scripts
+$('.version .text').text(gMovePackageInfo.version);
+document.body.innerHTML = document.body.innerHTML.replace(/\/move([a-z-]*)\.js/g, '/move-'+gMovePackageInfo.version+'$1.js');
+</script>
   </wrapper>
 </section>
 
