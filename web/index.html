@@ -31,6 +31,23 @@ layout: page
 }
 .left-column pre, .right-column pre { width:100% !important; }
 .right-column { float:right; }
+
+.fineprint {
+  font-size:13px;
+  color: #999;
+}
+.fineprint a:link, .fineprint a:active, .fineprint a:visited {
+  color: #999;
+  font-style: normal;
+}
+.fineprint a:hover { color: black; }
+p.fineprint { margin-bottom:0.3em; }
+ul.fineprint { margin-top:0; }
+.fineprint li {
+  list-style:none;
+  margin:0;
+  font-style: italic;
+}
 </style>
 
 <script type="text/move">
@@ -41,6 +58,10 @@ if (document.location.pathname == "/index.html") {
     document.location.pathname = '/'
   }
 }
+
+# Move version number
+$('.version .text').text gMovePackageInfo.version
+document.body.innerHTML = document.body.innerHTML.replace(/\/move([a-z-]*)\.js/g, '/move-'+gMovePackageInfo.version+'$1.js')
 </script>
 
 <div class="left-column">
@@ -51,11 +72,6 @@ if (document.location.pathname == "/index.html") {
 
 <div class="right-column">
   <div class="general-info">
-    <script type="text/move">
-pkg = {% include package.json %}
-$('.general-info .version .text').text pkg.version
-print pkg
-    </script>
     <div class="version"><a href="/move.js" title="Current stable version">v<span class="text">0.0.0</span></a></div>
     <p>
       <a href="#usage" title="Read how to use Move">Use <b>move.js</b></a>
@@ -63,6 +79,14 @@ print pkg
       <a href="https://github.com/rsms/move" title="Development source code"><b>github.com/rsms/move</b></a>
     </p>
   </div>
+  <p class="fineprint">
+    Special versions of the library:
+  </p>
+  <ul class="fineprint">
+    <li><a href="/move-rt.js" title="Runtime library for running precompiled Move code">move-rt.js</a> — runtime only</li>
+    <li><a href="/move-debug.js" title="Larger in size but easier to debug">move-debug.js</a> — human-readable</li>
+    <li><a href="/move-rt-debug.js" title="Larger in size but easier to debug">move-rt-debug.js</a> — runtime only, human-readable</li>
+  </ul>
 </div>
 <div class="breaker"></div>
 

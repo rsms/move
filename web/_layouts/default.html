@@ -8,8 +8,8 @@
     <meta name="viewport" content="width=900">
     <link rel="shortcut icon" href="/res/favicon.png">
     <link rel="apple-touch-icon-precomposed" href="/res/apple-touch-icon.png">
-
-    <script src="/move.js"></script>
+    <script>window.gMovePackageInfo = {% include package.json %};</script>
+    <script>document.write('<'+'script src="/move-'+gMovePackageInfo.version+'-debug.js"><'+'/script>');</script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
     <link rel="stylesheet" href="/res/screen.css" type="text/css" media="all">
     <link rel="alternate" type="application/json" title="package.json" href="{{ site.url }}/package.json">
@@ -78,7 +78,6 @@ under a permissive license, created by <a href="http://rsms.me/">Rasmus Andersso
 
     <script type="text/move">{% include syntax-highlight.mv %}</script>
     <script type="text/move">{% include load-custom-fonts.mv %}</script>
-    <script src="https://connect.facebook.net/en_US/all.js#appId=158328320889704&amp;xfbml=1"></script>
     <script>{% include analytics.js %}</script>
   </body>
 </html>
