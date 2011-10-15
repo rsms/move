@@ -45,6 +45,9 @@ export options = [
                           {type: 'int', 'short': 'O', 'long': 'optimization-level',
                            def: Move.defaultCompilationOptions.optimizationLevel}],
 
+  ['prettyPrint',         'Pretty-print generated code. Only effective if --optimization-level is higher than 0 (zero).',
+                          {type: 'bool', 'short':'none', 'long':'pretty'}],
+
   ['autoRebuild',         'Watch source files for changes and automatically re-compile.',
                           {type: 'bool', 'long':'auto', 'short':'a'}],
 
@@ -292,7 +295,7 @@ export main = ^{
     preprocess: ['ehtml'],
     moduleDefinitionPrefix: 'Move.require.define',
   }
-  if (options.optimizationLevel > 0)
+  if (options.optimizationLevel > 0 && !@parsedOptions.prettyPrint)
     options.outputFormatting = false
     
   if (@parsedOptions.basedir)
