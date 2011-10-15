@@ -158,6 +158,11 @@ $(function () {
 
     if (onlyCompile)
       return;
+      
+    // Clear local storage first, to avoid saving a crashing program
+    if (window.localStorage) {
+      window.localStorage['try.buffer.current'] = '';
+    }
 
     // Evaluate
     var result;
@@ -175,11 +180,12 @@ $(function () {
     } catch (e) {
       console.error('eval:', e.stack || e);
       appendOutput(''+e);
-      return;
     }
-
-    // Append result to output
-    //appendOutput(inspect(result));
+    
+    // Save to local storage, since we made it through
+    if (window.localStorage) {
+      window.localStorage['try.buffer.current'] = editor.getCode();
+    }
   };
 
 
@@ -279,9 +285,15 @@ $(function () {
   textarea(home);
   $input = $(home);
   var onEditorChange;
+  var saveBufferTimer;
   if (window.localStorage) {
     onEditorChange = function () {
-      window.localStorage['try.buffer.current'] = editor.getCode();
+      // Delay this by a litte while so to avoid saving a program which crashes
+      // the browser or gets stuck in an infinite loop
+      clearTimeout(saveBufferTimer);
+      saveBufferTimer = setTimeout(function(){
+        window.localStorage['try.buffer.current'] = editor.getCode();
+      }, 100);
     };
   }
   editor = new CodeMirror(home, {
