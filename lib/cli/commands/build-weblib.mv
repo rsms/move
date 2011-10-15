@@ -185,4 +185,10 @@ export main = ^{
   write outputRTOnly,      'move-rt.js'
   write outputDebug,       'move-debug.js'
   write outputRTOnlyDebug, 'move-rt-debug.js'
+
+  version = Move.version()
+  write output,            'move-'+version+'.js'
+  write outputRTOnly,      'move-'+version+'-rt.js'
+  write outputDebug,       'move-'+version+'-debug.js'
+  write outputRTOnlyDebug, 'move-'+version+'-rt-debug.js'
 }
