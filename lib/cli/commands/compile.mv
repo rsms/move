@@ -51,6 +51,9 @@ export options = [
   ['autoRebuild',         'Watch source files for changes and automatically re-compile.',
                           {type: 'bool', 'long':'auto', 'short':'a'}],
 
+  ['noSort',              'Do not sort input files by filename before compiling.',
+                          {type: 'bool', 'long':'no-sort', 'short':'none'}],
+
   ['silent',              'Do not output information to stderr.',
                           {type: 'bool', 'short':'none'}],
 
@@ -378,6 +381,9 @@ export main = ^{
     count = inputPaths.length
     ABORT = {}
     error = null
+
+    if (!self.parsedOptions.noSort)
+      inputPaths.sort()
   
     inputPaths.forEach ^(inputPath) {
       readAndCompile.call this, inputPath, create(options), ^(err, result) {
