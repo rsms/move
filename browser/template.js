@@ -132,11 +132,15 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
   decr();
   return null;
 };
-var _runScripts = function () { move.runBrowserScripts(); };
+var move_boot = function move_boot() { move.runBrowserScripts(); };
 if (window.addEventListener) {
-  window.addEventListener('DOMContentLoaded', _runScripts, false);
+  window.addEventListener("DOMContentLoaded", move_boot, false);
+} else if (window.attachEvent) {
+  window.attachEvent("onload", move_boot);
+} else if (window.addEvent) {
+	window.addEvent(window, "load", move_boot);
 } else {
-  window.attachEvent('onload', _runScripts);
+  window.onload = move_boot;
 }
 %ENDIF HAS_COMPILER%
 
