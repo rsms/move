@@ -516,7 +516,7 @@ Example:
     foo.on 'hello', ^(name){ print 'Hello '+name }
     foo.emit 'hello', 'John'
 
-
+*`EventEmitter` was introduced in [Move 0.4.4](http://movelang.org/move-0.4.4.js)*
 
 
 
