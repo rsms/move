@@ -486,3 +486,40 @@ There is very little magic going on here -- the resulting prototype is just an o
 This feature relies on compile-time extensions and can be disabled by setting the compiler option `runtimeClassCreation` to false. It is enabled by default.
 
 *`class` was introduced in Move 0.4.1*
+
+
+### EventEmitter
+
+- `EventEmitter() → object` — a class/prototype which can be inherited from to provide event-passing capabilities, or to simply create event-passing objects.
+- `EventEmitter.prototype.on(event:name, invoke:^(args...){...})` — register a handler for event *name*.
+- `EventEmitter.prototype.emit(name, args...)` — emit an event, calling all registered listeners and passing any args.
+- `EventEmitter.prototype.removeEventListener(event:name, callback:^{...})` — remove a specific event listener for event *name*.
+- `EventEmitter.prototype.removeEventListener(event:name)` — remove all event listeners for event *name*.
+- `EventEmitter.enableFor(object)` — make *object* an event emitter without modifying its prototype chain. This function simply copy the values from `EventEmitter.prototype` on to *object*.
+
+Example:
+<samp>Hello John</samp>
+
+    Foo = class EventEmitter, {
+      # Foo's prototype...
+    }
+    foo = Foo()
+    foo.on 'hello', ^(name){ print 'Hello '+name }
+    foo.emit 'hello', 'John'
+
+Example:
+<samp>Hello John</samp>
+
+    import Bar
+    foo = Bar()  # unknown prototype chain
+    EventEmitter.enableFor foo
+    foo.on 'hello', ^(name){ print 'Hello '+name }
+    foo.emit 'hello', 'John'
+
+
+
+
+
+
+
+
