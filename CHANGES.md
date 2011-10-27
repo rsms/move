@@ -1,3 +1,12 @@
+## 0.4.5
+
+- The "compile" CLI command has a new option; --pretty which formats the generated code in a human-readable manner. If --optimization-level is 0 (zero), this flag is always enabled thus it only makes sense to pass this when --optimization-level is higher than 0 (zero).
+- The "compile" CLI command has a new option; --no-sort. Source files are sorted by filename by default before compiled unless this (--no-sort) option is specified.
+- Changed: When passing a non-function argument to Object.prototype.forEach, throw a TypeError instead of failing later
+- Changed: "build-weblib" CLI command: Produce move-VERSION*.js files as well as move*.js files. This makes it easier for people to use a specific version of the library knowing it will not be changed. This change is effective on the website movelang.org starting with 0.4.4 (e.g. http://movelang.org/move-0.4.4.js exists but http://movelang.org/move-0.4.3.js does not).
+- Fixed: The dprint runtime function is only imported when the source is wrapped as a module or scoped.
+
+
 ## 0.4.4
 
 - The "import" expression now supports relative imports (e.g. `import .foo, ...bar/baz` is equivalent to `foo = require './foo', baz = require '../../bar/baz'`).
