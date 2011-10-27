@@ -9,7 +9,7 @@
     <link rel="shortcut icon" href="/res/favicon.png">
     <link rel="apple-touch-icon-precomposed" href="/res/apple-touch-icon.png">
     <script>window.gMovePackageInfo = { "name":        "move",
-  "version":     "0.4.4",
+  "version":     "0.4.5",
   "description": "A programming language",
   "homepage":    "http://movelang.org/",
   "author":      "Rasmus Andersson (http://rsms.me/)",
@@ -665,6 +665,41 @@ b = Bar("Bardot")
 <p>This feature relies on compile-time extensions and can be disabled by setting the compiler option <code>runtimeClassCreation</code> to false. It is enabled by default.</p>
 
 <p><em><code>class</code> was introduced in Move 0.4.1</em></p>
+
+<h3 id="EventEmitter">EventEmitter</h3>
+
+<ul>
+<li><code>EventEmitter() → object</code> — a class/prototype which can be inherited from to provide event-passing capabilities, or to simply create event-passing objects.</li>
+<li><code>EventEmitter.prototype.on(event:name, invoke:^(args...){...})</code> — register a handler for event <em>name</em>.</li>
+<li><code>EventEmitter.prototype.emit(name, args...)</code> — emit an event, calling all registered listeners and passing any args.</li>
+<li><code>EventEmitter.prototype.removeEventListener(event:name, callback:^{...})</code> — remove a specific event listener for event <em>name</em>.</li>
+<li><code>EventEmitter.prototype.removeEventListener(event:name)</code> — remove all event listeners for event <em>name</em>.</li>
+<li><code>EventEmitter.enableFor(object)</code> — make <em>object</em> an event emitter without modifying its prototype chain. This function simply copy the values from <code>EventEmitter.prototype</code> on to <em>object</em>.</li>
+</ul>
+
+
+<p>Example:
+<samp>Hello John</samp></p>
+
+<pre><code>Foo = class EventEmitter, {
+  # Foo's prototype...
+}
+foo = Foo()
+foo.on 'hello', ^(name){ print 'Hello '+name }
+foo.emit 'hello', 'John'
+</code></pre>
+
+<p>Example:
+<samp>Hello John</samp></p>
+
+<pre><code>import Bar
+foo = Bar()  # unknown prototype chain
+EventEmitter.enableFor foo
+foo.on 'hello', ^(name){ print 'Hello '+name }
+foo.emit 'hello', 'John'
+</code></pre>
+
+<p><em><code>EventEmitter</code> was introduced in <a href="http://movelang.org/move-0.4.4.js">Move 0.4.4</a></em></p>
 
   </wrapper>
 </section>
