@@ -50,6 +50,7 @@ true</samp>
     print 02322
     print 1234 == 1234.0
 
+**Note:** Since Move uses the circumflex character ("^") to denote functions, XOR operations are instead programmed using the `xor` keyword. If you do this in JavaScript: `x = 3 ^ (2+2)`, then you want to do this in Move: `x = 3 xor (2+2)`.
 
 ### Text
 
@@ -99,9 +100,7 @@ Example of programmatic composition:
 
 ### Objects
 
-The Object type is fundamental to Move (and JavaScript) as all other values are in fact Objects. E.g. a Number is a special type of Object. We say that "Move contains five different types of values" which is a simplification. Move has in fact only one type — Object — but at the same time,
-the language and the runtime *treats some Object subtypes differently*, like Numbers which can be used for mathematical operations or text which when "added"
-together creates a new piece of text being the two texts glued together. Therefore we simplify value types by saying there's only five of them.
+The Object type is fundamental to Move (and JavaScript) as all other values are in fact Objects. E.g. a Number is a special type of Object. We say that "Move contains five different types of values" which is a simplification. Move has in fact only one type — Object — but at the same time, the language and the runtime *treats some Object subtypes differently*, like Numbers which can be used for mathematical operations or text which when "added" together creates a new piece of text being the two texts glued together. Therefore we simplify value types by saying there's only five of them.
 
 An Object is a set of (unique) keys with associated values. Keys must be text values, but an associated value can be of any type. Objects are denoted by a pair of curly brackets ("{" and "}") holding zero or more key-value pairs. Keys are written either as regular text with wrapping quotation marks or without wrapping quotation marks for text which conforms to the rule that it is a valid name (starts with a-z, A-Z, _ or $ and is followed by zero or more letters, numbers, etc). A key is terminated by a colon character and is followed by a value expression. Two successive key-value pairs are separated by a comma character.
 
