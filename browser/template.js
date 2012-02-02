@@ -106,20 +106,23 @@ move.runBrowserScripts = function runBrowserScripts(rootElement, callback) {
       (function (qIndex, script) {
         incr();
         var opts = Object.create(compileOptions);
+        var moduleId = script.getAttribute('module');
         if (script.src) {
           opts.filename = script.src;
           opts.moduleStub = true;
           move.compileURL(opts.filename, opts, function (err, jscode) {
-            jscode = wrapAsModule(jscode, script.getAttribute('src'), opts.filename);
+            if (!moduleId) {
+              moduleId = script.getAttribute('src');
+            }
+            jscode = wrapAsModule(jscode, moduleId, opts.filename);
             completeQ[qIndex] = [err, jscode, opts.filename, script];
             decr();
           });
         } else {
-          var id = script.getAttribute('module');
-          opts.filename = '<script module="'+id+'">';
+          opts.filename = '<script module="'+moduleId+'">';
           try {
             // TODO: rip out into public function
-            jscode = move.compileModule(script.innerHTML, id, null, false, opts);
+            jscode = move.compileModule(script.innerHTML, moduleId, null, false, opts);
             completeQ[qIndex] = [null, jscode, opts.filename, script];
           } catch (e) {
             completeQ[qIndex] = [e, null, opts.filename, script];
