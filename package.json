@@ -1,13 +1,14 @@
-{ "name":        "move",
+{ "name":        "move-panta",
   "version":     "0.4.5",
   "description": "A programming language",
   "homepage":    "http://movelang.org/",
   "author":      "Rasmus Andersson (http://rsms.me/)",
+  "contributors": ["Marco Pantaleoni <marco.pantaleoni@gmail.com>"],
   "directories": {"lib" : "./lib"},
   "main":        "lib/index.js",
   "bin":         {"move": "./bin/move"},
   "keywords":    ["language", "compiler", "javascript", "move"],
   "engines":     {"node": ">=0.4.0"},
   "dependencies":{"uglify-js": ">=1.0.0"},
-  "repository":  {"type": "git", "url": "http://github.com/rsms/move.git"}
+  "repository":  {"type": "git", "url": "http://github.com/panta/move-panta"}
 }
