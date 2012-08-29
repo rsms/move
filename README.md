@@ -1,3 +1,12 @@
+## Notice
+
+This is a fork of [move](https://github.com/rsms/move), containing a fix to npm packaging (see the corresponding [npm package](http://search.npmjs.org/#/move-panta)).
+
+This is necessary for example for [docpad](https://github.com/bevry/docpad) being able to depend on this package.
+
+
+When pulled upstream, the package will be unpublished.
+
 # Move
 
 Move is a simple but powerful programming language which can run on most computers (anywhere there's a >=ES3 JavaScript runtime). When compared to JavaScript, Move has the following key features:
