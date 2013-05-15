@@ -1,1 +1,13 @@
-web/_includes/package.json
+{ "name":        "move",
+  "version":     "0.4.6",
+  "description": "A programming language",
+  "homepage":    "http://movelang.org/",
+  "author":      "Rasmus Andersson (http://rsms.me/)",
+  "directories": {"lib" : "./lib"},
+  "main":        "lib/index.js",
+  "bin":         {"move": "./bin/move"},
+  "keywords":    ["language", "compiler", "javascript", "move"],
+  "engines":     {"node": ">=0.4.0"},
+  "dependencies":{"uglify-js": "==1.3.4"},
+  "repository":  {"type": "git", "url": "http://github.com/rsms/move.git"}
+}
