@@ -1,0 +1,76 @@
+html {
+  cursor: text;
+}
+
+.editbox {
+  margin: 10px;
+  padding: 0;
+  font: 13px mplus-1m-regular, menlo, consolas, monospace;
+  color: black;
+  background: #EBEBDC url('../paper-bg.png') repeat scroll 0 0;
+  line-height: 20px;
+}
+
+pre.code, .editbox {
+  color: #666666;
+}
+
+.editbox p {
+  margin: 0;
+}
+
+span.js-punctuation {
+  color: #898173;
+}
+
+span.js-operator {
+  color: #0F5486;
+}
+
+span.js-keyword {
+  color: #1D7587;
+}
+
+span.move-lambda {
+  color: #ED3C90;
+}
+
+span.js-atom {
+  color: #964A6E;
+}
+
+span.js-variabledef {
+  color: #665E99;
+}
+
+span.js-localvariable {
+  color: #665E99;
+}
+
+span.js-variable {
+  color: #271F16;
+}
+
+span.js-property {
+  color: #796043;
+}
+
+span.js-comment {
+  color: #96968C;
+}
+
+span.js-string {
+  color: #4A9616;
+}
+
+span.marked-paren {
+  color: black !important;
+  background: #DCD781;
+}
+span.broken-paren {
+  color: black !important;
+  background: #f00;
+}
+.marked-between-parens {
+  background: #EAE6BD;
+}
