@@ -1,15 +1,15 @@
 #!/bin/bash
-SRC_DIR="$(perl -e "use Cwd; use Cwd 'realpath'; print realpath('${0}');" | xargs dirname)"
-DST_DIR="$(perl -e "use Cwd; use Cwd 'realpath'; print realpath('${SRC_DIR}');" | xargs dirname)"
+set -e
+set -x # debug
+SRC_DIR="$(perl -e "use Cwd; use Cwd 'realpath'; use File::Basename; print realpath(dirname('${0}'));")"
+DST_DIR="$(dirname "$SRC_DIR")/web_generated"
 BUILD_DST_DIR="${SRC_DIR}/.build"
-DST_DIR="${DST_DIR}/web_generated"
 GIT_SRC_DIR="$(dirname "$SRC_DIR")"
+MOVE_BIN="${SRC_DIR}/../bin/move"
 
 echo "Building from ${SRC_DIR} -> ${DST_DIR}"
 
-MOVE_BIN="${SRC_DIR}/../bin/move"
-
-cd "$SRC_DIR" || exit $?
+pushd "$SRC_DIR" >/dev/null
 
 # Check if DST_DIR is ok
 if [ ! -d "$DST_DIR" ] || [ "$(git --git-dir="${DST_DIR}/.git" branch --no-color | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1/")" != "gh-pages" ]; then
@@ -17,55 +17,57 @@ if [ ! -d "$DST_DIR" ] || [ "$(git --git-dir="${DST_DIR}/.git" branch --no-color
   if [ -d "$DST_DIR" ]; then
     BACKUP_DIR="${DST_DIR}_backup_"$(date +%s)
     echo "WARNING: ${DST_DIR} has been modified. Moving to ${BACKUP_DIR}"
-    rm -rf "$BACKUP_DIR" || exit $?
-    mv "$DST_DIR" "$BACKUP_DIR" || exit $?
+    rm -rf "$BACKUP_DIR"
+    mv "$DST_DIR" "$BACKUP_DIR"
   fi
 
   # Clone
   git clone --local --shared --no-checkout -- \
-    "$GIT_SRC_DIR" "$DST_DIR" || exit $?
+    "$GIT_SRC_DIR" "$DST_DIR"
 
-  cd "$DST_DIR" || exit $?
+  cd "$DST_DIR"
 
   # Create or checkout gh-pages branch
   if (git show-ref --heads --quiet gh-pages); then
-    git checkout gh-pages || exit $?
+    git checkout gh-pages
   else
-    git symbolic-ref HEAD refs/heads/gh-pages || exit $?
+    git symbolic-ref HEAD refs/heads/gh-pages
     rm -f .git/index
   fi
-  echo git clean -fdx || exit $?
+  echo git clean -fdx
 
   # Back home
-  cd "$SRC_DIR" || exit $?
+  cd "$SRC_DIR"
 fi
 
 # Build move
-"$MOVE_BIN" build-weblib || exit $?
+"$MOVE_BIN" build-weblib
 
 # Build website
 rm -rf "$BUILD_DST_DIR"
-jekyll --no-server --no-auto "$BUILD_DST_DIR" || exit $?
-mv "$DST_DIR/.git" "$BUILD_DST_DIR/.git" || exit $?
+
+# jekyll serve --watch --limit_posts 10
+
+jekyll build "$BUILD_DST_DIR"
+mv "$DST_DIR/.git" "$BUILD_DST_DIR/.git"
 rm -rf "$DST_DIR"
-mv -f "$BUILD_DST_DIR" "$DST_DIR" || exit $?
+mv -f "$BUILD_DST_DIR" "$DST_DIR"
 
 # Create .nojekyll
 touch "$DST_DIR/.nojekyll"
 
 # Commit
-cd "$DST_DIR" || exit $?
-git add . || exit $?
+cd "$DST_DIR"
+git add .
 if (git commit --no-status -a -m 'Generated website'); then
-  git remote set-url origin "$GIT_SRC_DIR" || exit $?
+  git remote set-url origin "$GIT_SRC_DIR"
   if ! (git push origin gh-pages 2>/dev/null); then
-    git pull origin gh-pages || exit $?
-    git push origin gh-pages || exit $?
+    git pull origin gh-pages
+    git push origin gh-pages
   fi
 fi
 
-# Back home
-#cd "$SRC_DIR" || exit $?
+popd >/dev/null
 
 echo "---- Done ---- Deploy with:"
 echo "  git push origin gh-pages"
