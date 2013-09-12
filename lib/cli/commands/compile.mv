@@ -281,9 +281,11 @@ export main = ^{
   if (@parsedOptions.bundleWithFull) {
     @argv.unshift webLibDir+'/move.js:{"bundle":false}'
     doNotWatchFiles.push webLibDir+'/move.js'
+    @parsedOptions.noSort = true
   } else if (@parsedOptions.bundleWithCore) {
     @argv.unshift webLibDir+'/move-rt.js:{"bundle":false}'
     doNotWatchFiles.push webLibDir+'/move-rt.js'
+    @parsedOptions.noSort = true
   }
 
   # Set compilation options
@@ -320,7 +322,7 @@ export main = ^{
       moduleIds = []
       
       output = []
-      outputs.forEach ^(inputPath, result) { output.push result }
+      inputPaths.forEach ^(inputPath) { output.push outputs[inputPath] }
       output = output.map(^(result) {
         if (result.options && result.options.moduleId != undefined)
           moduleIds.push result.options.moduleId
@@ -418,12 +420,13 @@ export main = ^{
   if (inputPaths.length - doNotWatchFiles.length == 0 && @parsedOptions.basedir)
     inputPaths.push @parsedOptions.basedir
   
-  
   # Expand directories
   error = null
   inputPaths.forEach ^(inputPath, i) {
     if (error)
       return
+    if (m = /^([^:]+):(.+)$/.exec inputPath)
+      inputPath = m[1]
     try {
       stats = fs.statSync inputPath
       if (stats.isDirectory()) {
@@ -519,9 +522,6 @@ export main = ^{
   
   if (inputPaths.length == 0)
     @program.exit 'No input'
-  
-  
-  #print 'inputPaths', inputPaths
   
   
   # Compile
