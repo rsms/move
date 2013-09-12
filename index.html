@@ -1,0 +1,629 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+  <head>
+    <meta charset="utf-8">
+    <title>Move</title>
+    <meta name="viewport" content="width=900">
+    <link rel="shortcut icon" href="/res/favicon.png">
+    <link rel="apple-touch-icon-precomposed" href="/res/apple-touch-icon.png">
+    <script>window.gMovePackageInfo = { "name":        "move",
+  "version":     "0.4.7",
+  "description": "A programming language",
+  "homepage":    "http://movelang.org/",
+  "author":      "Rasmus Andersson (http://rsms.me/)",
+  "directories": {"lib" : "./lib"},
+  "main":        "lib/index.js",
+  "bin":         {"move": "./bin/move"},
+  "keywords":    ["language", "compiler", "javascript", "move"],
+  "engines":     {"node": ">=0.8"},
+  "dependencies":{"uglify-js": "==1.3.4"},
+  "repository":  {"type": "git", "url": "http://github.com/rsms/move.git"}
+}
+;</script>
+    <script>document.write('<'+'script src="/move-'+gMovePackageInfo.version+'-debug.js"><'+'/script>');</script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <link rel="stylesheet" href="/res/screen.css" type="text/css" media="all">
+    <link rel="alternate" type="application/json" title="package.json" href="http://movelang.org/package.json">
+    <script type="text/move">
+visibleMenus = {}
+overlay = null
+enabled = true
+
+hideMenu = ^(menu_el){
+  menu_el.style.webkitTransition = 'opacity 200ms ease-out'
+  menu_el.style.opacity = '0'
+  clearTimeout menu_el.hideTimer
+  if (enabled) {
+    menu_el.hideTimer = after {delay:200} ^{ menu_el.style.display = 'none' }
+  } else {
+    menu_el.style.display = 'none'
+  }
+  overlay.style.display = 'none'
+}
+
+hideAllMenus = ^(ev) {
+  cancelEvent ev;
+  (Object.keys visibleMenus).forEach ^(k) {
+    hideMenu visibleMenus[k]
+  }
+}
+
+disableContextMenus = ^(ev) {
+  enabled = false
+  hideAllMenus ev
+}
+
+cancelEvent = ^(ev) {
+  if (ev) {
+    ev.preventDefault()
+    ev.stopPropagation()
+  }
+}
+
+mkhandler = ^(menu_id) { ^(ev) {
+  if (!enabled)
+    return
+
+  ev.preventDefault()
+
+  menu_el = document.getElementById menu_id
+  clearTimeout menu_el.hideTimer
+
+  menu_el.style.left = ev.pageX + 'px'
+  menu_el.style.top = ev.pageY + 'px'
+  menu_el.style.webkitTransition = 'none'
+  menu_el.style.opacity = '1'
+  menu_el.style.display = 'block'
+  menu_el.addEventListener 'mousedown', hideAllMenus, false
+
+  v = menu_el.getElementsByTagName 'a'
+  for (i=0,L=v.length; i < L; ++i) {
+    a = v[i]
+    a.addEventListener 'click', cancelEvent, false
+    if ((a.href.indexOf '#disable-context-menu') != -1) {
+      a.addEventListener 'mouseup', disableContextMenus, false
+    } else {
+      a.addEventListener 'mouseup', ^(ev) {
+        window.open @href, @getAttribute 'target'
+        hideMenu menu_el
+        cancelEvent ev
+      }, false
+    }
+  }
+
+  visibleMenus[menu_id] = menu_el
+
+  if (!overlay) {
+    overlay = document.createElement 'context-menu-overlay'
+    overlay.addEventListener 'mousedown', hideAllMenus, false
+    overlay.addEventListener 'touchstart', hideAllMenus, false
+    document.body.appendChild overlay
+  }
+  overlay.style.display = 'block'
+}}
+
+# Attach menu handlers
+v = document.getElementsByTagName 'a'
+for (i=0,L=v.length; i < L; ++i) {
+  el = v[i]
+  if (menu_id = el.getAttribute 'context-menu') {
+    el.addEventListener 'contextmenu', (mkhandler menu_id), false
+  }
+}
+</script>
+    <script type="text/move"># Sticky menu
+
+$menu = $ '#menu'
+$filler = $ '#menu-filler'
+$menu.find('a[href="#"]').last().click ^{ window.scrollTo 0, 0 }
+
+$menu.$wrapper = $menu.find('> wrapper').first()
+$window = $ window
+initialOrigin = $menu.offset()
+menuTop = initialOrigin.top
+menuIsFloating = false
+isPanningDevice = navigator.userAgent.indexOf('Safari/') != -1 &&
+                  navigator.userAgent.indexOf('Mobile/') != -1
+
+updateMenuOrigin = ^{
+  y = menuTop - $window.scrollTop()
+  if (y >= 0) {
+    if (menuIsFloating) {
+      menuIsFloating = false
+      $menu.css {
+        position: 'static',
+        width: 'auto'
+      }
+      $menu.removeClass 'floating'
+      $filler.removeClass 'enabled'
+    }
+  } else {
+    if (!menuIsFloating) {
+      $filler.css {height: $menu.height() + 'px'}
+      $filler.addClass 'enabled'
+      $menu.addClass 'floating'
+      menuIsFloating = true
+    }
+    $menu.css {
+      position: isPanningDevice ? 'absolute' : 'fixed',
+      top:      (isPanningDevice ? $window.scrollTop()
+                                 : Math.max(0, menuTop - $window.scrollTop())) +
+                'px',
+      left:     '-7px',
+      width:    window.innerWidth + 'px'
+    }
+  }
+}
+
+window.updateMenuOrigin = updateMenuOrigin
+updateMenuOrigin()
+$(window).bind 'scroll', updateMenuOrigin
+$(window).bind 'resize', updateMenuOrigin
+
+if (isPanningDevice) {
+  $(window).bind 'load', ^{ after {delay: 500} updateMenuOrigin }
+  setInterval updateMenuOrigin, 1000
+}
+
+
+$menu.find('a').each ^{
+  if ((@getAttribute 'href') == document.location.pathname) {
+    @className += ' current'
+  }
+}
+</script>
+
+    <!-- Open Graph -->
+    <meta property="fb:admins" content="728642302">
+    <meta property="fb:app_id" content="158328320889704">
+    <meta property="og:url" content="http://movelang.org/index.html">
+    <meta property="og:site_name" content="Move">
+    
+    <meta property="og:image" content="http://movelang.org/res/logo.png">
+    <meta name="description" content="Move — a modern programming language that runs everywhere">
+    
+  </head>
+
+
+  <body>
+    <div id="fb-root"></div>
+
+    <header>
+      <wrapper>
+        <h1><a href="/" context-menu="logo-context-menu"><img src="/res/logo.png" width="343" height="122" alt="Move logo"></a></h1><p class="description">
+Move is a modern and simple <em>programming language</em> which can run on virtually
+any computer. Move is primarily aimed towards people not previously familiar with
+programming computers.
+        </p>
+        <context-menu id="logo-context-menu">
+          <a href="/res/logo.png" target="logo">logo.png</a>
+          <a href="/res/logo.pdf" target="logo">logo.pdf (for high-resolution work)</a>
+          <hr>
+          <a href="#disable-context-menu">Disable this fancy context menu</a>
+        </context-menu>
+      </wrapper>
+    </header>
+
+    <section id="menu">
+      <wrapper>
+        <menu-items>
+          <a href="/" context-menu="logo-context-menu" class="small-logo"><img src="/res/menu-logo.png" width="65" height="36" alt="Small Move logo"></a><a
+             href="/how-to-move/" title="An introduction to programming">How to Move</a>
+          <a href="/library/" title="Built-in objects and functions">Library</a>
+          <a href="/language/" title="Language reference">Language</a>
+          <!--a href="/articles/" title="Articles with tutorials etc">Articles</a-->
+          <a href="https://github.com/rsms/move/issues" title="Report and browse bugs">Bugs</a>
+          <a href="/try/" title="Try Move in an interactive console">Try it</a>
+          <a href="#" title="Jump to the top of the scroll">&uarr;</a>
+        </menu-items>
+      </wrapper>
+    </section>
+    <section id="menu-filler"></section>
+
+
+    <section class="body">
+  <wrapper>
+    <style type="text/css" media="all">
+.general-info {
+  display: block;
+  width:330px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  background: #6B6050;
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizelegibility;
+  font-family: helvetica, sans-serif;
+  padding:10px 15px;
+  margin-top:-10px;
+}
+  .general-info a { color: white; }
+  .general-info a:hover { color: white; }
+  .general-info b {  font-weight: bold; }
+  .general-info p { margin: 0; }
+  .general-info .version { font-weight: lighter; float:right; }
+    .general-info .version .text { font-size: 2em; }
+
+.left-column, .right-column {
+  display:block;
+  float:left;
+  width:45%;
+}
+.left-column pre, .right-column pre { width:100% !important; }
+.right-column { float:right; }
+
+.fineprint {
+  font-size:13px;
+  color: #999;
+}
+.fineprint a:link, .fineprint a:active, .fineprint a:visited {
+  color: #999;
+  font-style: normal;
+}
+.fineprint a:hover { color: black; }
+p.fineprint { margin-bottom:0.3em; }
+ul.fineprint { margin-top:0; }
+.fineprint li {
+  list-style:none;
+  margin:0;
+  font-style: italic;
+}
+</style>
+
+<script type="text/move">
+if (document.location.pathname == "/index.html") {
+  if (history && history.pushState) {
+    history.replaceState null, null, '/'
+  } else {
+    document.location.pathname = '/'
+  }
+}
+</script>
+
+<div class="left-column">
+  Here is a simple Move program which outputs “Hello John” three times:<p></p>
+    <pre class="prettyprint lang-mv"><code class=" prettyprint lang-mv"><span class="pln">hello </span><span class="pun">=</span><span class="pln"> </span><span class="pun">^(</span><span class="pln">name</span><span class="pun">){</span><span class="pln"> </span><span class="str">"Hello "</span><span class="pun">+</span><span class="pln">name </span><span class="pun">}</span><span class="pln"><br>repeat </span><span class="pun">{</span><span class="pln">times</span><span class="pun">:</span><span class="pln"> </span><span class="lit">3</span><span class="pun">}</span><span class="pln"> </span><span class="pun">^{</span><span class="pln"><br>&nbsp; </span><span class="kwd">print</span><span class="pln"> hello </span><span class="pun">{</span><span class="pln">name</span><span class="pun">:</span><span class="pln"> </span><span class="str">"John"</span><span class="pun">}</span><span class="pln"><br></span><span class="pun">}</code></pre>
+</div>
+
+
+<div class="right-column">
+  <div class="general-info">
+    <div class="version"><a href="/move.js" title="Current stable version">v<span class="text">0.0.0</span></a></div>
+    <p>
+      <a href="#usage" title="Read how to use Move">Use <b>move.js</b></a>
+      or get the source from
+      <a href="https://github.com/rsms/move" title="Development source code"><b>github.com/rsms/move</b></a>
+    </p>
+  </div>
+  <p class="fineprint">
+    Special versions of the library:
+  </p>
+  <ul class="fineprint">
+    <li><a href="/move-rt.js" title="Runtime library for running precompiled Move code">move-rt.js</a> — runtime only</li>
+    <li><a href="/move-debug.js" title="Larger in size but easier to debug">move-debug.js</a> — human-readable</li>
+    <li><a href="/move-rt-debug.js" title="Larger in size but easier to debug">move-rt-debug.js</a> — runtime only, human-readable</li>
+  </ul>
+</div>
+<div class="breaker"></div>
+
+
+<hr>
+
+<div class="left-column learn">
+  <h2><a href="/how-to-move/">Learn how to Move</a></h2>
+
+  <p><img src="/res/dance.png" width="64" height="64" alt="Dance" align="right">Move has been designed with humans in mind and is very suitable as a first programming language. Learn how to Move and you will be able to write rich websites, server programs, etc -- Move runs everywhere and it's fun!</p>
+
+  <p><a href="/how-to-move/">Get started with "How to Move" &rarr;</a></p>
+</div>
+<div class="right-column">
+  
+    <a name="Features..amp..Highlights"></a>
+<h2>Features &amp; Highlights</h2>
+
+<ul>
+<li>Simplistic with few types</li>
+<li>Functions are first class and light-weight</li>
+<li>Normalized environment means you don&rsquo;t have to feature-test</li>
+<li>Compiles to optimized, strict JavaScript</li>
+</ul>
+
+
+<p>For a more complete list of features and differences compared to JavaScript, see <a href="https://github.com/rsms/move/blob/master/README.md">README.md &rarr;</a></p>
+
+  
+</div>
+<div class="breaker"></div>
+
+<hr>
+<a name="usage"></a>
+
+  <a name="Usage"></a>
+<h2>Usage</h2>
+
+<p>Move can run in web browsers and &ldquo;interpreters&rdquo; like <a href="http://nodejs.org/">Node.js</a>. Move has been designed so that your code can be run in web browsers and &ldquo;interpreters&rdquo; without any changes &ndash; your code is always running in an ES5 environment with a CommonJS module system.</p>
+
+<p>Jump to:</p>
+
+<ul>
+<li><a href="#Using+Move+in+web+browsers">Using Move in web browsers</a></li>
+<li><a href="#Using+Move+in+Node.js">Using Move in Node.js</a></li>
+<li><a href="#Using+Move+from+the+command+line">Using Move from the command line</a></li>
+</ul>
+
+
+<a name="Using.Move.in.web.browsers"></a>
+<h3>Using Move in web browsers</h3>
+
+<p>To run Move in a web browser, you simply include <a href="/move.js">move.js</a>:</p>
+
+<pre><code>&lt;script src="http://movelang.org/move.js"&gt;&lt;/script&gt;
+</code></pre>
+
+<p>Move code can then be embedded, which will execute directly after the DOM has loaded:</p>
+
+<pre><code>&lt;script type="text/move"&gt;
+print 'Hello worlds!'
+&lt;/script&gt;
+</code></pre>
+
+<p>If you specify the <code>module</code> attribute, the code defines a module rather than execute the code:</p>
+
+<pre><code>&lt;script type="text/move" module="foo"&gt;
+export sayHello = ^{ print 'Hello worlds!' }
+&lt;/script&gt;
+</code></pre>
+
+<p>It&rsquo;s then possible to <code>import</code> that module from other code:</p>
+
+<pre><code>&lt;script type="text/move"&gt;
+import foo
+foo.sayHello()
+&lt;/script&gt;
+</code></pre>
+
+<p>Modules can also be remotely imported:</p>
+
+<pre><code>&lt;script type="text/move" src="foo.mv"&gt;&lt;/script&gt;
+</code></pre>
+
+<p>You don&rsquo;t have to care about the order in which you define your modules. The only thing you need to think about is where you execute embedded code.</p>
+
+<a name="Complete.example"></a>
+<h4>Complete example</h4>
+
+<pre><code>&lt;script src="http://movelang.org/move.js"&gt;&lt;/script&gt;
+&lt;script type="text/move" module="bar"&gt;
+import foo, capitalize
+export sayHello = ^(name) {
+  print foo.makeHello capitalize name
+}
+&lt;/script&gt;
+&lt;script type="text/move" src="capitalize.mv"&gt;&lt;/script&gt;
+&lt;script type="text/move" module="foo"&gt;
+export makeHello = ^(name) { 'Hello '+name+'!' }
+&lt;/script&gt;
+&lt;script type="text/move"&gt;
+import bar
+bar.sayHello 'worlds'
+&lt;/script&gt;
+</code></pre>
+
+<p>When the DOM loads, &ldquo;Hello Worlds!&rdquo; is printed to the console.</p>
+
+<p>The Move module itself is available as the global variable <code>Move</code> (technically a property of <code>window</code>). This module provides access to preprocessors, the parser &amp; compiler and version info. It also houses the Move runtime library (<code>Move.runtime</code>) which can be manipulated. An example of evaluating some Move code:
+<samp>&ldquo;function () {
+  return print("Hello&rdquo;);
+}&ldquo;</samp></p>
+
+<pre><code>Move.eval '^{ print "Hello" }'
+</code></pre>
+
+<p>This is available in both Move-land <em>and JavaScript-land</em>:</p>
+
+<pre><code>Move.eval('^{ print "Hello" }');
+</code></pre>
+
+<a name="Using.Move.in.Node.js"></a>
+<h3>Using Move in Node.js</h3>
+
+<p>First up; install Move through <a href="http://npmjs.org/">NPM</a>:</p>
+
+<pre><code>npm install move
+</code></pre>
+
+<p>Then, <code>require('move');</code> and simply write any module you wish in Move and name the file with a &ldquo;.mv&rdquo; extension. From there everything behaves as normal in Node.js (e.g. defining a foo.mv module and later doing <code>var foo = require('foo');</code> works as expected).</p>
+
+<p>To run Move code directly from the command line, use the <code>move</code> program:</p>
+
+<pre><code>move hello.mv
+</code></pre>
+
+<p>Note that you can not load Move code directly through <code>node</code> since Node has no knowledge about how to compile Move code. The <code>move</code> program simply registers the Move compiler with Node&rsquo;s module loading system and then loads your module.</p>
+
+<a name="Using.Move.from.the.command.line"></a>
+<h3>Using Move from the command line</h3>
+
+<p>When you install move for Node.js, you will have access to a <code>move</code> command line client program.</p>
+
+<p>To see a list of available commands, run <code>move --help</code>:</p>
+
+<pre class="wide">
+$ move --help
+Usage: move [global options] &lt;command&gt; [command arguments ..]
+       move [global options] &lt;filename&gt;
+Global options:
+  --help, -h       Show this help message.
+Commands:
+  build            Build a Move web app.
+  build-weblib     Build the Move library for web browsers
+  compile          Parse and compile Move code.
+  run              Run a Move program.
+  version          Print version and exit.
+  help             Display help for a command.
+</pre>
+
+
+<p>To show help for a specific command, run <code>move command --help</code>:</p>
+
+<pre class="wide">
+$ move run --help
+Usage: move run [options] &lt;filename&gt; [..]
+Options:
+  --optimization-level, -O &lt;i&gt;       Optimization level. Defaults to 0 (basic).
+  --help, -h                         Show this message
+</pre>
+
+
+<p>Execute a move program:</p>
+
+<pre><code>move foo/bar.mv
+move run foo/bar.mv
+</code></pre>
+
+<p>Compile move code to JavaScript:</p>
+
+<pre><code>move compile foo/bar.mv
+move compile --output foo/bar.js foo/bar.mv
+</code></pre>
+
+<p>The compile command can do a lot more than just compiling Move code. One of the most useful features is the ability to &ldquo;bundle&rdquo; a source tree of Move and JavaScript into a name-spaced (CommonJS modules), single JavaScript file. Imagine the following source tree:</p>
+
+<pre><code>main.mv
+lib/bar.js
+lib/scrap.txt
+src/index.mv
+src/foo.mv
+src/cat/index.mv
+src/cat/zelda.js
+</code></pre>
+
+<p>Now, we&rsquo;ll bundle these files:</p>
+
+<pre class="wide">
+move compile --bundle --output bundle.js --basedir src main.mv src lib/*.js
+</pre>
+
+
+<p>Which will write something like this to <code>bundle.js</code>:</p>
+
+<pre class="wide">
+Move.require.define("main","main.mv",function(require,module,exports) {
+  // code generated from main.mv
+});
+Move.require.define("lib/bar","lib/bar.js",function(require,module,exports) {
+  // code generated from lib/bar.js
+});
+Move.require.define("","src/index.mv",function(require,module,exports) {
+  // code generated from src/index.mv
+});
+Move.require.define("foo","src/foo.mv",function(require,module,exports) {
+  // code generated from src/foo.mv
+});
+Move.require.define("cat","src/cat/index.mv",function(require,module,exports) {
+  // code generated from src/cat/index.mv
+});
+Move.require.define("cat/zelda","src/cat/zelda.js",function(require,module,exports) {
+  // code generated from src/cat/zelda.js
+});
+(function(){
+  // code that executes the "" module when the DOM is ready
+})();
+</pre>
+
+
+<p>The generated file can now be imported into a document and run with the support of the <a href="http://movelang.org/move-rt.js">runtime library</a>:</p>
+
+<pre class="wide">
+&lt;head&gt;
+  &lt;script src="http://movelang.org/move-rt.js"&gt;&lt;/script&gt;
+  &lt;script src="bundle.js"&gt;&lt;/script&gt;
+  ...
+</pre>
+
+
+
+
+<script>
+// Move version number. Needs to run before other scripts
+$('.version .text').text(gMovePackageInfo.version);
+document.body.innerHTML = document.body.innerHTML.replace(/\/move([a-z-]*)\.js/g, '/move-'+gMovePackageInfo.version+'$1.js');
+</script>
+  </wrapper>
+</section>
+
+
+
+    <footer>
+      <wrapper>
+Move is free software and <a href="https://github.com/rsms/move">open source</a>
+under a permissive license, created by <a href="http://rsms.me/">Rasmus Andersson</a>.
+      </wrapper>
+    </footer>
+
+    <script type="text/move">// curry pre < code to be able to get prettified
+v = document.getElementsByTagName('pre')
+for (i=0,L=v.length; i < L; ++i) {
+  n = v.item i
+  a = n.getAttribute('class') || ''
+  if (a.indexOf('wide') == -1)
+    n.setAttribute 'title', 'Move code'
+  if (n.firstChild && n.firstChild.nodeName == 'CODE') {
+    if (a.indexOf('prettyprint') === -1 &&
+        (n.firstChild.getAttribute('class') || '').indexOf('prettyprint') === -1) {
+      n.setAttribute 'class', a+' prettyprint lang-mv'
+    }
+  } else {
+    n.setAttribute 'class', a+' prettyprint lang-mv'
+  }
+}
+
+v = document.getElementsByTagName('code');
+for (i=0,L=v.length; i < L; ++i) {
+  n = v.item i
+  a = (n.getAttribute 'class') || '';
+  if ((a.indexOf 'prettyprint') === -1)
+    n.setAttribute 'class', a+' prettyprint lang-mv'
+}
+$('section.body samp').attr 'title', 'Output'
+script = document.createElement 'script'
+script.async = true
+script.src = "/res/prettify.js"
+document.getElementsByTagName('head')[0].appendChild script
+</script>
+    <script type="text/move">if (!/AppleWebKit/.test(navigator.userAgent) || !/iP[oa]d|iPhone/.test(navigator.userAgent)) {
+
+  link = document.createElement 'link'
+  link.type = "text/css"
+  link.rel = "stylesheet"
+  link.href = "https://fonts.googleapis.com/css?family=Droid+Serif:regular,italic,bold|Droid+Sans+Mono"
+  document.documentElement.getElementsByTagName('head')[0].appendChild link
+
+  checkLoaded = ^{
+    for (i = 0; i < document.styleSheets.length; i++) {
+      if (document.styleSheets[i].href &&
+          document.styleSheets[i].href.indexOf('://fonts.googleapis.com/css') != -1) {
+        document.body.className += ' custom-fonts-loaded';
+        if (window.updateMenuOrigin)
+          window.updateMenuOrigin()
+        return
+      }
+    }
+    after {delay:100} checkLoaded
+  }
+  checkLoaded()
+}</script>
+    <script>var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-9078556-5']);
+_gaq.push(['_trackPageview']);
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+</script>
+  </body>
+</html>
