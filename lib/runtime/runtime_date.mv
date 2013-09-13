@@ -8,10 +8,12 @@ if (!Date.nowUTC)
 Date.nowUTC = ^{ (new Date()).getUTCTime() }
 
 if (!Date.prototype.getUTCTime)
-Date.prototype.getUTCTime = ^{ this.getTime() - this.getTimezoneOffset() }
+Object.defineConstant Date.prototype, 'getUTCTime', getUTCTime = ^{
+  this.getTime() - this.getTimezoneOffset()
+}
 
 if (!Date.prototype.getUTCComponents)
-Date.prototype.getUTCComponents = ^{
+Object.defineConstant Date.prototype, 'getUTCComponents', getUTCComponents = ^{
   return [
     this.getUTCFullYear(), this.getUTCMonth()+1, this.getUTCDate(),
     this.getUTCHours(), this.getUTCMinutes(), this.getUTCSeconds(),

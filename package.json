@@ -1,5 +1,5 @@
 { "name":        "move",
-  "version":     "0.4.7",
+  "version":     "0.4.8",
   "description": "A programming language",
   "homepage":    "http://movelang.org/",
   "author":      "Rasmus Andersson (http://rsms.me/)",

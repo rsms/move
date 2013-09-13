@@ -36,24 +36,13 @@ require './runtime_array'
 # -----------------------------------------------------------------------------
 # Constants
 
-# Helper function to define constants
-if (Object.defineProperty) {
-  defineConstant = ^(obj, name, value){
-    Object.defineProperty(obj, name, {
-      value: value, writable: false, enumerable: true, configurable: false
-    })
-  }
-} else {
-  defineConstant = ^(obj, name, value){ obj[name] = value }
-}
-
 # _MoveKWArgsT is a unique object used to test for and prevent tampering with
 # keyword arguments
-defineConstant(exports, '_MoveKWArgsT', _MoveKWArgsT)
+Object.defineConstant exports, '_MoveKWArgsT', _MoveKWArgsT, true
 
 # String is aliased as Text
-defineConstant(exports, 'Text', String)
-String.prototype.toText = String.prototype.toString
+Object.defineConstant exports, 'Text', String, true
+Object.defineConstant String.prototype, 'toText', String.prototype.toString
 
 # -----------------------------------------------------------------------------
 # Base library functions
