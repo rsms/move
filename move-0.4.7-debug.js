@@ -527,6 +527,7 @@ var http; try{ http = require('http'); }catch(e){}
 var parser = require("./parser");
 var processor = require("./process");
 var astMutators = require("./ast-mutators");
+require('../runtime/runtime_object');
 require('../runtime/runtime_string');
 
 // Available preprocessors
@@ -5262,7 +5263,8 @@ String.prototype.trimRight = function trimRight() {
   return this.replace(/(?:\s|\u00A0)+$/, '');
 };
 });
-_require.define("runtime","runtime/index.js",function(require, module, exports, __filename, __dirname){require('./runtime_string');
+_require.define("runtime","runtime/index.js",function(require, module, exports, __filename, __dirname){require('./runtime_object');
+require('./runtime_string');
 
 // Unless imported by the core module, global.Move is undefined
 if (!global.Move) global.Move = {};
@@ -5346,7 +5348,7 @@ _require.define("runtime/preprocessors/ehtml","runtime/preprocessors/ehtml.mv",f
 })();});
 _require.define("runtime/runtime_array","runtime/runtime_array.js",function(require, module, exports, __filename, __dirname){// unique() -> list
 if (typeof Array.prototype.unique !== 'function')
-Array.prototype.unique = function unique() {
+Object.defineConstant(Array.prototype, 'unique', function unique() {
   var a = [], i, j, l = this.length;
   for (i=0; i<l; ++i) {
     for (j=i+1; j<l; ++j) {
@@ -5357,25 +5359,26 @@ Array.prototype.unique = function unique() {
     a.push(this[i]);
   }
   return a;
-};
+});
 
 // list[startIndex:endIndex] = value -> list
 // _move_setSlice(startIndex, endIndex=@length, value) -> list
 if (typeof Array.prototype._move_setSlice != 'function') {
   var _splice = Array.prototype.splice;
-  Array.prototype._move_setSlice =
-  function _move_setSlice(startIndex, endIndex, value) {
-    // splice(index, howMany[, element1[, ...[, elementN]]]) → list
-    var length;
-    if (endIndex !== undefined) {
-      if (typeof endIndex !== 'number')
-        throw new TypeError('Second argument must be a number');
-      length = endIndex - startIndex;
-    } else {
-      length = this.length;
+  Object.defineConstant(Array.prototype, '_move_setSlice',
+    function _move_setSlice(startIndex, endIndex, value) {
+      // splice(index, howMany[, element1[, ...[, elementN]]]) → list
+      var length;
+      if (endIndex !== undefined) {
+        if (typeof endIndex !== 'number')
+          throw new TypeError('Second argument must be a number');
+        length = endIndex - startIndex;
+      } else {
+        length = this.length;
+      }
+      return _splice.apply(this, [startIndex, length].concat(value));
     }
-    return _splice.apply(this, [startIndex, length].concat(value));
-  };
+  );
 }
 });
 _require.define("runtime/runtime_class","runtime/runtime_class.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
@@ -5429,19 +5432,19 @@ _require.define("runtime/runtime_class","runtime/runtime_class.mv",function(requ
   };
 })();});
 _require.define("runtime/runtime_date","runtime/runtime_date.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
-  var M, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class, EventEmitter;
+  var M, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class, EventEmitter, getUTCTime, getUTCComponents;
   M = Move.runtime, _MoveKWArgsT = M._MoveKWArgsT, Text = M.Text, extend = M.extend, create = M.create, print = M.print, repeat = M.repeat, after = M.after, JSON = M.JSON, __class = M.__class, EventEmitter = M.EventEmitter;
   if (Date.distantFuture === undefined) Date.distantFuture = new Date(359753450957352);
   if (Date.distantPast === undefined) Date.distantPast = new Date(-621356868e5);
   if (!Date.nowUTC) Date.nowUTC = function nowUTC() {
     return (new Date).getUTCTime();
   };
-  if (!Date.prototype.getUTCTime) Date.prototype.getUTCTime = function getUTCTime() {
+  if (!Date.prototype.getUTCTime) Object.defineConstant(Date.prototype, "getUTCTime", getUTCTime = function getUTCTime() {
     return this.getTime() - this.getTimezoneOffset();
-  };
-  if (!Date.prototype.getUTCComponents) return Date.prototype.getUTCComponents = function getUTCComponents() {
+  });
+  if (!Date.prototype.getUTCComponents) return Object.defineConstant(Date.prototype, "getUTCComponents", getUTCComponents = function getUTCComponents() {
     return [ this.getUTCFullYear(), this.getUTCMonth() + 1, this.getUTCDate(), this.getUTCHours(), this.getUTCMinutes(), this.getUTCSeconds(), this.getUTCMilliseconds() ];
-  };
+  });
 })();});
 _require.define("runtime/runtime_events","runtime/runtime_events.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
   var M, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class, EventEmitter;
@@ -5769,7 +5772,7 @@ function isDate(d) {
 }
 });
 _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(require, module, exports, __filename, __dirname){(function(){"use strict";
-  var M, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class, EventEmitter, IS_KNOWN_ES5_HOST, defineConstant, extend, create, repeat, after, _JSON;
+  var M, _MoveKWArgsT, Text, extend, create, print, repeat, after, JSON, __class, EventEmitter, IS_KNOWN_ES5_HOST, extend, create, repeat, after, _JSON;
   M = Move.runtime, _MoveKWArgsT = M._MoveKWArgsT, Text = M.Text, extend = M.extend, create = M.create, print = M.print, repeat = M.repeat, after = M.after, JSON = M.JSON, __class = M.__class, EventEmitter = M.EventEmitter;
   _MoveKWArgsT = global.Move.runtime._MoveKWArgsT;
   IS_KNOWN_ES5_HOST = !!(typeof process !== "undefined" && (typeof process.versions === "object" && process.versions.node || process.pid));
@@ -5783,25 +5786,9 @@ _require.define("runtime/runtime_move","runtime/runtime_move.mv",function(requir
   require("./runtime_string");
   require("./runtime_date");
   require("./runtime_array");
-  if (Object.defineProperty) {
-    defineConstant = function defineConstant(obj, name, value) {
-      obj !== null && typeof obj === "object" && obj.__kw === _MoveKWArgsT && (arguments.keywords = obj, value = obj.value, name = obj.name, obj = obj.obj);
-      return Object.defineProperty(obj, name, {
-        value: value,
-        writable: false,
-        enumerable: true,
-        configurable: false
-      });
-    };
-  } else {
-    defineConstant = function defineConstant(obj, name, value) {
-      obj !== null && typeof obj === "object" && obj.__kw === _MoveKWArgsT && (arguments.keywords = obj, value = obj.value, name = obj.name, obj = obj.obj);
-      return obj[name] = value;
-    };
-  }
-  defineConstant(exports, "_MoveKWArgsT", _MoveKWArgsT);
-  defineConstant(exports, "Text", String);
-  String.prototype.toText = String.prototype.toString;
+  Object.defineConstant(exports, "_MoveKWArgsT", _MoveKWArgsT, true);
+  Object.defineConstant(exports, "Text", String, true);
+  Object.defineConstant(String.prototype, "toText", String.prototype.toString);
   exports.extend = extend = function extend(object, body, onlyOwnProperties) {
     object !== null && typeof object === "object" && object.__kw === _MoveKWArgsT && (arguments.keywords = object, onlyOwnProperties = object.onlyOwnProperties, body = object.body, object = object.object);
     var T;
@@ -5955,28 +5942,40 @@ _require.define("runtime/runtime_object","runtime/runtime_object.js",function(re
     //Object.prototype.forEach = forEach;
   }
 }
+
+if (!Object.defineConstant)
+Object.defineConstant = Object.defineProperty ?
+  function defineConstant(obj, prop, value, enumerable/*=false*/) {
+    return Object.defineProperty(obj, prop, {
+      enumerable: !!enumerable,
+      configurable: false,
+      writable: false,
+      value: value
+    });
+  } :
+  function defineConstant(obj, prop, value) { obj[prop] = value; };
 });
 _require.define("runtime/runtime_string","runtime/runtime_string.js",function(require, module, exports, __filename, __dirname){if (!String.prototype.repeat)
-String.prototype.repeat = function repeat(times) {
+Object.defineConstant(String.prototype, 'repeat', function repeat(times) {
   s = ''; while (times--) s += this
   return s;
-};
+});
 
 if (!String.prototype.padLeft)
-String.prototype.padLeft = function padLeft(length, padstr) {
+Object.defineConstant(String.prototype, 'padLeft', function padLeft(length, padstr) {
   if (this.length >= length) return this;
   return String(padstr || " ").repeat(length-this.length) + this;
-};
+});
 
 if (!String.prototype.padRight)
-String.prototype.padRight = function padRight(length, padstr) {
+Object.defineConstant(String.prototype, 'padRight', function padRight(length, padstr) {
   if (this.length >= length) return this;
   return this + String(padstr || " ").repeat(length-this.length);
-};
+});
 
 // Levenshtein edit distance by Carlos R. L. Rodrigues
 if (!String.prototype.editDistance)
-String.prototype.editDistance = function editDistance(otherString) {
+Object.defineConstant(String.prototype, 'editDistance', function editDistance(otherString) {
   var s, l = (s = this.split("")).length,
       t = (otherString = otherString.split("")).length, i, j, m, n;
   if(!(l || t)) return Math.max(l, t);
@@ -5989,11 +5988,11 @@ String.prototype.editDistance = function editDistance(otherString) {
     }
   }
   return a[l][t];
-};
+});
 
 // Return all parts of the receiver which matches regexp `pattern`
 if (!String.prototype.matchAll)
-String.prototype.matchAll = function matchAll(pattern) {
+Object.defineConstant(String.prototype, 'matchAll', function matchAll(pattern) {
   "use strict";
   if (!(pattern instanceof RegExp)) {
     pattern = new RegExp(pattern, 'g');
@@ -6005,22 +6004,24 @@ String.prototype.matchAll = function matchAll(pattern) {
     matches.push(match);
   }
   return matches;
-};
+});
 
 // Iterate over the receiver for matches of regexp `pattern`
 if (!String.prototype.forEachMatch)
-String.prototype.forEachMatch = function forEachMatch(pattern, iterfun, thisObject) {
-  "use strict";
-  if (!thisObject) thisObject = this;
-  this.matchAll(pattern).forEach(iterfun, thisObject);
-  return thisObject;
-};
+Object.defineConstant(String.prototype, 'forEachMatch',
+  function forEachMatch(pattern, iterfun, thisObject) {
+    "use strict";
+    if (!thisObject) thisObject = this;
+    this.matchAll(pattern).forEach(iterfun, thisObject);
+    return thisObject;
+  }
+);
 
 // Use locale-aware case conversion if available
 if (typeof String.prototype.toLocaleLowerCase === 'function')
-  String.prototype.toLowerCase = String.prototype.toLocaleLowerCase;
+  Object.defineConstant(String.prototype, 'toLowerCase', String.prototype.toLocaleLowerCase);
 if (typeof String.prototype.toLocaleUpperCase === 'function')
-  String.prototype.toUpperCase = String.prototype.toLocaleUpperCase;
+  Object.defineConstant(String.prototype, 'toUpperCase', String.prototype.toLocaleUpperCase);
 });
 _require.define("runtime/symbols","runtime/symbols.js",function(require, module, exports, __filename, __dirname){// _MoveKWArgsT represents keyword arguments and is used for detection
 exports._MoveKWArgsT = function _MoveKWArgsT(obj) {
