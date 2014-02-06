@@ -11,6 +11,8 @@ echo "Building from ${SRC_DIR} -> ${DST_DIR}"
 
 pushd "$SRC_DIR" >/dev/null
 
+cp -vf ../package.json _includes/package.json
+
 # Check if DST_DIR is ok
 if [ ! -d "$DST_DIR" ] || [ "$(git --git-dir="${DST_DIR}/.git" branch --no-color | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1/")" != "gh-pages" ]; then
   # Backup if modified
