@@ -1,0 +1,27 @@
+port: 3000
+pygments: false
+lsi: false
+
+destination: ./.build
+exclude:
+  - build.sh
+  - apple-touch-icon.psd
+  - favicon.psd
+  - logo.psd
+  - menu-logo.psd
+  - output.psd
+  - paper-bg2.psd
+  - paper-bg3.psd
+
+url: http://movelang.org
+
+permalink: /articles/:title/
+#paginate: 10
+
+markdown: rdiscount
+rdiscount:
+  extensions: [smart, generate_toc]
+
+#markdown: kramdown
+#kramdown:
+#  auto_ids: true

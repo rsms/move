@@ -1,0 +1,22 @@
+if (!/AppleWebKit/.test(navigator.userAgent) || !/iP[oa]d|iPhone/.test(navigator.userAgent)) {
+
+  link = document.createElement 'link'
+  link.type = "text/css"
+  link.rel = "stylesheet"
+  link.href = "https://fonts.googleapis.com/css?family=Droid+Serif:regular,italic,bold|Droid+Sans+Mono"
+  document.documentElement.getElementsByTagName('head')[0].appendChild link
+
+  checkLoaded = ^{
+    for (i = 0; i < document.styleSheets.length; i++) {
+      if (document.styleSheets[i].href &&
+          document.styleSheets[i].href.indexOf('://fonts.googleapis.com/css') != -1) {
+        document.body.className += ' custom-fonts-loaded';
+        if (window.updateMenuOrigin)
+          window.updateMenuOrigin()
+        return
+      }
+    }
+    after {delay:100} checkLoaded
+  }
+  checkLoaded()
+}

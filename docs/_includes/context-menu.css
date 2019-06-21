@@ -1,0 +1,46 @@
+context-menu-overlay {
+  display: none;
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  pointer-events: auto;
+}
+context-menu {
+  display: none;
+  background-color: #333;
+  background-color: rgba(40,40,40,0.9);
+  color: white;
+  padding: 5px 0;
+  position: absolute;
+  left: 40px;
+  top: 40px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  font-weight: bold;
+  font-family: helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+  -moz-box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 7px rgba(0,0,0,0.2);
+  opacity: 0;
+  -webkit-transition: opacity 200ms ease-out;
+  z-index: 9;
+}
+  context-menu a {
+    display: block;
+    line-height: 30px;
+    padding: 0 10px;
+    cursor: default;
+  }
+  context-menu a:link, context-menu a:visited, context-menu a:active {
+    color: white !important;
+    text-decoration: none !important;
+  }
+  context-menu a:hover {
+    background-color: #2B6EDD;
+  }
+  context-menu hr {
+    margin:5px 0;
+    background-color: rgba(255,255,255, 0.25);
+    border-top: 1px solid rgba(0,0,0, 0.7);
+  }

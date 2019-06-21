@@ -1,0 +1,115 @@
+---
+layout: page
+---
+<style type="text/css" media="all">
+.general-info {
+  display: block;
+  width:330px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  background: #6B6050;
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizelegibility;
+  font-family: helvetica, sans-serif;
+  padding:10px 15px;
+  margin-top:-10px;
+}
+  .general-info a { color: white; }
+  .general-info a:hover { color: white; }
+  .general-info b {  font-weight: bold; }
+  .general-info p { margin: 0; }
+  .general-info .version { font-weight: lighter; float:right; }
+    .general-info .version .text { font-size: 2em; }
+
+.left-column, .right-column {
+  display:block;
+  float:left;
+  width:45%;
+}
+.left-column pre, .right-column pre { width:100% !important; }
+.right-column { float:right; }
+
+.fineprint {
+  font-size:13px;
+  color: #999;
+}
+.fineprint a:link, .fineprint a:active, .fineprint a:visited {
+  color: #999;
+  font-style: normal;
+}
+.fineprint a:hover { color: black; }
+p.fineprint { margin-bottom:0.3em; }
+ul.fineprint { margin-top:0; }
+.fineprint li {
+  list-style:none;
+  margin:0;
+  font-style: italic;
+}
+</style>
+
+<script type="text/move">
+if (document.location.pathname == "/index.html") {
+  if (history && history.pushState) {
+    history.replaceState null, null, '/'
+  } else {
+    document.location.pathname = '/'
+  }
+}
+</script>
+
+<div class="left-column">
+  Here is a simple Move program which outputs “Hello John” three times:<p></p>
+    <pre class="prettyprint lang-mv"><code class=" prettyprint lang-mv"><span class="pln">hello </span><span class="pun">=</span><span class="pln"> </span><span class="pun">^(</span><span class="pln">name</span><span class="pun">){</span><span class="pln"> </span><span class="str">"Hello "</span><span class="pun">+</span><span class="pln">name </span><span class="pun">}</span><span class="pln"><br>repeat </span><span class="pun">{</span><span class="pln">times</span><span class="pun">:</span><span class="pln"> </span><span class="lit">3</span><span class="pun">}</span><span class="pln"> </span><span class="pun">^{</span><span class="pln"><br>&nbsp; </span><span class="kwd">print</span><span class="pln"> hello </span><span class="pun">{</span><span class="pln">name</span><span class="pun">:</span><span class="pln"> </span><span class="str">"John"</span><span class="pun">}</span><span class="pln"><br></span><span class="pun">}</code></pre>
+</div>
+
+
+<div class="right-column">
+  <div class="general-info">
+    <div class="version"><a href="/move.js" title="Current stable version">v<span class="text">0.0.0</span></a></div>
+    <p>
+      <a href="#usage" title="Read how to use Move">Use <b>move.js</b></a>
+      or get the source from
+      <a href="https://github.com/rsms/move" title="Development source code"><b>github.com/rsms/move</b></a>
+    </p>
+  </div>
+  <p class="fineprint">
+    Special versions of the library:
+  </p>
+  <ul class="fineprint">
+    <li><a href="/move-rt.js" title="Runtime library for running precompiled Move code">move-rt.js</a> — runtime only</li>
+    <li><a href="/move-debug.js" title="Larger in size but easier to debug">move-debug.js</a> — human-readable</li>
+    <li><a href="/move-rt-debug.js" title="Larger in size but easier to debug">move-rt-debug.js</a> — runtime only, human-readable</li>
+  </ul>
+</div>
+<div class="breaker"></div>
+
+
+<hr>
+
+<div class="left-column learn">
+  <h2><a href="/how-to-move/">Learn how to Move</a></h2>
+
+  <p><img src="/res/dance.png" width="64" height="64" alt="Dance" align="right">Move has been designed with humans in mind and is very suitable as a first programming language. Learn how to Move and you will be able to write rich websites, server programs, etc -- Move runs everywhere and it's fun!</p>
+
+  <p><a href="/how-to-move/">Get started with "How to Move" &rarr;</a></p>
+</div>
+<div class="right-column">
+  {% for p in site.pages %}{% if p.url == '/index-features.html' %}
+    {{ p.content }}
+  {% endif %}{% endfor %}
+</div>
+<div class="breaker"></div>
+
+<hr>
+<a name="usage"></a>
+{% for p in site.pages %}{% if p.url == '/index-usage.html' %}
+  {{ p.content }}
+{% endif %}{% endfor %}
+
+<script>
+// Move version number. Needs to run before other scripts
+$('.version .text').text(gMovePackageInfo.version);
+document.body.innerHTML = document.body.innerHTML.replace(/\/move([a-z-]*)\.js/g, '/move-'+gMovePackageInfo.version+'$1.js');
+</script>

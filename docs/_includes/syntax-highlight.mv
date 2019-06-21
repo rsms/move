@@ -1,0 +1,29 @@
+// curry pre < code to be able to get prettified
+v = document.getElementsByTagName('pre')
+for (i=0,L=v.length; i < L; ++i) {
+  n = v.item i
+  a = n.getAttribute('class') || ''
+  if (a.indexOf('wide') == -1)
+    n.setAttribute 'title', 'Move code'
+  if (n.firstChild && n.firstChild.nodeName == 'CODE') {
+    if (a.indexOf('prettyprint') === -1 &&
+        (n.firstChild.getAttribute('class') || '').indexOf('prettyprint') === -1) {
+      n.setAttribute 'class', a+' prettyprint lang-mv'
+    }
+  } else {
+    n.setAttribute 'class', a+' prettyprint lang-mv'
+  }
+}
+
+v = document.getElementsByTagName('code');
+for (i=0,L=v.length; i < L; ++i) {
+  n = v.item i
+  a = (n.getAttribute 'class') || '';
+  if ((a.indexOf 'prettyprint') === -1)
+    n.setAttribute 'class', a+' prettyprint lang-mv'
+}
+$('section.body samp').attr 'title', 'Output'
+script = document.createElement 'script'
+script.async = true
+script.src = "/res/prettify.js"
+document.getElementsByTagName('head')[0].appendChild script

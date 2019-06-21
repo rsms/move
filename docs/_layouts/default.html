@@ -1,0 +1,83 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+
+  <head>
+    <meta charset="utf-8">
+    <title>{% if page.title %}{{ page.title }} &mdash; {% endif %}Move</title>
+    <meta name="viewport" content="width=900">
+    <link rel="shortcut icon" href="/res/favicon.png">
+    <link rel="apple-touch-icon-precomposed" href="/res/apple-touch-icon.png">
+    <script>window.gMovePackageInfo = {% include package.json %};</script>
+    <script>document.write('<'+'script src="/move-'+gMovePackageInfo.version+'-debug.js"><'+'/script>');</script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <link rel="stylesheet" href="/res/screen.css" type="text/css" media="all">
+    <link rel="alternate" type="application/json" title="package.json" href="{{ site.url }}/package.json">
+    <script type="text/move">{% include context-menu.mv %}</script>
+    <script type="text/move">{% include navigation-menu.mv %}</script>
+
+    <!-- Open Graph -->
+    <meta property="fb:admins" content="728642302">
+    <meta property="fb:app_id" content="158328320889704">
+    <meta property="og:url" content="{{ site.url }}{{ page.url }}">
+    <meta property="og:site_name" content="Move">
+    {% if page.title %}
+    <meta property="og:title" content="{{ page.title }}">
+    {% else %}
+    <meta property="og:image" content="{{ site.url }}/res/logo.png">
+    <meta name="description" content="Move — a modern programming language that runs everywhere">
+    {% endif %}
+  </head>
+
+
+  <body>
+    <div id="fb-root"></div>
+
+    <header>
+      <wrapper>
+        <h1><a href="/" context-menu="logo-context-menu"><img src="/res/logo.png" width="343" height="122" alt="Move logo"></a></h1><p class="description">
+Move is a modern and simple <em>programming language</em> which can run on virtually
+any computer. Move is primarily aimed towards people not previously familiar with
+programming computers.
+        </p>
+        <context-menu id="logo-context-menu">
+          <a href="/res/logo.png" target="logo">logo.png</a>
+          <a href="/res/logo.pdf" target="logo">logo.pdf (for high-resolution work)</a>
+          <hr>
+          <a href="#disable-context-menu">Disable this fancy context menu</a>
+        </context-menu>
+      </wrapper>
+    </header>
+
+    <section id="menu">
+      <wrapper>
+        <menu-items>
+          <a href="/" context-menu="logo-context-menu" class="small-logo"><img src="/res/menu-logo.png" width="65" height="36" alt="Small Move logo"></a><a
+             href="/how-to-move/" title="An introduction to programming">How to Move</a>
+          <a href="/library/" title="Built-in objects and functions">Library</a>
+          <a href="/language/" title="Language reference">Language</a>
+          <!--a href="/articles/" title="Articles with tutorials etc">Articles</a-->
+          <a href="https://github.com/rsms/move/issues" title="Report and browse bugs">Bugs</a>
+          <a href="/try/" title="Try Move in an interactive console">Try it</a>
+          <a href="#" title="Jump to the top of the scroll">&uarr;</a>
+        </menu-items>
+      </wrapper>
+    </section>
+    <section id="menu-filler"></section>
+
+
+    {{ content }}
+
+
+    <footer>
+      <wrapper>
+Move is free software and <a href="https://github.com/rsms/move">open source</a>
+under a permissive license, created by <a href="http://rsms.me/">Rasmus Andersson</a>.
+      </wrapper>
+    </footer>
+
+    <script type="text/move">{% include syntax-highlight.mv %}</script>
+    <script type="text/move">{% include load-custom-fonts.mv %}</script>
+    <script>{% include analytics.js %}</script>
+  </body>
+</html>

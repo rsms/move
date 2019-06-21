@@ -1,0 +1,24 @@
+span.str { color: #080; }
+span.kwd { color: #295AA4; }
+span.com { color: #999; }
+span.typ { color: #808; }
+span.lit { color: #066; }
+span.pun, span.opn, span.clo { color: #660; }
+span.pln { color: #000; }
+span.tag { color: #008; }
+span.atn { color: #606; }
+span.atv { color: #080; }
+span.dec { color: #606; }
+/* Use higher contrast and font-styling for printable form. */
+@media print {
+  span.str { color: #060; }
+  span.kwd { color: #006; font-weight: bold; }
+  span.com { color: #999; font-style: italic; }
+  span.typ { color: #404; font-weight: bold; }
+  span.lit { color: #044; }
+  span.pun, span.opn, span.clo { color: #440; }
+  span.pln { color: #000; }
+  span.tag { color: #006; font-weight: bold; }
+  span.atn { color: #404; }
+  span.atv { color: #060; }
+}
